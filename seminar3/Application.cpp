@@ -240,7 +240,7 @@ void Application::update()
 GLuint Application::createShader(GLenum shaderType, std::string filename)
 {
 	//Читаем текст шейдера из файла
-	std::ifstream vertFile(filename);
+	std::ifstream vertFile(filename.c_str());
 	if (vertFile.fail())
 	{
 		std::cerr << "Failed to load shader file " << filename << std::endl;

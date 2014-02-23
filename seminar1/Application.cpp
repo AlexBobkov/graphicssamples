@@ -131,7 +131,7 @@ void Application::draw()
 GLuint Application::createShader(GLenum shaderType, std::string filename)
 {
 	//Читаем текст шейдера из файла
-	std::ifstream vertFile(filename);
+	std::ifstream vertFile(filename.c_str());
 	if (vertFile.fail())
 	{
 		std::cerr << "Failed to load shader file " << filename << std::endl;
@@ -272,55 +272,55 @@ void Application::makeSceneImplementation3()
 {
 	std::vector<float> vertices;
 	//front
-	addPoint(vertices, -0.3, 0.3, 0.0);
-	addPoint(vertices, 0.3, 0.3, 0.0);
-	addPoint(vertices, 0.3, -0.3, 0.0);
+	addPoint(vertices, -0.3f, 0.3f, 0.0f);
+	addPoint(vertices, 0.3f, 0.3f, 0.0f);
+	addPoint(vertices, 0.3f, -0.3f, 0.0f);
 
-	addPoint(vertices, -0.3, 0.3, 0.0);
-	addPoint(vertices, 0.3, -0.3, 0.0);
-	addPoint(vertices, -0.3, -0.3, 0.0);
+	addPoint(vertices, -0.3f, 0.3f, 0.0f);
+	addPoint(vertices, 0.3f, -0.3f, 0.0f);
+	addPoint(vertices, -0.3f, -0.3f, 0.0f);
 
 	//left
-	addPoint(vertices, -0.3, 0.3, 0.0);
-	addPoint(vertices, -0.3, -0.3, -1.0);
-	addPoint(vertices, -0.3, 0.3, -1.0);
+	addPoint(vertices, -0.3f, 0.3f, 0.0f);
+	addPoint(vertices, -0.3f, -0.3f, -1.0f);
+	addPoint(vertices, -0.3f, 0.3f, -1.0f);
 
-	addPoint(vertices, -0.3, 0.3, 0.0);
-	addPoint(vertices, -0.3, -0.3, 0.0);
-	addPoint(vertices, -0.3, -0.3, -1.0);
+	addPoint(vertices, -0.3f, 0.3f, 0.0f);
+	addPoint(vertices, -0.3f, -0.3f, 0.0f);
+	addPoint(vertices, -0.3f, -0.3f, -1.0f);
 
 	//buttom
-	addPoint(vertices, -0.3, -0.3, 0.0);
-	addPoint(vertices, 0.3, -0.3, -1.0);
-	addPoint(vertices, 0.3, -0.3, 0.0);
+	addPoint(vertices, -0.3f, -0.3f, 0.0f);
+	addPoint(vertices, 0.3f, -0.3f, -1.0f);
+	addPoint(vertices, 0.3f, -0.3f, 0.0f);
 
-	addPoint(vertices, -0.3, -0.3, 0.0);
-	addPoint(vertices, -0.3, -0.3, -1.0);
-	addPoint(vertices, 0.3, -0.3, -1.0);
+	addPoint(vertices, -0.3f, -0.3f, 0.0f);
+	addPoint(vertices, -0.3f, -0.3f, -1.0f);
+	addPoint(vertices, 0.3f, -0.3f, -1.0f);
 
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
 
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
 
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
 
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
 
-	addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 0.0, 1.0, 0.0, 1.0);
+	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
 
-	addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 0.0, 1.0, 0.0, 1.0);
+	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
 
 	int Npoints = vertices.size() / 7;
 
@@ -369,21 +369,21 @@ void Application::makeSceneImplementation3()
 void Application::makeSceneImplementation4()
 {
 	std::vector<float> vertices;	
-	addPoint(vertices, -0.3, 0.3, 0.0);
-	addPoint(vertices, 0.3, 0.3, 0.0);
-	addPoint(vertices, 0.3, -0.3, 0.0);
-	addPoint(vertices, -0.3, -0.3, 0.0);
-	addPoint(vertices, -0.3, 0.3, -1.0);
-	addPoint(vertices, -0.3, -0.3, -1.0);
-	addPoint(vertices, 0.3, -0.3, -1.0);
+	addPoint(vertices, -0.3f, 0.3f, 0.0f);
+	addPoint(vertices, 0.3f, 0.3f, 0.0f);
+	addPoint(vertices, 0.3f, -0.3f, 0.0f);
+	addPoint(vertices, -0.3f, -0.3f, 0.0f);
+	addPoint(vertices, -0.3f, 0.3f, -1.0f);
+	addPoint(vertices, -0.3f, -0.3f, -1.0f);
+	addPoint(vertices, 0.3f, -0.3f, -1.0f);
 
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-	addColor(vertices, 0.0, 0.0, 1.0, 1.0);	
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-	addColor(vertices, 0.0, 1.0, 0.0, 1.0);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
+	addColor(vertices, 0.0f, 0.0f, 1.0f, 1.0f);	
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
+	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
 	
 	int Npoints = vertices.size() / 7;
 
