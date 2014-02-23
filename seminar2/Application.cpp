@@ -4,7 +4,7 @@ const int demoNumber = 1; //
 
 //======================================
 
-//Функция обратного вызова для обработки нажатий на клавиатуре
+//Р¤СѓРЅРєС†РёСЏ РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР° РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РЅР°Р¶Р°С‚РёР№ РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	Application* app = (Application*)glfwGetWindowUserPointer(window);
@@ -108,7 +108,7 @@ void Application::initContext()
 	}
 	glfwMakeContextCurrent(_window);
 
-	glfwSetWindowUserPointer(_window, this); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
+	glfwSetWindowUserPointer(_window, this); //СЂРµРіРёСЃС‚СЂРёСЂСѓРµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚, С‡С‚РѕР±С‹ РїРѕС‚РѕРј РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РµРіРѕ РІ С„СѓРЅРєС†РёСЏС… РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°
 }
 
 void Application::initGL()
@@ -185,7 +185,7 @@ void Application::update()
 	{
 		_thetaAng -= speed * dt;
 	}
-	
+
 	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * 5.0f;
 
 	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -217,7 +217,7 @@ void Application::update()
 
 GLuint Application::createShader(GLenum shaderType, std::string filename)
 {
-	//Читаем текст шейдера из файла
+	//Р§РёС‚Р°РµРј С‚РµРєСЃС‚ С€РµР№РґРµСЂР° РёР· С„Р°Р№Р»Р°
 	std::ifstream vertFile(filename.c_str());
 	if (vertFile.fail())
 	{
@@ -229,7 +229,7 @@ GLuint Application::createShader(GLenum shaderType, std::string filename)
 
 	const char* vertexShaderText = vertFileContent.c_str();
 
-	//Создаем шейдерный объект в OpenGL
+	//РЎРѕР·РґР°РµРј С€РµР№РґРµСЂРЅС‹Р№ РѕР±СЉРµРєС‚ РІ OpenGL
 	GLuint vs = glCreateShader(shaderType);
 	glShaderSource(vs, 1, &vertexShaderText, NULL);
 	glCompileShader(vs);
@@ -288,7 +288,7 @@ void Application::makeSceneImplementation()
 	addPoint(vertices, -size, -size, size);
 	addPoint(vertices, -size, size, -size);
 	addPoint(vertices, -size, size, size);
-					   
+
 	addPoint(vertices, -size, -size, size);
 	addPoint(vertices, -size, -size, -size);
 	addPoint(vertices, -size, size, -size);
@@ -346,7 +346,7 @@ void Application::makeSceneImplementation()
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-							
+
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
@@ -354,7 +354,7 @@ void Application::makeSceneImplementation()
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-						
+
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
@@ -418,5 +418,5 @@ void Application::drawImplementation()
 	glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
 	glBindVertexArray(_vao);	
-	glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем 3 грани куба (6 треугольников)
+	glDrawArrays(GL_TRIANGLES, 0, 36); //Р РёСЃСѓРµРј 3 РіСЂР°РЅРё РєСѓР±Р° (6 С‚СЂРµСѓРіРѕР»СЊРЅРёРєРѕРІ)
 }

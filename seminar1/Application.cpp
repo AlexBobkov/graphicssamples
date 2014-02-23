@@ -4,7 +4,7 @@ const int demoNumber = 2; //1,2,3,4 demos for seminar 1
 
 //======================================
 
-//Функция обратного вызова для обработки нажатий на клавиатуре
+//Р¤СѓРЅРєС†РёСЏ РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР° РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РЅР°Р¶Р°С‚РёР№ РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	Application* app = (Application*)glfwGetWindowUserPointer(window);
@@ -54,7 +54,7 @@ void Application::initContext()
 	}
 	glfwMakeContextCurrent(_window);
 
-	glfwSetWindowUserPointer(_window, this); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
+	glfwSetWindowUserPointer(_window, this); //СЂРµРіРёСЃС‚СЂРёСЂСѓРµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚, С‡С‚РѕР±С‹ РїРѕС‚РѕРј РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РµРіРѕ РІ С„СѓРЅРєС†РёСЏС… РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°
 }
 
 void Application::initGL()
@@ -130,7 +130,7 @@ void Application::draw()
 
 GLuint Application::createShader(GLenum shaderType, std::string filename)
 {
-	//Читаем текст шейдера из файла
+	//Р§РёС‚Р°РµРј С‚РµРєСЃС‚ С€РµР№РґРµСЂР° РёР· С„Р°Р№Р»Р°
 	std::ifstream vertFile(filename.c_str());
 	if (vertFile.fail())
 	{
@@ -142,7 +142,7 @@ GLuint Application::createShader(GLenum shaderType, std::string filename)
 
 	const char* vertexShaderText = vertFileContent.c_str();
 
-	//Создаем шейдерный объект в OpenGL
+	//РЎРѕР·РґР°РµРј С€РµР№РґРµСЂРЅС‹Р№ РѕР±СЉРµРєС‚ РІ OpenGL
 	GLuint vs = glCreateShader(shaderType);
 	glShaderSource(vs, 1, &vertexShaderText, NULL);
 	glCompileShader(vs);
@@ -384,7 +384,7 @@ void Application::makeSceneImplementation4()
 	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
 	addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
 	addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
-	
+
 	int Npoints = vertices.size() / 7;
 
 	std::vector<unsigned short> indices;
@@ -414,7 +414,7 @@ void Application::makeSceneImplementation4()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(Npoints * 4 * 3));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-	
+
 	//=========================================================
 
 	GLuint vs = createShader(GL_VERTEX_SHADER, "simple_color.vert");
@@ -446,17 +446,17 @@ void Application::makeSceneImplementation4()
 void Application::drawImplementation()
 {
 	glBindVertexArray(_vao);	
-	glDrawArrays(GL_TRIANGLES, 0, 3); //Рисуем треугольник
+	glDrawArrays(GL_TRIANGLES, 0, 3); //Р РёСЃСѓРµРј С‚СЂРµСѓРіРѕР»СЊРЅРёРє
 }
 
 void Application::drawImplementation3()
 {
 	glBindVertexArray(_vao);	
-	glDrawArrays(GL_TRIANGLES, 0, 18); //Рисуем 3 грани куба (6 треугольников)
+	glDrawArrays(GL_TRIANGLES, 0, 18); //Р РёСЃСѓРµРј 3 РіСЂР°РЅРё РєСѓР±Р° (6 С‚СЂРµСѓРіРѕР»СЊРЅРёРєРѕРІ)
 }
 
 void Application::drawImplementation4()
 {
 	glBindVertexArray(_vao);	
-	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, 0); //Рисуем с помощью индексов
+	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, 0); //Р РёСЃСѓРµРј СЃ РїРѕРјРѕС‰СЊСЋ РёРЅРґРµРєСЃРѕРІ
 }

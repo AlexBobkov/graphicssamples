@@ -21,22 +21,22 @@ public:
 	Application();
 	~Application();
 
-	//Инициализация графического контекста
+	//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РіСЂР°С„РёС‡РµСЃРєРѕРіРѕ РєРѕРЅС‚РµРєСЃС‚Р°
 	void initContext();
 
-	//Настройка некоторых параметров OpenGL
+	//РќР°СЃС‚СЂРѕР№РєР° РЅРµРєРѕС‚РѕСЂС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ OpenGL
 	void initGL();
 
-	//Создание трехмерной сцены
+	//РЎРѕР·РґР°РЅРёРµ С‚СЂРµС…РјРµСЂРЅРѕР№ СЃС†РµРЅС‹
 	void makeScene();
 
-	//Цикл рендеринга
+	//Р¦РёРєР» СЂРµРЅРґРµСЂРёРЅРіР°
 	void run();
 
-	//Отрисовать один кадр
+	//РћС‚СЂРёСЃРѕРІР°С‚СЊ РѕРґРёРЅ РєР°РґСЂ
 	void draw();
 
-	//Обновление
+	//РћР±РЅРѕРІР»РµРЅРёРµ
 	void update();
 
 	void rotateLeft(bool b) { _rotateLeft = b; }
@@ -47,7 +47,7 @@ public:
 
 	void fovInc(bool b) { _fovInc = b; }
 	void fovDec(bool b) { _fovDec = b; }
-		
+
 protected:	
 	GLFWwindow* _window;
 	GLuint _vao;
@@ -56,11 +56,11 @@ protected:
 	GLuint _modelMatrixUniform;
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;
-	
+
 	glm::mat4 _modelMatrix;
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
-	
+
 	double _oldTime;
 
 	bool _rotateLeft;
@@ -77,10 +77,10 @@ protected:
 	bool _fovDec;
 	float _fov;
 
-	//Читает текст шейдера из файла и создает объект
+	//Р§РёС‚Р°РµС‚ С‚РµРєСЃС‚ С€РµР№РґРµСЂР° РёР· С„Р°Р№Р»Р° Рё СЃРѕР·РґР°РµС‚ РѕР±СЉРµРєС‚
 	GLuint createShader(GLenum shaderType, std::string filename);
 
-	//Конкретные реализация для разных примеров на семинаре (треугольник, куб)
+	//РљРѕРЅРєСЂРµС‚РЅС‹Рµ СЂРµР°Р»РёР·Р°С†РёСЏ РґР»СЏ СЂР°Р·РЅС‹С… РїСЂРёРјРµСЂРѕРІ РЅР° СЃРµРјРёРЅР°СЂРµ (С‚СЂРµСѓРіРѕР»СЊРЅРёРє, РєСѓР±)
 	void makeSceneImplementation();
 
 	void drawImplementation();

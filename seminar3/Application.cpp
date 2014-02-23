@@ -4,7 +4,7 @@ const int demoNumber = 5; //1 - simple, 2 - mat, 3 - color, 4 - point, 5 - time,
 
 //======================================
 
-//Функция обратного вызова для обработки нажатий на клавиатуре
+//Р¤СѓРЅРєС†РёСЏ РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР° РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РЅР°Р¶Р°С‚РёР№ РЅР° РєР»Р°РІРёР°С‚СѓСЂРµ
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	Application* app = (Application*)glfwGetWindowUserPointer(window);
@@ -108,7 +108,7 @@ void Application::initContext()
 	}
 	glfwMakeContextCurrent(_window);
 
-	glfwSetWindowUserPointer(_window, this); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
+	glfwSetWindowUserPointer(_window, this); //СЂРµРіРёСЃС‚СЂРёСЂСѓРµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚, С‡С‚РѕР±С‹ РїРѕС‚РѕРј РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РµРіРѕ РІ С„СѓРЅРєС†РёСЏС… РѕР±СЂР°С‚РЅРѕРіРѕ РІС‹Р·РѕРІР°
 }
 
 void Application::initGL()
@@ -124,10 +124,10 @@ void Application::initGL()
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 
-	//Включает сглаживание точек
+	//Р’РєР»СЋС‡Р°РµС‚ СЃРіР»Р°Р¶РёРІР°РЅРёРµ С‚РѕС‡РµРє
 	glEnable(GL_POINT_SMOOTH);
 
-	//Включает изменение размера точек через шейдер
+	//Р’РєР»СЋС‡Р°РµС‚ РёР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂР° С‚РѕС‡РµРє С‡РµСЂРµР· С€РµР№РґРµСЂ
 	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
 
@@ -207,7 +207,7 @@ void Application::update()
 	{
 		_thetaAng -= speed * dt;
 	}
-	
+
 	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * 5.0f;
 
 	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -239,7 +239,7 @@ void Application::update()
 
 GLuint Application::createShader(GLenum shaderType, std::string filename)
 {
-	//Читаем текст шейдера из файла
+	//Р§РёС‚Р°РµРј С‚РµРєСЃС‚ С€РµР№РґРµСЂР° РёР· С„Р°Р№Р»Р°
 	std::ifstream vertFile(filename.c_str());
 	if (vertFile.fail())
 	{
@@ -251,7 +251,7 @@ GLuint Application::createShader(GLenum shaderType, std::string filename)
 
 	const char* vertexShaderText = vertFileContent.c_str();
 
-	//Создаем шейдерный объект в OpenGL
+	//РЎРѕР·РґР°РµРј С€РµР№РґРµСЂРЅС‹Р№ РѕР±СЉРµРєС‚ РІ OpenGL
 	GLuint vs = glCreateShader(shaderType);
 	glShaderSource(vs, 1, &vertexShaderText, NULL);
 	glCompileShader(vs);
@@ -310,7 +310,7 @@ void Application::makeSceneImplementation()
 	addPoint(vertices, -size, -size, size);
 	addPoint(vertices, -size, size, -size);
 	addPoint(vertices, -size, size, size);
-					   
+
 	addPoint(vertices, -size, -size, size);
 	addPoint(vertices, -size, -size, -size);
 	addPoint(vertices, -size, size, -size);
@@ -368,7 +368,7 @@ void Application::makeSceneImplementation()
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-							
+
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
 	addColor(vertices, 0.0, 1.0, 1.0, 1.0);
@@ -376,7 +376,7 @@ void Application::makeSceneImplementation()
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-						
+
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
 	addColor(vertices, 1.0, 0.0, 1.0, 1.0);
@@ -456,7 +456,7 @@ void Application::makeSceneImplementation()
 	_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
 	_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
 	_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-	
+
 	//float projMatrix[16];
 	//float fFrustumScale = 1.0f; float fzNear = 0.5f; float fzFar = 3.0f;
 	//memset(projMatrix, 0, sizeof(float) * 16);
@@ -562,7 +562,7 @@ void Application::makeSceneImplementationQuad()
 	glLinkProgram(_shaderProgram);
 
 	//=========================================================
-		
+
 	_timeUniform = glGetUniformLocation(_shaderProgram, "time");
 }
 
@@ -570,7 +570,7 @@ void Application::drawImplementation()
 {
 	glUseProgram(_shaderProgram);
 
-	glUniform1f(_timeUniform, glfwGetTime()); //передаем время в шейдер	
+	glUniform1f(_timeUniform, (float)glfwGetTime()); //РїРµСЂРµРґР°РµРј РІСЂРµРјСЏ РІ С€РµР№РґРµСЂ	
 
 	glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 	glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
@@ -579,20 +579,20 @@ void Application::drawImplementation()
 
 	_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_modelMatrix));	
-			
-	glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем 3 грани куба (6 треугольников)
+
+	glDrawArrays(GL_TRIANGLES, 0, 36); //Р РёСЃСѓРµРј 3 РіСЂР°РЅРё РєСѓР±Р° (6 С‚СЂРµСѓРіРѕР»СЊРЅРёРєРѕРІ)
 
 	_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_modelMatrix));	
-		
-	glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем 3 грани куба (6 треугольников)
+
+	glDrawArrays(GL_TRIANGLES, 0, 36); //Р РёСЃСѓРµРј 3 РіСЂР°РЅРё РєСѓР±Р° (6 С‚СЂРµСѓРіРѕР»СЊРЅРёРєРѕРІ)
 }
 
 void Application::drawImplementationLine()
 {
 	glUseProgram(_shaderProgram);
 
-	glUniform1f(_timeUniform, glfwGetTime()); //передаем время в шейдер	
+	glUniform1f(_timeUniform, (float)glfwGetTime()); //РїРµСЂРµРґР°РµРј РІСЂРµРјСЏ РІ С€РµР№РґРµСЂ	
 
 	glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 	glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
@@ -606,8 +606,8 @@ void Application::drawImplementationQuad()
 {
 	glUseProgram(_shaderProgram);
 
-	glUniform1f(_timeUniform, glfwGetTime()); //передаем время в шейдер	
-	
+	glUniform1f(_timeUniform, (float)glfwGetTime()); //РїРµСЂРµРґР°РµРј РІСЂРµРјСЏ РІ С€РµР№РґРµСЂ	
+
 	glBindVertexArray(_vao);			
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 }
