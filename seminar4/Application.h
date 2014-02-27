@@ -69,6 +69,8 @@ protected:
 	GLuint _diffuseColorUniform;
 	GLuint _specularColorUniform;
 	GLuint _shininessUniform;
+	GLuint _materialUniform;
+	GLuint _attenuationUniform;
 
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
@@ -78,17 +80,21 @@ protected:
 	glm::vec3 _ambientColor;
 	glm::vec3 _diffuseColor;
 	glm::vec3 _specularColor;
-	float _shininess;
-	
+	float _attenuation;
+		
 	//sphere
 	GLuint _sphereVao;	
 	glm::mat4 _sphereModelMatrix;
 	int _sphereNumTris;
+	float _sphereShininess;
+	glm::vec3 _sphereMaterial;
 
 	//cube
 	GLuint _cubeVao;
 	glm::mat4 _cubeModelMatrix;
 	int _cubeNumTris;
+	float _cubeShininess;
+	glm::vec3 _cubeMaterial;
 
 	double _oldTime;
 
