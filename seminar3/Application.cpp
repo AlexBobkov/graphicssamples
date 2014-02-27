@@ -580,12 +580,12 @@ void Application::drawImplementation()
 	_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f));
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_modelMatrix));	
 
-	glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем 3 грани куба (6 треугольников)
+	glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем куб
 
 	_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_modelMatrix));	
 
-	glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем 3 грани куба (6 треугольников)
+	glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем куб
 }
 
 void Application::drawImplementationLine()
