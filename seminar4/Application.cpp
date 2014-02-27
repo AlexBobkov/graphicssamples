@@ -6,8 +6,9 @@
 bool addColorAttribute = false;
 bool addNormalAttribute = true;
 
-int demoNum = 2; //1 - diffuse per vertex directinal light
+int demoNum = 3; //1 - diffuse per vertex directinal light
 //2 - diffuse per vertex point light
+//3 - diffuse per fragment point light
 
 //====================================== Вспомогательные функции
 
@@ -282,8 +283,8 @@ void Application::makeSceneImplementation()
 void Application::makeSphere()
 {
 	float radius = 0.5f;
-	int N = 100;
-	int M = 50;
+	int N = 10;
+	int M = 10;
 	_sphereNumTris = 0;
 
 	std::vector<float> vertices;
@@ -591,6 +592,11 @@ void Application::makeShaders()
 		{
 			vertFilename = "shaders4/diffusePerVertexPoint.vert";
 			fragFilename = "shaders4/diffusePerVertexPoint.frag";
+		}
+		else if (demoNum == 3)
+		{
+			vertFilename = "shaders4/diffusePerFramentPoint.vert";
+			fragFilename = "shaders4/diffusePerFramentPoint.frag";
 		}
 	}
 
