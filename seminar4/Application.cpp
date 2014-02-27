@@ -599,9 +599,20 @@ void Application::makeShaders()
 	_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
 	_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
 	_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-
+	_normalToCameraMatrixUniform = glGetUniformLocation(_shaderProgram, "normalToCameraMatrix");
+	
 	_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	_projMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+
+	//=========================================================
+
+	_lightDirUniform = glGetUniformLocation(_shaderProgram, "lightDir");
+	_ambientColorUniform = glGetUniformLocation(_shaderProgram, "ambientColor");
+	_diffuseColorUniform = glGetUniformLocation(_shaderProgram, "diffuseColor");
+
+	_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0);
+	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
+	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
 }
 
 void Application::drawImplementation()
@@ -612,12 +623,26 @@ void Application::drawImplementation()
 	glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 	glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
+	glUniform4fv(_lightDirUniform, 1, glm::value_ptr(_lightDir));
+	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
+	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
+
+	//====== Сфера ======
+	_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _sphereModelMatrix)));
+	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
+
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_sphereModelMatrix));	
+
 	glBindVertexArray(_sphereVao);
 	glDrawArrays(GL_TRIANGLES, 0, _sphereNumTris * 3); //Рисуем сферу
 
-	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_cubeModelMatrix));	
+
+	//====== Куб ======
+	_normalToCameraMatrix = glm::mat3(_viewMatrix * _cubeModelMatrix);
+	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
+
+	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_cubeModelMatrix));
+
 	glBindVertexArray(_cubeVao);
 	glDrawArrays(GL_TRIANGLES, 0, _cubeNumTris * 3); //Рисуем куб
-
 }

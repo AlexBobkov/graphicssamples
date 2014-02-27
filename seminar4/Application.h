@@ -61,9 +61,20 @@ protected:
 
 	GLuint _modelMatrixUniform;
 	GLuint _viewMatrixUniform;
-	GLuint _projMatrixUniform;
+	GLuint _projMatrixUniform;	
+	GLuint _normalToCameraMatrixUniform;
+	GLuint _lightDirUniform;	
+	GLuint _ambientColorUniform;
+	GLuint _diffuseColorUniform;
+	GLuint _specularColorUniform;
+
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
+	glm::mat3 _normalToCameraMatrix;
+	glm::vec4 _lightDir; //in world space
+	glm::vec3 _ambientColor;
+	glm::vec3 _diffuseColor;
+	glm::vec3 _specularColor;
 	
 	//sphere
 	GLuint _sphereVao;	

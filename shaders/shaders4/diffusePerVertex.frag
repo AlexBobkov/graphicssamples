@@ -1,10 +1,10 @@
 #version 330
 
-in vec4 interpColor;
+in vec3 interpColor;
 
 out vec4 fragColor;
 
 void main()
 {
-	fragColor = interpColor;
+	fragColor = vec4(interpColor, 1.0);
 }
