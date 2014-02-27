@@ -6,7 +6,7 @@
 bool addColorAttribute = false;
 bool addNormalAttribute = true;
 
-int demoNum = 4; //1 - diffuse per vertex directinal light
+int demoNum = 5; //1 - diffuse per vertex directinal light
 //2 - diffuse per vertex point light
 //3 - diffuse per fragment point light
 //4 - specular phong
@@ -606,6 +606,11 @@ void Application::makeShaders()
 		{
 			vertFilename = "shaders4/specular.vert";
 			fragFilename = "shaders4/specular.frag";
+		}
+		else if (demoNum == 5)
+		{
+			vertFilename = "shaders4/specularBlinn.vert";
+			fragFilename = "shaders4/specularBlinn.frag";
 		}
 	}
 
