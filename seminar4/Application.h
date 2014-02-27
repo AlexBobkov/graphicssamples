@@ -68,6 +68,7 @@ protected:
 	GLuint _ambientColorUniform;
 	GLuint _diffuseColorUniform;
 	GLuint _specularColorUniform;
+	GLuint _shininessUniform;
 
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
@@ -77,6 +78,7 @@ protected:
 	glm::vec3 _ambientColor;
 	glm::vec3 _diffuseColor;
 	glm::vec3 _specularColor;
+	float _shininess;
 	
 	//sphere
 	GLuint _sphereVao;	

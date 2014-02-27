@@ -6,9 +6,13 @@
 bool addColorAttribute = false;
 bool addNormalAttribute = true;
 
-int demoNum = 3; //1 - diffuse per vertex directinal light
+int demoNum = 4; //1 - diffuse per vertex directinal light
 //2 - diffuse per vertex point light
 //3 - diffuse per fragment point light
+//4 - specular phong
+//5 - specular blinn
+//6 - materials
+//7 - attenuation
 
 //====================================== Вспомогательные функции
 
@@ -283,8 +287,8 @@ void Application::makeSceneImplementation()
 void Application::makeSphere()
 {
 	float radius = 0.5f;
-	int N = 10;
-	int M = 10;
+	int N = 100;
+	int M = 50;
 	_sphereNumTris = 0;
 
 	std::vector<float> vertices;
@@ -598,6 +602,11 @@ void Application::makeShaders()
 			vertFilename = "shaders4/diffusePerFramentPoint.vert";
 			fragFilename = "shaders4/diffusePerFramentPoint.frag";
 		}
+		else if (demoNum == 4)
+		{
+			vertFilename = "shaders4/specular.vert";
+			fragFilename = "shaders4/specular.frag";
+		}
 	}
 
 	GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
@@ -625,11 +634,15 @@ void Application::makeShaders()
 	_lightPosUniform = glGetUniformLocation(_shaderProgram, "lightPos");
 	_ambientColorUniform = glGetUniformLocation(_shaderProgram, "ambientColor");
 	_diffuseColorUniform = glGetUniformLocation(_shaderProgram, "diffuseColor");
+	_specularColorUniform = glGetUniformLocation(_shaderProgram, "specularColor");
+	_shininessUniform = glGetUniformLocation(_shaderProgram, "shininessFactor");
 
 	_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0);
 	_lightPos = glm::vec4(0.0f, 1.0f, 0.8f, 1.0);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
+	_specularColor = glm::vec3(0.25, 0.25, 0.25);
+	_shininess = 100.0f;
 }
 
 void Application::drawImplementation()
@@ -644,6 +657,8 @@ void Application::drawImplementation()
 	glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
 	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
 	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
+	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
+	glUniform1f(_shininessUniform, _shininess); //передаем время в шейдер	
 
 	//====== Сфера ======
 	_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _sphereModelMatrix)));
