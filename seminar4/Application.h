@@ -63,7 +63,8 @@ protected:
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;	
 	GLuint _normalToCameraMatrixUniform;
-	GLuint _lightDirUniform;	
+	GLuint _lightDirUniform;
+	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
 	GLuint _diffuseColorUniform;
 	GLuint _specularColorUniform;
@@ -72,6 +73,7 @@ protected:
 	glm::mat4 _projMatrix;
 	glm::mat3 _normalToCameraMatrix;
 	glm::vec4 _lightDir; //in world space
+	glm::vec4 _lightPos; //in world space
 	glm::vec3 _ambientColor;
 	glm::vec3 _diffuseColor;
 	glm::vec3 _specularColor;

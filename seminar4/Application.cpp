@@ -6,6 +6,9 @@
 bool addColorAttribute = false;
 bool addNormalAttribute = true;
 
+int demoNum = 2; //1 - diffuse per vertex directinal light
+//2 - diffuse per vertex point light
+
 //====================================== Вспомогательные функции
 
 float frand(float low, float high)
@@ -579,10 +582,16 @@ void Application::makeShaders()
 	}
 	else if (addNormalAttribute)
 	{
-		std::cout << "FKFK\n";
-
-		vertFilename = "shaders4/diffusePerVertex.vert";
-		fragFilename = "shaders4/diffusePerVertex.frag";
+		if (demoNum == 1)
+		{
+			vertFilename = "shaders4/diffusePerVertex.vert";
+			fragFilename = "shaders4/diffusePerVertex.frag";
+		}
+		else if (demoNum == 2)
+		{
+			vertFilename = "shaders4/diffusePerVertexPoint.vert";
+			fragFilename = "shaders4/diffusePerVertexPoint.frag";
+		}
 	}
 
 	GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
@@ -607,10 +616,12 @@ void Application::makeShaders()
 	//=========================================================
 
 	_lightDirUniform = glGetUniformLocation(_shaderProgram, "lightDir");
+	_lightPosUniform = glGetUniformLocation(_shaderProgram, "lightPos");
 	_ambientColorUniform = glGetUniformLocation(_shaderProgram, "ambientColor");
 	_diffuseColorUniform = glGetUniformLocation(_shaderProgram, "diffuseColor");
 
 	_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0);
+	_lightPos = glm::vec4(0.0f, 1.0f, 0.8f, 1.0);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
 }
@@ -624,6 +635,7 @@ void Application::drawImplementation()
 	glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
 	glUniform4fv(_lightDirUniform, 1, glm::value_ptr(_lightDir));
+	glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
 	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
 	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
 
