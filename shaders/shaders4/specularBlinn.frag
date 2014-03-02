@@ -1,34 +1,34 @@
 #version 330
 
-uniform vec3 ambientColor;
-uniform vec3 diffuseColor;
-uniform vec3 specularColor;
-uniform float shininessFactor;
+uniform vec3 ambientColor; //цвет окружающего света (аппроксимаци€ множественных переотражений)
+uniform vec3 diffuseColor; //цвет источника света
+uniform vec3 specularColor; //бликовый цвет источника света
+uniform float shininessFactor; //блеск (свойство материала, вли€ет на размер блика)
 
-in vec3 normalCamSpace;
-in vec4 lightPosCamSpace;
-in vec4 posCamSpace;
+in vec3 normalCamSpace; //нормаль в системе координат камеры (интерполирована между вершинами треугольника)
+in vec4 lightPosCamSpace; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
+in vec4 posCamSpace; //координаты вершины в системе координат камеры (интерполированы между вершинами треугольника)
 
-out vec4 fragColor;
+out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz);
+	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //направление на источник света
 
-	vec3 normal = normalize(normalCamSpace);
+	vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерпол€ции
 				    
-    float cosAngIncidence = dot(normal, lightDirCamSpace);
+    float cosAngIncidence = dot(normal, lightDirCamSpace); //интенсивность диффузного света
     cosAngIncidence = clamp(cosAngIncidence, 0, 1);
     
-	vec3 viewDirection = normalize(-posCamSpace.xyz);
+	vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находитс€ в точке (0.0, 0.0, 0.0))
 		
-	vec3 halfAngle = normalize(lightDirCamSpace + viewDirection);
-	float blinnTerm = dot(normal, halfAngle);
+	vec3 halfAngle = normalize(lightDirCamSpace + viewDirection); //биссектриса между направлени€ми на камеру и на источник света
+	float blinnTerm = dot(normal, halfAngle); //интенсивность бликового освещени€ по Ѕлинну
 	blinnTerm = clamp(blinnTerm, 0, 1);
 	blinnTerm = cosAngIncidence != 0.0 ? blinnTerm : 0.0;
-	blinnTerm = pow(blinnTerm, shininessFactor);
+	blinnTerm = pow(blinnTerm, shininessFactor); //регулируем размер блика
 
-    vec3 color = ambientColor + diffuseColor * cosAngIncidence + specularColor * blinnTerm;	
+    vec3 color = ambientColor + diffuseColor * cosAngIncidence + specularColor * blinnTerm; //результирующий цвет
 
-	fragColor = vec4(color, 1.0);
+	fragColor = vec4(color, 1.0); //просто копируем
 }

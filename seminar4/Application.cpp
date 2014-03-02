@@ -3,6 +3,7 @@
 
 #include "Application.h"
 
+//исключающие параметры
 bool addColorAttribute = false;
 bool addNormalAttribute = true;
 
@@ -37,6 +38,7 @@ void addColor(std::vector<float>& vec, float r, float g, float b, float a)
 	vec.push_back(a);
 }
 
+//вычисление цвета по линейной палитре
 void getColorFromLinearPalette(float value, float& r, float& g, float& b)
 {
 	if (value < 0.25f)
@@ -608,6 +610,7 @@ void Application::makeShaders()
 	glLinkProgram(_shaderProgram);
 
 	//=========================================================
+	//Инициализация uniform-переменных для преобразования координат
 
 	_timeUniform = glGetUniformLocation(_shaderProgram, "time");
 	_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
@@ -619,6 +622,7 @@ void Application::makeShaders()
 	_projMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
 
 	//=========================================================
+	//Инициализация uniform-переменных для освещения
 
 	_lightDirUniform = glGetUniformLocation(_shaderProgram, "lightDir");
 	_lightPosUniform = glGetUniformLocation(_shaderProgram, "lightPos");
@@ -629,6 +633,7 @@ void Application::makeShaders()
 	_materialUniform = glGetUniformLocation(_shaderProgram, "material");
 	_attenuationUniform = glGetUniformLocation(_shaderProgram, "attenuation");
 
+	//Инициализация значений переменных освщения
 	_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0f);
 	_lightPos = glm::vec4(0.0f, 1.0f, 0.8f, 1.0f);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
@@ -636,7 +641,7 @@ void Application::makeShaders()
 	_specularColor = glm::vec3(0.25, 0.25, 0.25);
 		
 	_sphereShininess = 100.0f;
-	_cubeShininess = 10.0f;
+	_cubeShininess = 100.0f;
 
 	_sphereMaterial = glm::vec3(1.0, 0.0, 0.0);
 	_cubeMaterial = glm::vec3(0.0, 1.0, 0.0);
@@ -647,6 +652,8 @@ void Application::makeShaders()
 void Application::drawImplementation()
 {
 	glUseProgram(_shaderProgram);
+
+	//Копирование на видеокарту значений uniform-пемеренных, общих для всех объектов
 
 	glUniform1f(_timeUniform, (float)glfwGetTime()); //передаем время в шейдер	
 	glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
@@ -660,6 +667,7 @@ void Application::drawImplementation()
 	glUniform1f(_attenuationUniform, _attenuation);
 	
 	//====== Сфера ======
+	//Копирование на видеокарту значений uniform-пемеренных для сферы
 	_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _sphereModelMatrix)));
 	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
 	
@@ -668,12 +676,13 @@ void Application::drawImplementation()
 
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_sphereModelMatrix));	
 
-	glBindVertexArray(_sphereVao);
+	glBindVertexArray(_sphereVao); //Подключаем VertexArray для сферы
 	glDrawArrays(GL_TRIANGLES, 0, _sphereNumTris * 3); //Рисуем сферу
 
 
 	//====== Куб ======
-	_normalToCameraMatrix = glm::mat3(_viewMatrix * _cubeModelMatrix);
+	//Копирование на видеокарту значений uniform-пемеренных для куба
+	_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _cubeModelMatrix)));
 	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
 
 	glUniform3fv(_materialUniform, 1, glm::value_ptr(_cubeMaterial));
@@ -681,6 +690,6 @@ void Application::drawImplementation()
 
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_cubeModelMatrix));
 
-	glBindVertexArray(_cubeVao);
+	glBindVertexArray(_cubeVao); //Подключаем VertexArray для куба
 	glDrawArrays(GL_TRIANGLES, 0, _cubeNumTris * 3); //Рисуем куб
 }
