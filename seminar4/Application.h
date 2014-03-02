@@ -39,14 +39,12 @@ public:
 	//Обновление
 	void update();
 
+	//Функции для управления положением камеры
 	void rotateLeft(bool b) { _rotateLeft = b; }
 	void rotateRight(bool b) { _rotateRight = b; }
 
 	void rotateUp(bool b) { _rotateUp = b; }
 	void rotateDown(bool b) { _rotateDown = b; }
-
-	void fovInc(bool b) { _fovInc = b; }
-	void fovDec(bool b) { _fovDec = b; }
 
 protected:	
 	void makeSphere();
@@ -56,9 +54,9 @@ protected:
 	GLFWwindow* _window;
 
 	GLuint _shaderProgram;
-	
-	GLuint _timeUniform;
 
+	//идентификаторы uniform-переменных
+	GLuint _timeUniform;
 	GLuint _modelMatrixUniform;
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;	
@@ -72,6 +70,7 @@ protected:
 	GLuint _materialUniform;
 	GLuint _attenuationUniform;
 
+	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
 	glm::mat3 _normalToCameraMatrix;
@@ -98,6 +97,7 @@ protected:
 
 	double _oldTime;
 
+	//Состояние виртуальной камеры
 	bool _rotateLeft;
 	bool _rotateRight;
 	double _phiAng;
@@ -106,21 +106,9 @@ protected:
 	bool _rotateDown;
 	double _thetaAng;
 
-	double _z;
-
-	bool _fovInc;
-	bool _fovDec;
-	float _fov;
-
 	//Читает текст шейдера из файла и создает объект
 	GLuint createShader(GLenum shaderType, std::string filename);
-
-	//Конкретные реализация для разных примеров на семинаре (треугольник, куб)
+		
 	void makeSceneImplementation();
-	void makeSceneImplementationLine();
-	void makeSceneImplementationQuad();
-
 	void drawImplementation();
-	void drawImplementationLine();
-	void drawImplementationQuad();
 };

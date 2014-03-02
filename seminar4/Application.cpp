@@ -94,14 +94,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		{
 			app->rotateDown(true);
 		}
-		else if (key == GLFW_KEY_R)
-		{
-			app->fovInc(true);
-		}
-		else if (key == GLFW_KEY_F)
-		{
-			app->fovDec(true);
-		}
 	}
 	else if (action == GLFW_RELEASE)
 	{
@@ -121,14 +113,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		{
 			app->rotateDown(false);
 		}
-		else if (key == GLFW_KEY_R)
-		{
-			app->fovInc(false);
-		}
-		else if (key == GLFW_KEY_F)
-		{
-			app->fovDec(false);
-		}
 	}
 }
 
@@ -141,11 +125,7 @@ _oldTime(0.0f),
 	_phiAng(0.0f),
 	_rotateUp(false),
 	_rotateDown(false),
-	_thetaAng(0.0f),
-	_fovInc(false),
-	_fovDec(false),
-	_fov(45.0),
-	_z(0.0f)
+	_thetaAng(0.0f)	
 {
 }
 
@@ -186,12 +166,6 @@ void Application::initGL()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-
-	//Включает сглаживание точек
-	glEnable(GL_POINT_SMOOTH);
-
-	//Включает изменение размера точек через шейдер
-	glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 }
 
 void Application::makeScene()
