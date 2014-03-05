@@ -5,6 +5,7 @@
 * GLFW (http://www.glfw.org/)
 * GLEW (http://sourceforge.net/projects/glew/)
 * GLM (http://glm.g-truc.net/0.9.5/index.html)
+* GL Image (http://glsdk.sourceforge.net/docs/html/index.html)
 
 Сборка осуществляется с помощью CMake (http://cmake.org/)
 
@@ -19,3 +20,4 @@
 2) Преобразование вершин. Матрицы модели, вида, проекции.
 3) Язык GLSL
 4) Освещение
+5) Текстурирование
