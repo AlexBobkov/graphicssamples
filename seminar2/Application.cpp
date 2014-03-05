@@ -234,6 +234,25 @@ GLuint Application::createShader(GLenum shaderType, std::string filename)
 	glShaderSource(vs, 1, &vertexShaderText, NULL);
 	glCompileShader(vs);
 
+	//Проверяем ошибки компиляции
+	int status = -1;
+	glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
+	if (status != GL_TRUE)
+	{
+		std::cerr << "Failed to compile the shader:\n";		
+		
+		GLint errorLength;
+		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
+
+		GLchar* log = new GLchar[errorLength];
+		glGetShaderInfoLog(vs, errorLength, 0, log);
+
+		std::cerr << log << std::endl;
+
+		delete[] log;
+		exit(1);
+	}
+
 	return vs;
 }
 
@@ -384,6 +403,25 @@ void Application::makeSceneImplementation()
 	glAttachShader(_shaderProgram, fs);
 	glAttachShader(_shaderProgram, vs);
 	glLinkProgram(_shaderProgram);
+
+	//Проверяем ошибки линковки
+	int status = -1;
+	glGetProgramiv(_shaderProgram, GL_LINK_STATUS, &status);
+	if (status != GL_TRUE)
+	{
+		std::cerr << "Failed to link the program:\n";		
+		
+		GLint errorLength;
+		glGetProgramiv(_shaderProgram, GL_INFO_LOG_LENGTH, &errorLength);
+
+		GLchar* log = new GLchar[errorLength];
+		glGetProgramInfoLog(_shaderProgram, errorLength, 0, log);
+
+		std::cerr << log << std::endl;
+
+		delete[] log;
+		exit(1);
+	}
 
 	//=========================================================
 
