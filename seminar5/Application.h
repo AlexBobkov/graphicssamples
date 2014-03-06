@@ -47,8 +47,9 @@ public:
 	void rotateDown(bool b) { _rotateDown = b; }
 
 protected:	
-	void makeSphere();
+	void makeSphere();	
 	void makeCube();
+	void makePlane();
 	void makeShaders();
 	void initData();
 
@@ -91,20 +92,27 @@ protected:
 	GLuint _worldTexId;
 	GLuint _brickTexId;
 	GLuint _grassTexId;	
+
+	//параметры материалов
+	float _shininess1;
+	glm::vec3 _material1;
+
+	float _shininess2;
+	glm::vec3 _material2;
 		
 	//sphere
 	GLuint _sphereVao;	
 	glm::mat4 _sphereModelMatrix;
 	int _sphereNumTris;
-	float _sphereShininess;
-	glm::vec3 _sphereMaterial;
 
 	//cube
 	GLuint _cubeVao;
 	glm::mat4 _cubeModelMatrix;
 	int _cubeNumTris;
-	float _cubeShininess;
-	glm::vec3 _cubeMaterial;
+
+	//plane
+	GLuint _planeVao;
+	glm::mat4 _planeModelMatrix;	
 
 	double _oldTime;
 

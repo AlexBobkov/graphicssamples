@@ -174,6 +174,7 @@ void Application::makeSceneImplementation()
 {
 	makeSphere();
 	makeCube();
+	makePlane();
 	makeShaders();
 	initData();
 }
@@ -230,11 +231,11 @@ void Application::initData()
 	_attenuation = 1.0f;
 
 	//Инициализация материалов
-	_sphereShininess = 100.0f;
-	_sphereMaterial = glm::vec3(1.0, 0.0, 0.0);
+	_shininess1 = 100.0f;
+	_material1 = glm::vec3(1.0, 0.0, 0.0);
 
-	_cubeShininess = 100.0f;	
-	_cubeMaterial = glm::vec3(0.0, 1.0, 0.0);	
+	_shininess2 = 100.0f;	
+	_material2 = glm::vec3(0.0, 1.0, 0.0);	
 
 	//Инициализация текстур
 	_worldTexId = makeTexture("images/earth_global.jpg");
@@ -274,25 +275,39 @@ void Application::drawImplementation()
 	_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _sphereModelMatrix)));
 	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
 
-	glUniform3fv(_materialUniform, 1, glm::value_ptr(_sphereMaterial));
-	glUniform1f(_shininessUniform, _sphereShininess);
+	glUniform3fv(_materialUniform, 1, glm::value_ptr(_material1));
+	glUniform1f(_shininessUniform, _shininess1);
 
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_sphereModelMatrix));	
 
 	glBindVertexArray(_sphereVao); //Подключаем VertexArray для сферы
 	glDrawArrays(GL_TRIANGLES, 0, _sphereNumTris * 3); //Рисуем сферу
 
+	//====== Плоскость ======
+	//Копирование на видеокарту значений uniform-пемеренных для плоскости
+	_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _planeModelMatrix)));
+	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
 
+	glUniform3fv(_materialUniform, 1, glm::value_ptr(_material2));
+	glUniform1f(_shininessUniform, _shininess2);
+
+	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_planeModelMatrix));
+
+	glBindVertexArray(_planeVao); //Подключаем VertexArray для плоскости
+	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
+
+#if 0
 	//====== Куб ======
 	//Копирование на видеокарту значений uniform-пемеренных для куба
 	_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _cubeModelMatrix)));
 	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
 
-	glUniform3fv(_materialUniform, 1, glm::value_ptr(_cubeMaterial));
-	glUniform1f(_shininessUniform, _cubeShininess);
+	glUniform3fv(_materialUniform, 1, glm::value_ptr(_material2));
+	glUniform1f(_shininessUniform, _shininess2);
 
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_cubeModelMatrix));
 
 	glBindVertexArray(_cubeVao); //Подключаем VertexArray для куба
 	glDrawArrays(GL_TRIANGLES, 0, _cubeNumTris * 3); //Рисуем куб
+#endif
 }
