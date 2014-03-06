@@ -3,6 +3,9 @@ SET(APP_NAME seminar5)
 SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Meshes.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Shaders.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Textures.cpp
 )
 
 SET(HEADER_FILES

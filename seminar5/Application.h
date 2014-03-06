@@ -50,6 +50,11 @@ protected:
 	void makeSphere();
 	void makeCube();
 	void makeShaders();
+	void initData();
+
+	GLuint makeTexture(std::string filename);	
+	GLuint makeShader(GLenum shaderType, std::string filename); //Читает текст шейдера из файла и создает объект
+	GLuint makeShaderProgram(std::string vertFilename, std::string fragFilename); //создает вершинный и фрагментный шейдеры и линкует их
 
 	GLFWwindow* _window;
 		
@@ -69,6 +74,7 @@ protected:
 	GLuint _shininessUniform;
 	GLuint _materialUniform;
 	GLuint _attenuationUniform;
+	GLuint _diffuseTexUniform;
 
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
 	glm::mat4 _viewMatrix;
@@ -81,8 +87,10 @@ protected:
 	glm::vec3 _specularColor;
 	float _attenuation;
 
-	GLuint _texId;
-	GLuint _texUniform;
+	//идентификаторы текстурных объектов
+	GLuint _worldTexId;
+	GLuint _brickTexId;
+	GLuint _grassTexId;	
 		
 	//sphere
 	GLuint _sphereVao;	
@@ -108,10 +116,7 @@ protected:
 	bool _rotateUp;
 	bool _rotateDown;
 	double _thetaAng;
-
-	//Читает текст шейдера из файла и создает объект
-	GLuint createShader(GLenum shaderType, std::string filename);
-		
+				
 	void makeSceneImplementation();
 	void drawImplementation();
 };
