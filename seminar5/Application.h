@@ -49,14 +49,18 @@ public:
 	void zoomUp(bool b) { _zoomUp = b; }
 	void zoomDown(bool b) { _zoomDown = b; }
 
+	void homePos();
+
 protected:	
 	void makeSphere();	
 	void makeCube();
 	void makePlane();
+	void makeChessPlane();
 	void makeShaders();
 	void initData();
 
 	GLuint loadTexture(std::string filename);
+	GLuint loadTextureWithMipmaps(std::string filename);
 	GLuint makeCustomTexture();
 	GLuint makeShader(GLenum shaderType, std::string filename); //Читает текст шейдера из файла и создает объект
 	GLuint makeShaderProgram(std::string vertFilename, std::string fragFilename); //создает вершинный и фрагментный шейдеры и линкует их
@@ -97,10 +101,12 @@ protected:
 	GLuint _worldTexId;
 	GLuint _brickTexId;
 	GLuint _grassTexId;	
-	GLuint _specularTexId;	
+	GLuint _specularTexId;
+	GLuint _chessTexId;
 	GLuint _myTexId;
 
 	GLuint _sampler;
+	GLuint _repeatSampler;
 
 	//параметры материалов
 	float _shininess1;
@@ -122,6 +128,9 @@ protected:
 	//plane
 	GLuint _planeVao;
 	glm::mat4 _planeModelMatrix;	
+
+	//chess
+	GLuint _chessVao;
 
 	float _oldTime;
 

@@ -48,6 +48,39 @@ GLuint Application::loadTexture(std::string filename)
 	return texId;
 }
 
+GLuint Application::loadTextureWithMipmaps(std::string filename)
+{
+	GLuint texId;
+
+	try
+	{
+		std::shared_ptr<glimg::ImageSet> pImageSet;
+		pImageSet.reset(glimg::loaders::dds::LoadFromFile(filename));
+
+		glGenTextures(1, &texId);
+		glBindTexture(GL_TEXTURE_2D, texId);
+
+		for(int mipmapLevel = 0; mipmapLevel < pImageSet->GetMipmapCount(); mipmapLevel++)
+		{
+			glimg::SingleImage pImage = pImageSet->GetImage(mipmapLevel, 0, 0);
+			glimg::Dimensions dims = pImage.GetDimensions();
+
+			glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RGB8, dims.width, dims.height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, pImage.GetImageData());
+		}
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, pImageSet->GetMipmapCount() - 1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	catch(glimg::loaders::dds::DdsLoaderException& e)
+	{
+		std::cerr << "Failed to load texture " << filename << std::endl;;
+		exit(1);
+	}
+
+	return texId;
+}
+
 GLuint Application::makeCustomTexture()
 {
 	int width = 128;

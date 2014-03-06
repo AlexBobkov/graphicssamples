@@ -7,6 +7,7 @@
 
 bool useLighting = true;
 bool useSpecularTex = false;
+bool showChess = false;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -42,6 +43,10 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		else if (key == GLFW_KEY_F)
 		{
 			app->zoomDown(true);
+		}
+		else if (key == GLFW_KEY_SPACE)
+		{
+			app->homePos();
 		}
 	}
 	else if (action == GLFW_RELEASE)
@@ -200,11 +205,23 @@ void Application::update()
 	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
+void Application::homePos()
+{
+	_phiAng = 0.0;
+	_thetaAng = M_PI * 0.05;
+	_distance = 20.0;
+
+	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
+
+	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+}
+
 void Application::makeSceneImplementation()
 {
 	makeSphere();
 	makeCube();
 	makePlane();
+	makeChessPlane();
 	makeShaders();
 	initData();
 }
@@ -214,7 +231,7 @@ void Application::makeShaders()
 	std::string vertFilename = "shaders5/texture_without_lighting.vert";
 	std::string fragFilename = "shaders5/texture_without_lighting.frag";
 
-	if (useLighting)
+	if (useLighting && !showChess)
 	{
 		vertFilename = "shaders5/shader.vert";
 		fragFilename = "shaders5/shader.frag";
@@ -264,7 +281,7 @@ void Application::initData()
 
 	//Инициализация значений переменных освщения
 	_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0f);
-	_lightPos = glm::vec4(2.0f, 2.0f, 0.0f, 1.0f);
+	_lightPos = glm::vec4(2.0f, 2.0f, 0.5f, 1.0f);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
 	_specularColor = glm::vec3(0.5, 0.5, 0.5);
@@ -282,7 +299,15 @@ void Application::initData()
 	_brickTexId = loadTexture("images/brick.jpg");
 	_grassTexId = loadTexture("images/grass.jpg");
 	_specularTexId = loadTexture("images/specular.dds");
+	_chessTexId = loadTextureWithMipmaps("images/chess.dds");
 	_myTexId = makeCustomTexture();
+
+	//====
+	GLfloat maxAniso = 0.0f;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &maxAniso);
+
+	std::cout << "Max anistropy " << maxAniso << std::endl;
+	//====
 			
 	//Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);
@@ -290,6 +315,35 @@ void Application::initData()
 	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	int variant = 3;
+
+	glGenSamplers(1, &_repeatSampler);
+	if (variant == 0)
+	{
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
+	else if (variant == 1)
+	{
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);	
+	}
+	else if (variant == 2)
+	{
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+	}
+	else if (variant == 3)
+	{
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	}
+
+	glSamplerParameterf(_repeatSampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
+
+	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);	
 }
 
 void Application::drawImplementation()
@@ -353,6 +407,26 @@ void Application::drawImplementation()
 
 	glBindVertexArray(_planeVao); //Подключаем VertexArray для плоскости
 	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
+
+	if (showChess)
+	{
+		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _chessTexId);
+		glBindSampler(0, _repeatSampler);
+
+		//====== Шахматы ======
+		//Копирование на видеокарту значений uniform-пемеренных для плоскости
+		_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix)));
+		glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
+
+		glUniform3fv(_materialUniform, 1, glm::value_ptr(_material2));
+		glUniform1f(_shininessUniform, _shininess2);
+
+		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0)));
+
+		glBindVertexArray(_chessVao); //Подключаем VertexArray для плоскости
+		glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
+	}
 
 #if 0
 	//====== Куб ======

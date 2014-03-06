@@ -389,3 +389,62 @@ void Application::makePlane()
 
 	_planeModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 }
+
+void Application::makeChessPlane()
+{
+	float size = 100.0f;
+	float N = 100.0f;
+
+	std::vector<float> vertices;	
+	std::vector<float> normals;
+	std::vector<float> texcoords;
+
+	//front 1
+	addVec3(vertices, -size, size, 0.0);
+	addVec3(vertices, size, size, 0.0);
+	addVec3(vertices, size, -size, 0.0);
+
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+
+	addVec2(texcoords, -N, N);
+	addVec2(texcoords, N, N);
+	addVec2(texcoords, N, -N);
+
+	//front 2
+	addVec3(vertices, -size, size, 0.0);
+	addVec3(vertices, size, -size, 0.0);
+	addVec3(vertices, -size, -size, 0.0);
+
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+
+	addVec2(texcoords, -N, N);
+	addVec2(texcoords, N, -N);
+	addVec2(texcoords, -N, -N);
+
+	vertices.insert(vertices.end(), normals.begin(), normals.end());
+	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
+
+	int numTris = 2;
+
+	unsigned int vbo = 0;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+	_chessVao = 0;
+	glGenVertexArrays(1, &_chessVao);
+	glBindVertexArray(_chessVao);
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
+
+	glBindVertexArray(0);
+}
