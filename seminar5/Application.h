@@ -46,6 +46,9 @@ public:
 	void rotateUp(bool b) { _rotateUp = b; }
 	void rotateDown(bool b) { _rotateDown = b; }
 
+	void zoomUp(bool b) { _zoomUp = b; }
+	void zoomDown(bool b) { _zoomDown = b; }
+
 protected:	
 	void makeSphere();	
 	void makeCube();
@@ -53,7 +56,8 @@ protected:
 	void makeShaders();
 	void initData();
 
-	GLuint makeTexture(std::string filename);	
+	GLuint loadTexture(std::string filename);
+	GLuint makeCustomTexture();
 	GLuint makeShader(GLenum shaderType, std::string filename); //Читает текст шейдера из файла и создает объект
 	GLuint makeShaderProgram(std::string vertFilename, std::string fragFilename); //создает вершинный и фрагментный шейдеры и линкует их
 
@@ -76,6 +80,7 @@ protected:
 	GLuint _materialUniform;
 	GLuint _attenuationUniform;
 	GLuint _diffuseTexUniform;
+	GLuint _specularTexUniform;
 
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
 	glm::mat4 _viewMatrix;
@@ -92,6 +97,10 @@ protected:
 	GLuint _worldTexId;
 	GLuint _brickTexId;
 	GLuint _grassTexId;	
+	GLuint _specularTexId;	
+	GLuint _myTexId;
+
+	GLuint _sampler;
 
 	//параметры материалов
 	float _shininess1;
@@ -114,16 +123,20 @@ protected:
 	GLuint _planeVao;
 	glm::mat4 _planeModelMatrix;	
 
-	double _oldTime;
+	float _oldTime;
 
 	//Состояние виртуальной камеры
 	bool _rotateLeft;
 	bool _rotateRight;
-	double _phiAng;
+	float _phiAng;
 
 	bool _rotateUp;
 	bool _rotateDown;
-	double _thetaAng;
+	float _thetaAng;
+
+	bool _zoomUp;
+	bool _zoomDown;
+	float _distance;
 				
 	void makeSceneImplementation();
 	void drawImplementation();

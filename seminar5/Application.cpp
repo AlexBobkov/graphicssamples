@@ -5,7 +5,8 @@
 
 #include "Application.h"
 
-int demoNum = 1;
+bool useLighting = true;
+bool useSpecularTex = false;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -34,6 +35,14 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		{
 			app->rotateDown(true);
 		}
+		else if (key == GLFW_KEY_R)
+		{
+			app->zoomUp(true);
+		}
+		else if (key == GLFW_KEY_F)
+		{
+			app->zoomDown(true);
+		}
 	}
 	else if (action == GLFW_RELEASE)
 	{
@@ -53,6 +62,14 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		{
 			app->rotateDown(false);
 		}
+		else if (key == GLFW_KEY_R)
+		{
+			app->zoomUp(false);
+		}
+		else if (key == GLFW_KEY_F)
+		{
+			app->zoomDown(false);
+		}
 	}
 }
 
@@ -65,7 +82,10 @@ _oldTime(0.0f),
 	_phiAng(0.0f),
 	_rotateUp(false),
 	_rotateDown(false),
-	_thetaAng(0.0f)	
+	_thetaAng(0.0f),
+	_zoomUp(false),
+	_zoomDown(false),
+	_distance(5.0f)
 {
 }
 
@@ -143,10 +163,10 @@ void Application::draw()
 
 void Application::update()
 {
-	double dt = glfwGetTime() - _oldTime;
+	float dt = glfwGetTime() - _oldTime;
 	_oldTime = glfwGetTime();
 
-	double speed = 1.0;
+	float speed = 1.0f;
 
 	if (_rotateLeft)
 	{
@@ -164,8 +184,18 @@ void Application::update()
 	{
 		_thetaAng -= speed * dt;
 	}
+	if (_zoomUp)
+	{
+		_distance += _distance * dt;
+	}
+	if (_zoomDown)
+	{
+		_distance -= _distance * dt;
+	}
 
-	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * 5.0f;
+	_distance = glm::clamp(_distance, 0.5f, 50.0f);
+
+	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
 
 	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 }
@@ -181,11 +211,20 @@ void Application::makeSceneImplementation()
 
 void Application::makeShaders()
 {
-	/*std::string vertFilename = "shaders5/shader.vert";
-	std::string fragFilename = "shaders5/shader.frag";*/
-
 	std::string vertFilename = "shaders5/texture_without_lighting.vert";
 	std::string fragFilename = "shaders5/texture_without_lighting.frag";
+
+	if (useLighting)
+	{
+		vertFilename = "shaders5/shader.vert";
+		fragFilename = "shaders5/shader.frag";
+
+		if (useSpecularTex)		
+		{
+			vertFilename = "shaders5/shader_specular_tex.vert";
+			fragFilename = "shaders5/shader_specular_tex.frag";
+		}
+	}
 
 	_shaderProgram = makeShaderProgram(vertFilename, fragFilename);
 
@@ -213,7 +252,8 @@ void Application::makeShaders()
 	//=========================================================
 	//Инициализация uniform-переменных для текстурирования
 
-	_diffuseTexUniform = glGetUniformLocation(_shaderProgram, "diffuseTex");	
+	_diffuseTexUniform = glGetUniformLocation(_shaderProgram, "diffuseTex");
+	_specularTexUniform = glGetUniformLocation(_shaderProgram, "specularTex");
 }
 
 void Application::initData()
@@ -224,10 +264,10 @@ void Application::initData()
 
 	//Инициализация значений переменных освщения
 	_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0f);
-	_lightPos = glm::vec4(0.0f, 1.0f, 0.8f, 1.0f);
+	_lightPos = glm::vec4(2.0f, 2.0f, 0.0f, 1.0f);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
-	_specularColor = glm::vec3(0.25, 0.25, 0.25);
+	_specularColor = glm::vec3(0.5, 0.5, 0.5);
 	_attenuation = 1.0f;
 
 	//Инициализация материалов
@@ -238,9 +278,18 @@ void Application::initData()
 	_material2 = glm::vec3(0.0, 1.0, 0.0);	
 
 	//Инициализация текстур
-	_worldTexId = makeTexture("images/earth_global.jpg");
-	_brickTexId = makeTexture("images/brick.jpg");
-	_grassTexId = makeTexture("images/grass.jpg");
+	_worldTexId = loadTexture("images/earth_global.jpg");
+	_brickTexId = loadTexture("images/brick.jpg");
+	_grassTexId = loadTexture("images/grass.jpg");
+	_specularTexId = loadTexture("images/specular.dds");
+	_myTexId = makeCustomTexture();
+			
+	//Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+	glGenSamplers(1, &_sampler);
+	glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 void Application::drawImplementation()
@@ -262,12 +311,21 @@ void Application::drawImplementation()
 	glUniform1f(_attenuationUniform, _attenuation);
 
 	glUniform1i(_diffuseTexUniform, 0); //текстурный юнит 0
+	glUniform1i(_specularTexUniform, 1); //текстурный юнит 1
 
 		
 	//=============================================================================
 	//Активизация текстур
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _worldTexId);
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	if (useSpecularTex)
+	{
+		glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
+		glBindTexture(GL_TEXTURE_2D, _specularTexId);
+		glBindSampler(1, _sampler);
+	}	
 
 
 	//====== Сфера ======

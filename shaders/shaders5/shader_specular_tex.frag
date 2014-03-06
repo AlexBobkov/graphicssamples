@@ -1,6 +1,7 @@
 #version 330
 
 uniform sampler2D diffuseTex;
+uniform sampler2D specularTex;
 
 uniform vec3 ambientColor; //цвет окружающего света (аппроксимация множественных переотражений)
 uniform vec3 diffuseColor; //цвет источника света
@@ -19,6 +20,7 @@ out vec4 fragColor; //выходной цвет фрагмента
 void main()
 {
 	vec3 diffuseMaterial = texture(diffuseTex, interpTc).rgb;
+	vec3 specularMaterial = texture(specularTex, interpTc).rgb;
 
 	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //направление на источник света
 
@@ -35,7 +37,7 @@ void main()
 	blinnTerm = cosAngIncidence != 0.0 ? blinnTerm : 0.0;
 	blinnTerm = pow(blinnTerm, shininessFactor); //регулируем размер блика
 
-    vec3 color = diffuseMaterial * ambientColor + diffuseMaterial * diffuseColor * cosAngIncidence + specularColor * blinnTerm; //результирующий цвет	
+    vec3 color = diffuseMaterial * ambientColor + diffuseMaterial * diffuseColor * cosAngIncidence + specularMaterial * specularColor * blinnTerm; //результирующий цвет	
 
 	fragColor = vec4(color, 1.0); //просто копируем
 }

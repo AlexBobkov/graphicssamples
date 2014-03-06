@@ -5,13 +5,24 @@
 
 #include "Application.h"
 
-GLuint Application::makeTexture(std::string filename)
+void getColorFromLinearPalette(float value, float& r, float& g, float& b);
+
+GLuint Application::loadTexture(std::string filename)
 {
 	GLuint texId;
 
 	try
 	{
-		std::shared_ptr<glimg::ImageSet> pImageSet(glimg::loaders::stb::LoadFromFile(filename));
+		std::shared_ptr<glimg::ImageSet> pImageSet;
+
+		if (filename.find(".dds") != std::string::npos)
+		{
+			pImageSet.reset(glimg::loaders::dds::LoadFromFile(filename));
+		}
+		else
+		{
+			pImageSet.reset(glimg::loaders::stb::LoadFromFile(filename));
+		}
 
 		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
 		glimg::Dimensions dims = pImage.GetDimensions();
@@ -28,6 +39,42 @@ GLuint Application::makeTexture(std::string filename)
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
 	}
+	catch(glimg::loaders::dds::DdsLoaderException& e)
+	{
+		std::cerr << "Failed to load texture " << filename << std::endl;;
+		exit(1);
+	}
+
+	return texId;
+}
+
+GLuint Application::makeCustomTexture()
+{
+	int width = 128;
+	int height = 128;
+
+	std::vector<unsigned char> data;
+
+	for (unsigned int row = 0; row < height; row++)
+	{
+		for (unsigned int column = 0; column < width; column++)
+		{
+			float r, g, b;
+			getColorFromLinearPalette((float)column / width, r, g, b);
+
+			data.push_back((unsigned char)(255 * r));
+			data.push_back((unsigned char)(255 * g));
+			data.push_back((unsigned char)(255 * b));
+		}
+	}
+
+	GLuint texId;
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_2D, texId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data());
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
 	return texId;
 }

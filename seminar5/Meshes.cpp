@@ -81,8 +81,8 @@ void Application::makeSphere()
 
 		for (int j = 0; j < N; j++)
 		{
-			float phi = 2.0f * (float)M_PI * j / N;
-			float phi1 = 2.0f * (float)M_PI * (j + 1) / N;
+			float phi = 2.0f * (float)M_PI * j / N + (float)M_PI;
+			float phi1 = 2.0f * (float)M_PI * (j + 1) / N + (float)M_PI;
 
 			//Первый треугольник, образующий квад
 			addVec3(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
