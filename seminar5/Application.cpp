@@ -1,6 +1,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <glimg/glimg.h>
+
 #include "Application.h"
 
 int demoNum = 1;
@@ -12,14 +14,20 @@ float frand(float low, float high)
 	return low + (high - low) * (rand() % 1000) * 0.001f;
 }
 
-void addPoint(std::vector<float>& vec, float x, float y, float z)
+void addVec2(std::vector<float>& vec, float s, float t)
+{
+	vec.push_back(s);
+	vec.push_back(t);
+}
+
+void addVec3(std::vector<float>& vec, float x, float y, float z)
 {
 	vec.push_back(x);
 	vec.push_back(y);
 	vec.push_back(z);
 }
 
-void addColor(std::vector<float>& vec, float r, float g, float b, float a)
+void addVec4(std::vector<float>& vec, float r, float g, float b, float a)
 {
 	vec.push_back(r);
 	vec.push_back(g);
@@ -267,6 +275,30 @@ void Application::makeSceneImplementation()
 	makeSphere();
 	makeCube();
 	makeShaders();
+
+	//std::string textureFilename = "images/brick.jpg";
+	std::string textureFilename = "images/earth_global.jpg";
+    
+    try
+    {
+		std::shared_ptr<glimg::ImageSet> pImageSet(glimg::loaders::stb::LoadFromFile(textureFilename));
+
+        glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
+        
+        glimg::Dimensions dims = pImage.GetDimensions();
+        
+        glGenTextures(1, &_texId);
+        glBindTexture(GL_TEXTURE_2D, _texId);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+        glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	catch(glimg::loaders::stb::StbLoaderException &e)
+	{
+		std::cerr << "Failed to load texture " << textureFilename << std::endl;;
+		exit(1);
+	}
 }
 
 void Application::makeSphere()
@@ -276,9 +308,9 @@ void Application::makeSphere()
 	int M = 50;
 	_sphereNumTris = 0;
 
-	std::vector<float> vertices;
-	std::vector<float> colors;
+	std::vector<float> vertices;	
 	std::vector<float> normals;
+	std::vector<float> texcoords;
 	for (int i = 0; i < M; i++)
 	{
 		float theta = M_PI * i / M;
@@ -290,43 +322,39 @@ void Application::makeSphere()
 			float phi1 = 2.0 * M_PI * (j + 1) / N;
 
 			//Первый треугольник, образующий квад
-			addPoint(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
-			addPoint(vertices, cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius);
-			addPoint(vertices, cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
+			addVec3(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
+			addVec3(vertices, cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius);
+			addVec3(vertices, cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
 
-			float r, g, b;
-			getColorFromLinearPalette(frand(0.0, 1.0), r, g, b);
+			addVec3(normals, cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
+			addVec3(normals, cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta));
+			addVec3(normals, cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
 
-			addColor(colors, r, g, b, 1.0);
-			addColor(colors, r, g, b, 1.0);
-			addColor(colors, r, g, b, 1.0);
-
-			addPoint(normals, cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
-			addPoint(normals, cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta));
-			addPoint(normals, cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
+			addVec2(texcoords, (float)j / N, 1.0 - (float)i / M);
+			addVec2(texcoords, (float)(j + 1) / N, 1.0 - (float)i / M);
+			addVec2(texcoords, (float)(j + 1) / N, 1.0 - (float)(i + 1) / M);						
 
 			_sphereNumTris++;
 
 			//Второй треугольник, образующий квад
-			addPoint(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
-			addPoint(vertices, cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
-			addPoint(vertices, cos(phi) * sin(theta1) * radius, sin(phi) * sin(theta1) * radius, cos(theta1) * radius);			
+			addVec3(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
+			addVec3(vertices, cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
+			addVec3(vertices, cos(phi) * sin(theta1) * radius, sin(phi) * sin(theta1) * radius, cos(theta1) * radius);			
 
-			getColorFromLinearPalette(frand(0.0, 1.0), r, g, b);
+			addVec3(normals, cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
+			addVec3(normals, cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
+			addVec3(normals, cos(phi) * sin(theta1), sin(phi) * sin(theta1), cos(theta1));			
 
-			addColor(colors, r, g, b, 1.0);
-			addColor(colors, r, g, b, 1.0);
-			addColor(colors, r, g, b, 1.0);
-
-			addPoint(normals, cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
-			addPoint(normals, cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
-			addPoint(normals, cos(phi) * sin(theta1), sin(phi) * sin(theta1), cos(theta1));			
+			addVec2(texcoords, (float)j / N, 1.0 - (float)i / M);
+			addVec2(texcoords, (float)(j + 1) / N, 1.0 - (float)(i + 1) / M);
+			addVec2(texcoords, (float)j / N, 1.0 - (float)(i + 1) / M);			
 
 			_sphereNumTris++;
 		}
 	}
 
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
+	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
 	unsigned int vbo = 0;
 	glGenBuffers(1, &vbo);
@@ -338,9 +366,11 @@ void Application::makeSphere()
 	glBindVertexArray(_sphereVao);
 	glEnableVertexAttribArray(0);	
 	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_sphereNumTris * 3 * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_sphereNumTris * 3 * 3 * 4 * 2));
 	
 	glBindVertexArray(0);
 
@@ -356,160 +386,160 @@ void Application::makeCube()
 	std::vector<float> normals;
 
 	//front 1
-	addPoint(vertices, size, -size, size);
-	addPoint(vertices, size, size, size);
-	addPoint(vertices, size, size, -size);
+	addVec3(vertices, size, -size, size);
+	addVec3(vertices, size, size, size);
+	addVec3(vertices, size, size, -size);
 
-	addColor(colors, 1.0, 0.0, 0.0, 1.0);
-	addColor(colors, 1.0, 0.0, 0.0, 1.0);
-	addColor(colors, 1.0, 0.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 0.0, 1.0);
 
-	addPoint(normals, 1.0, 0.0, 0.0);
-	addPoint(normals, 1.0, 0.0, 0.0);
-	addPoint(normals, 1.0, 0.0, 0.0);
+	addVec3(normals, 1.0, 0.0, 0.0);
+	addVec3(normals, 1.0, 0.0, 0.0);
+	addVec3(normals, 1.0, 0.0, 0.0);
 
 	//front 2
-	addPoint(vertices, size, -size, size);
-	addPoint(vertices, size, size, -size);
-	addPoint(vertices, size, -size, -size);
+	addVec3(vertices, size, -size, size);
+	addVec3(vertices, size, size, -size);
+	addVec3(vertices, size, -size, -size);
 
-	addColor(colors, 1.0, 0.0, 0.0, 1.0);
-	addColor(colors, 1.0, 0.0, 0.0, 1.0);
-	addColor(colors, 1.0, 0.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 0.0, 1.0);
 
-	addPoint(normals, 1.0, 0.0, 0.0);
-	addPoint(normals, 1.0, 0.0, 0.0);
-	addPoint(normals, 1.0, 0.0, 0.0);
+	addVec3(normals, 1.0, 0.0, 0.0);
+	addVec3(normals, 1.0, 0.0, 0.0);
+	addVec3(normals, 1.0, 0.0, 0.0);
 
 	//left 1
-	addPoint(vertices, -size, -size, size);
-	addPoint(vertices, size, -size, size);
-	addPoint(vertices, size, -size, -size);
+	addVec3(vertices, -size, -size, size);
+	addVec3(vertices, size, -size, size);
+	addVec3(vertices, size, -size, -size);
 
-	addColor(colors, 1.0, 1.0, 0.0, 1.0);
-	addColor(colors, 1.0, 1.0, 0.0, 1.0);
-	addColor(colors, 1.0, 1.0, 0.0, 1.0);	
+	addVec4(colors, 1.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 1.0, 0.0, 1.0);	
 
-	addPoint(normals, 0.0, -1.0, 0.0);
-	addPoint(normals, 0.0, -1.0, 0.0);
-	addPoint(normals, 0.0, -1.0, 0.0);	
+	addVec3(normals, 0.0, -1.0, 0.0);
+	addVec3(normals, 0.0, -1.0, 0.0);
+	addVec3(normals, 0.0, -1.0, 0.0);	
 
 	//left 2
-	addPoint(vertices, -size, -size, size);
-	addPoint(vertices, size, -size, -size);
-	addPoint(vertices, -size, -size, -size);
+	addVec3(vertices, -size, -size, size);
+	addVec3(vertices, size, -size, -size);
+	addVec3(vertices, -size, -size, -size);
 
-	addColor(colors, 1.0, 1.0, 0.0, 1.0);
-	addColor(colors, 1.0, 1.0, 0.0, 1.0);
-	addColor(colors, 1.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 1.0, 1.0, 0.0, 1.0);
 
-	addPoint(normals, 0.0, -1.0, 0.0);
-	addPoint(normals, 0.0, -1.0, 0.0);
-	addPoint(normals, 0.0, -1.0, 0.0);
+	addVec3(normals, 0.0, -1.0, 0.0);
+	addVec3(normals, 0.0, -1.0, 0.0);
+	addVec3(normals, 0.0, -1.0, 0.0);
 
 	//top 1
-	addPoint(vertices, -size, size, size);
-	addPoint(vertices, size, size, size);
-	addPoint(vertices, size, -size, size);
+	addVec3(vertices, -size, size, size);
+	addVec3(vertices, size, size, size);
+	addVec3(vertices, size, -size, size);
 
-	addColor(colors, 0.0, 1.0, 0.0, 1.0);
-	addColor(colors, 0.0, 1.0, 0.0, 1.0);
-	addColor(colors, 0.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 0.0, 1.0);
 
-	addPoint(normals, 0.0, 0.0, 1.0);
-	addPoint(normals, 0.0, 0.0, 1.0);
-	addPoint(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
 
 	//top 2
-	addPoint(vertices, -size, size, size);
-	addPoint(vertices, -size, -size, size);
-	addPoint(vertices, size, -size, size);
+	addVec3(vertices, -size, size, size);
+	addVec3(vertices, -size, -size, size);
+	addVec3(vertices, size, -size, size);
 
-	addColor(colors, 0.0, 1.0, 0.0, 1.0);
-	addColor(colors, 0.0, 1.0, 0.0, 1.0);
-	addColor(colors, 0.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 0.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 0.0, 1.0);
 
-	addPoint(normals, 0.0, 0.0, 1.0);
-	addPoint(normals, 0.0, 0.0, 1.0);
-	addPoint(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
+	addVec3(normals, 0.0, 0.0, 1.0);
 
 	//back 1
-	addPoint(vertices, -size, -size, size);
-	addPoint(vertices, -size, size, -size);
-	addPoint(vertices, -size, size, size);
+	addVec3(vertices, -size, -size, size);
+	addVec3(vertices, -size, size, -size);
+	addVec3(vertices, -size, size, size);
 
-	addColor(colors, 0.0, 0.0, 1.0, 1.0);
-	addColor(colors, 0.0, 0.0, 1.0, 1.0);
-	addColor(colors, 0.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 0.0, 1.0, 1.0);
 
-	addPoint(normals, -1.0, 0.0, 0.0);
-	addPoint(normals, -1.0, 0.0, 0.0);
-	addPoint(normals, -1.0, 0.0, 0.0);
+	addVec3(normals, -1.0, 0.0, 0.0);
+	addVec3(normals, -1.0, 0.0, 0.0);
+	addVec3(normals, -1.0, 0.0, 0.0);
 
 	//back 2
-	addPoint(vertices, -size, -size, size);
-	addPoint(vertices, -size, -size, -size);
-	addPoint(vertices, -size, size, -size);
+	addVec3(vertices, -size, -size, size);
+	addVec3(vertices, -size, -size, -size);
+	addVec3(vertices, -size, size, -size);
 
-	addColor(colors, 0.0, 0.0, 1.0, 1.0);
-	addColor(colors, 0.0, 0.0, 1.0, 1.0);
-	addColor(colors, 0.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 0.0, 1.0, 1.0);
 
-	addPoint(normals, -1.0, 0.0, 0.0);
-	addPoint(normals, -1.0, 0.0, 0.0);
-	addPoint(normals, -1.0, 0.0, 0.0);
+	addVec3(normals, -1.0, 0.0, 0.0);
+	addVec3(normals, -1.0, 0.0, 0.0);
+	addVec3(normals, -1.0, 0.0, 0.0);
 
 	//right 1
-	addPoint(vertices, -size, size, size);
-	addPoint(vertices, size, size, -size);
-	addPoint(vertices, size, size, size);
+	addVec3(vertices, -size, size, size);
+	addVec3(vertices, size, size, -size);
+	addVec3(vertices, size, size, size);
 
-	addColor(colors, 0.0, 1.0, 1.0, 1.0);
-	addColor(colors, 0.0, 1.0, 1.0, 1.0);
-	addColor(colors, 0.0, 1.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 1.0, 1.0);
 
-	addPoint(normals, 0.0, 1.0, 0.0);
-	addPoint(normals, 0.0, 1.0, 0.0);
-	addPoint(normals, 0.0, 1.0, 0.0);
+	addVec3(normals, 0.0, 1.0, 0.0);
+	addVec3(normals, 0.0, 1.0, 0.0);
+	addVec3(normals, 0.0, 1.0, 0.0);
 
 	//right 2
-	addPoint(vertices, -size, size, size);
-	addPoint(vertices, -size, size, -size);
-	addPoint(vertices, +size, size, -size);
+	addVec3(vertices, -size, size, size);
+	addVec3(vertices, -size, size, -size);
+	addVec3(vertices, +size, size, -size);
 
-	addColor(colors, 0.0, 1.0, 1.0, 1.0);
-	addColor(colors, 0.0, 1.0, 1.0, 1.0);
-	addColor(colors, 0.0, 1.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 1.0, 1.0);
+	addVec4(colors, 0.0, 1.0, 1.0, 1.0);
 
-	addPoint(normals, 0.0, 1.0, 0.0);
-	addPoint(normals, 0.0, 1.0, 0.0);
-	addPoint(normals, 0.0, 1.0, 0.0);
+	addVec3(normals, 0.0, 1.0, 0.0);
+	addVec3(normals, 0.0, 1.0, 0.0);
+	addVec3(normals, 0.0, 1.0, 0.0);
 
 	//bottom 1
-	addPoint(vertices, -size, size, -size);
-	addPoint(vertices, size, -size, -size);
-	addPoint(vertices, size, size, -size);
+	addVec3(vertices, -size, size, -size);
+	addVec3(vertices, size, -size, -size);
+	addVec3(vertices, size, size, -size);
 
-	addColor(colors, 1.0, 0.0, 1.0, 1.0);
-	addColor(colors, 1.0, 0.0, 1.0, 1.0);
-	addColor(colors, 1.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 1.0, 1.0);
 
-	addPoint(normals, 0.0, 0.0, -1.0);
-	addPoint(normals, 0.0, 0.0, -1.0);
-	addPoint(normals, 0.0, 0.0, -1.0);
+	addVec3(normals, 0.0, 0.0, -1.0);
+	addVec3(normals, 0.0, 0.0, -1.0);
+	addVec3(normals, 0.0, 0.0, -1.0);
 
 	//bottom 2
-	addPoint(vertices, -size, size, -size);
-	addPoint(vertices, size, -size, -size);
-	addPoint(vertices, -size, -size, -size);
+	addVec3(vertices, -size, size, -size);
+	addVec3(vertices, size, -size, -size);
+	addVec3(vertices, -size, -size, -size);
 
-	addColor(colors, 1.0, 0.0, 1.0, 1.0);
-	addColor(colors, 1.0, 0.0, 1.0, 1.0);
-	addColor(colors, 1.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 1.0, 1.0);
+	addVec4(colors, 1.0, 0.0, 1.0, 1.0);
 
-	addPoint(normals, 0.0, 0.0, -1.0);
-	addPoint(normals, 0.0, 0.0, -1.0);
-	addPoint(normals, 0.0, 0.0, -1.0);
+	addVec3(normals, 0.0, 0.0, -1.0);
+	addVec3(normals, 0.0, 0.0, -1.0);
+	addVec3(normals, 0.0, 0.0, -1.0);
 
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 
@@ -536,8 +566,11 @@ void Application::makeCube()
 
 void Application::makeShaders()
 {
-	std::string vertFilename = "shaders5/shader.vert";
-	std::string fragFilename = "shaders5/shader.frag";
+	/*std::string vertFilename = "shaders5/shader.vert";
+	std::string fragFilename = "shaders5/shader.frag";*/
+
+	std::string vertFilename = "shaders5/texture_without_lighting.vert";
+	std::string fragFilename = "shaders5/texture_without_lighting.frag";
 	
 	GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
 	GLuint fs = createShader(GL_FRAGMENT_SHADER, fragFilename);
@@ -604,6 +637,11 @@ void Application::makeShaders()
 	_cubeMaterial = glm::vec3(0.0, 1.0, 0.0);
 
 	_attenuation = 1.0f;
+
+	//Текстура
+	_texUniform = glGetUniformLocation(_shaderProgram, "diffuseTex");
+	glUseProgram(_shaderProgram);
+	glUniform1i(_texUniform, 0);
 }
 
 void Application::drawImplementation()
@@ -622,6 +660,9 @@ void Application::drawImplementation()
 	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
 	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
 	glUniform1f(_attenuationUniform, _attenuation);
+
+	glActiveTexture(GL_TEXTURE0 + 0);
+	glBindTexture(GL_TEXTURE_2D, _texId);
 	
 	//====== Сфера ======
 	//Копирование на видеокарту значений uniform-пемеренных для сферы

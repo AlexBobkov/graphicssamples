@@ -52,9 +52,9 @@ protected:
 	void makeShaders();
 
 	GLFWwindow* _window;
-
+		
 	GLuint _shaderProgram;
-
+	
 	//идентификаторы uniform-переменных
 	GLuint _timeUniform;
 	GLuint _modelMatrixUniform;
@@ -80,6 +80,9 @@ protected:
 	glm::vec3 _diffuseColor;
 	glm::vec3 _specularColor;
 	float _attenuation;
+
+	GLuint _texId;
+	GLuint _texUniform;
 		
 	//sphere
 	GLuint _sphereVao;	
