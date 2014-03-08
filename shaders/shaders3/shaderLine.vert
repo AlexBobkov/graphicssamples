@@ -17,4 +17,4 @@ void main()
 	vec4 pos = vec4(0.0, cos(t + time), sin(t), 1.0);
 	
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * pos;
-};
+}

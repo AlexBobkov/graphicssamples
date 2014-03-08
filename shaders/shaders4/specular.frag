@@ -1,34 +1,34 @@
 #version 330
 
-uniform vec3 ambientColor; //цвет окружающего света (аппроксимация множественных переотражений)
-uniform vec3 diffuseColor; //цвет источника света
-uniform vec3 specularColor; //бликовый цвет источника света
-uniform float shininessFactor; //блеск (свойство материала, влияет на размер блика)
+uniform vec3 ambientColor; //С†РІРµС‚ РѕРєСЂСѓР¶Р°СЋС‰РµРіРѕ СЃРІРµС‚Р° (Р°РїРїСЂРѕРєСЃРёРјР°С†РёСЏ РјРЅРѕР¶РµСЃС‚РІРµРЅРЅС‹С… РїРµСЂРµРѕС‚СЂР°Р¶РµРЅРёР№)
+uniform vec3 diffuseColor; //С†РІРµС‚ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+uniform vec3 specularColor; //Р±Р»РёРєРѕРІС‹Р№ С†РІРµС‚ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+uniform float shininessFactor; //Р±Р»РµСЃРє (СЃРІРѕР№СЃС‚РІРѕ РјР°С‚РµСЂРёР°Р»Р°, РІР»РёСЏРµС‚ РЅР° СЂР°Р·РјРµСЂ Р±Р»РёРєР°)
 
-in vec3 normalCamSpace; //нормаль в системе координат камеры (интерполирована между вершинами треугольника)
-in vec4 lightPosCamSpace; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
-in vec4 posCamSpace; //координаты вершины в системе координат камеры (интерполированы между вершинами треугольника)
+in vec3 normalCamSpace; //РЅРѕСЂРјР°Р»СЊ РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ (РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅР° РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°)
+in vec4 lightPosCamSpace; //РїРѕР»РѕР¶РµРЅРёРµ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р° РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ (РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅРѕ РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°)
+in vec4 posCamSpace; //РєРѕРѕСЂРґРёРЅР°С‚С‹ РІРµСЂС€РёРЅС‹ РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ (РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅС‹ РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°)
 
-out vec4 fragColor; //выходной цвет фрагмента
+out vec4 fragColor; //РІС‹С…РѕРґРЅРѕР№ С†РІРµС‚ С„СЂР°РіРјРµРЅС‚Р°
 
 void main()
 {
-	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //направление на источник света
+	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //РЅР°РїСЂР°РІР»РµРЅРёРµ РЅР° РёСЃС‚РѕС‡РЅРёРє СЃРІРµС‚Р°
 
-	vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции
+	vec3 normal = normalize(normalCamSpace); //РЅРѕСЂРјР°Р»РёР·СѓРµРј РЅРѕСЂРјР°Р»СЊ РїРѕСЃР»Рµ РёРЅС‚РµСЂРїРѕР»СЏС†РёРё
 				    
-    float cosAngIncidence = dot(normal, lightDirCamSpace); //интенсивность диффузного света
+    float cosAngIncidence = dot(normal, lightDirCamSpace); //РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ РґРёС„С„СѓР·РЅРѕРіРѕ СЃРІРµС‚Р°
     cosAngIncidence = clamp(cosAngIncidence, 0, 1);
     
-	vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
-	vec3 reflectDir = reflect(-lightDirCamSpace, normal); //вектор отраженного света
+	vec3 viewDirection = normalize(-posCamSpace.xyz); //РЅР°РїСЂР°РІР»РµРЅРёРµ РЅР° РІРёСЂС‚СѓР°Р»СЊРЅСѓСЋ РєР°РјРµСЂСѓ (РѕРЅР° РЅР°С…РѕРґРёС‚СЃСЏ РІ С‚РѕС‡РєРµ (0.0, 0.0, 0.0))
+	vec3 reflectDir = reflect(-lightDirCamSpace, normal); //РІРµРєС‚РѕСЂ РѕС‚СЂР°Р¶РµРЅРЅРѕРіРѕ СЃРІРµС‚Р°
 	
-	float phongTerm = dot(viewDirection, reflectDir); //интенсивность бликового света по Фонгу
+	float phongTerm = dot(viewDirection, reflectDir); //РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ Р±Р»РёРєРѕРІРѕРіРѕ СЃРІРµС‚Р° РїРѕ Р¤РѕРЅРіСѓ
 	phongTerm = clamp(phongTerm, 0, 1);
 	phongTerm = cosAngIncidence != 0.0 ? phongTerm : 0.0;
-	phongTerm = pow(phongTerm, shininessFactor); //регулируем размер блика
+	phongTerm = pow(phongTerm, shininessFactor); //СЂРµРіСѓР»РёСЂСѓРµРј СЂР°Р·РјРµСЂ Р±Р»РёРєР°
 
-    vec3 color = ambientColor + diffuseColor * cosAngIncidence + specularColor * phongTerm;	//результирующий цвет
+    vec3 color = ambientColor + diffuseColor * cosAngIncidence + specularColor * phongTerm;	//СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РёР№ С†РІРµС‚
 
-	fragColor = vec4(color, 1.0); //просто копируем
+	fragColor = vec4(color, 1.0); //РїСЂРѕСЃС‚Рѕ РєРѕРїРёСЂСѓРµРј
 }

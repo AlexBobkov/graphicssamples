@@ -1,22 +1,22 @@
 #version 330
 
-uniform vec3 ambientColor; //цвет окружающего света (аппроксимация множественных переотражений)
-uniform vec3 diffuseColor; //цвет источника света
+uniform vec3 ambientColor; //С†РІРµС‚ РѕРєСЂСѓР¶Р°СЋС‰РµРіРѕ СЃРІРµС‚Р° (Р°РїРїСЂРѕРєСЃРёРјР°С†РёСЏ РјРЅРѕР¶РµСЃС‚РІРµРЅРЅС‹С… РїРµСЂРµРѕС‚СЂР°Р¶РµРЅРёР№)
+uniform vec3 diffuseColor; //С†РІРµС‚ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-in vec3 normalCamSpace; //нормаль в системе координат камеры (интерполирована между вершинами треугольника)
-in vec4 lightPosCamSpace; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
-in vec4 posCamSpace; //координаты вершины в системе координат камеры (интерполированы между вершинами треугольника)
+in vec3 normalCamSpace; //РЅРѕСЂРјР°Р»СЊ РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ (РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅР° РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°)
+in vec4 lightPosCamSpace; //РїРѕР»РѕР¶РµРЅРёРµ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р° РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ (РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅРѕ РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°)
+in vec4 posCamSpace; //РєРѕРѕСЂРґРёРЅР°С‚С‹ РІРµСЂС€РёРЅС‹ РІ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ (РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅС‹ РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°)
 
-out vec4 fragColor; //выходной цвет фрагмента
+out vec4 fragColor; //РІС‹С…РѕРґРЅРѕР№ С†РІРµС‚ С„СЂР°РіРјРµРЅС‚Р°
 
 void main()
 {
-	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //направление на источник света
+	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //РЅР°РїСЂР°РІР»РµРЅРёРµ РЅР° РёСЃС‚РѕС‡РЅРёРє СЃРІРµС‚Р°
 				    
-    float cosAngIncidence = dot(normalize(normalCamSpace), lightDirCamSpace.xyz); //интенсивность диффузного света
+    float cosAngIncidence = dot(normalize(normalCamSpace), lightDirCamSpace.xyz); //РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ РґРёС„С„СѓР·РЅРѕРіРѕ СЃРІРµС‚Р°
     cosAngIncidence = clamp(cosAngIncidence, 0, 1);
     
-    vec3 color = ambientColor + diffuseColor * cosAngIncidence;	//результирующий цвет
+    vec3 color = ambientColor + diffuseColor * cosAngIncidence;	//СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РёР№ С†РІРµС‚
 
-	fragColor = vec4(color, 1.0); //просто копируем
+	fragColor = vec4(color, 1.0); //РїСЂРѕСЃС‚Рѕ РєРѕРїРёСЂСѓРµРј
 }

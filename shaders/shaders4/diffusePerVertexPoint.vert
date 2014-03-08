@@ -1,34 +1,34 @@
 #version 330
 
-//стандартные матрицы для преобразования координат
-uniform mat4 modelMatrix; //из локальной в мировую
-uniform mat4 viewMatrix; //из мировой в систему координат камеры
-uniform mat4 projectionMatrix; //из системы координат камеры в усеченные координаты
+//СЃС‚Р°РЅРґР°СЂС‚РЅС‹Рµ РјР°С‚СЂРёС†С‹ РґР»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РєРѕРѕСЂРґРёРЅР°С‚
+uniform mat4 modelMatrix; //РёР· Р»РѕРєР°Р»СЊРЅРѕР№ РІ РјРёСЂРѕРІСѓСЋ
+uniform mat4 viewMatrix; //РёР· РјРёСЂРѕРІРѕР№ РІ СЃРёСЃС‚РµРјСѓ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹
+uniform mat4 projectionMatrix; //РёР· СЃРёСЃС‚РµРјС‹ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ РІ СѓСЃРµС‡РµРЅРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹
 
-//матрица для преобразования нормалей из локальной системы координат в систему координат камеры
+//РјР°С‚СЂРёС†Р° РґР»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РЅРѕСЂРјР°Р»РµР№ РёР· Р»РѕРєР°Р»СЊРЅРѕР№ СЃРёСЃС‚РµРјС‹ РєРѕРѕСЂРґРёРЅР°С‚ РІ СЃРёСЃС‚РµРјСѓ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹
 uniform mat3 normalToCameraMatrix;
 
-uniform vec4 lightPos; //положение источника света в мировой системе координат (для точечного источника)
-uniform vec3 ambientColor; //цвет окружающего света (аппроксимация множественных переотражений)
-uniform vec3 diffuseColor; //цвет источника света
+uniform vec4 lightPos; //РїРѕР»РѕР¶РµРЅРёРµ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р° РІ РјРёСЂРѕРІРѕР№ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚ (РґР»СЏ С‚РѕС‡РµС‡РЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°)
+uniform vec3 ambientColor; //С†РІРµС‚ РѕРєСЂСѓР¶Р°СЋС‰РµРіРѕ СЃРІРµС‚Р° (Р°РїРїСЂРѕРєСЃРёРјР°С†РёСЏ РјРЅРѕР¶РµСЃС‚РІРµРЅРЅС‹С… РїРµСЂРµРѕС‚СЂР°Р¶РµРЅРёР№)
+uniform vec3 diffuseColor; //С†РІРµС‚ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-layout(location = 0) in vec3 vp; //координаты вершины в локальной системе координат
-layout(location = 1) in vec3 normal; //нормаль в локальной системе координат
+layout(location = 0) in vec3 vp; //РєРѕРѕСЂРґРёРЅР°С‚С‹ РІРµСЂС€РёРЅС‹ РІ Р»РѕРєР°Р»СЊРЅРѕР№ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚
+layout(location = 1) in vec3 normal; //РЅРѕСЂРјР°Р»СЊ РІ Р»РѕРєР°Р»СЊРЅРѕР№ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚
 
-out vec3 interpColor; //цвет вершины
+out vec3 interpColor; //С†РІРµС‚ РІРµСЂС€РёРЅС‹
 
 void main()
 {
-	vec4 posCamSpace = viewMatrix * modelMatrix * vec4(vp, 1.0); //координаты вершины из локальной в систему координат камеры
+	vec4 posCamSpace = viewMatrix * modelMatrix * vec4(vp, 1.0); //РєРѕРѕСЂРґРёРЅР°С‚С‹ РІРµСЂС€РёРЅС‹ РёР· Р»РѕРєР°Р»СЊРЅРѕР№ РІ СЃРёСЃС‚РµРјСѓ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹
 	gl_Position = projectionMatrix * posCamSpace;
 
-	vec3 normalCamSpace = normalize(normalToCameraMatrix * normal); //нормаль - из локальной в систему координат камеры
-	vec4 lightPosCamSpace = viewMatrix * lightPos; //положение источника света - из мировой в систему координат камеры 
+	vec3 normalCamSpace = normalize(normalToCameraMatrix * normal); //РЅРѕСЂРјР°Р»СЊ - РёР· Р»РѕРєР°Р»СЊРЅРѕР№ РІ СЃРёСЃС‚РµРјСѓ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹
+	vec4 lightPosCamSpace = viewMatrix * lightPos; //РїРѕР»РѕР¶РµРЅРёРµ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р° - РёР· РјРёСЂРѕРІРѕР№ РІ СЃРёСЃС‚РµРјСѓ РєРѕРѕСЂРґРёРЅР°С‚ РєР°РјРµСЂС‹ 
 
-	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //считаем направление на источник света
+	vec3 lightDirCamSpace = normalize(lightPosCamSpace.xyz - posCamSpace.xyz); //СЃС‡РёС‚Р°РµРј РЅР°РїСЂР°РІР»РµРЅРёРµ РЅР° РёСЃС‚РѕС‡РЅРёРє СЃРІРµС‚Р°
 				    
-    float cosAngIncidence = dot(normalCamSpace, lightDirCamSpace.xyz); //скалярное произведение (косинус)
+    float cosAngIncidence = dot(normalCamSpace, lightDirCamSpace.xyz); //СЃРєР°Р»СЏСЂРЅРѕРµ РїСЂРѕРёР·РІРµРґРµРЅРёРµ (РєРѕСЃРёРЅСѓСЃ)
     cosAngIncidence = clamp(cosAngIncidence, 0, 1);
     
-    interpColor = ambientColor + diffuseColor * cosAngIncidence; //цвет вершины
-};
+    interpColor = ambientColor + diffuseColor * cosAngIncidence; //С†РІРµС‚ РІРµСЂС€РёРЅС‹
+}

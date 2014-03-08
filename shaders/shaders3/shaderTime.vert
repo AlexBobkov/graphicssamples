@@ -18,4 +18,4 @@ void main()
 	vec3 offset = vec3(sin(time), cos(time), 0.0);
 			
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp + offset, 1.0);
-};
+}

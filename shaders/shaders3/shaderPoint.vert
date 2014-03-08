@@ -14,4 +14,4 @@ void main()
 	theColor = color;
 	gl_PointSize = 6.0;
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp, 1.0);
-};
+}

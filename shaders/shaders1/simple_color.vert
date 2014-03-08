@@ -11,4 +11,4 @@ void main()
 {
 	theColor = color;
 	gl_Position = projectionMatrix * (vec4(vp, 1.0) + vec4(0.4, 0.4, -1.0, 0.0));
-};
+}

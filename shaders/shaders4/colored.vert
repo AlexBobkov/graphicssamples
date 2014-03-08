@@ -13,4 +13,4 @@ void main()
 {
 	interpColor = color;
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp, 1.0);
-};
+}

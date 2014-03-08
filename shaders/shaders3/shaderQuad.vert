@@ -11,4 +11,4 @@ void main()
 	pos = vec2(vp.x, vp.y);
 	
 	gl_Position = vec4(vp, 1.0);
-};
+}

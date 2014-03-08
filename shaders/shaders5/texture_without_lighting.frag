@@ -2,14 +2,13 @@
 
 uniform sampler2D diffuseTex;
 
-in vec2 interpTc; //текстурные координаты (интерполированы между вершинами треугольника)
+in vec2 interpTc; //С‚РµРєСЃС‚СѓСЂРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ (РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅС‹ РјРµР¶РґСѓ РІРµСЂС€РёРЅР°РјРё С‚СЂРµСѓРіРѕР»СЊРЅРёРєР°)
 
-out vec4 fragColor; //выходной цвет фрагмента
+out vec4 fragColor; //РІС‹С…РѕРґРЅРѕР№ С†РІРµС‚ С„СЂР°РіРјРµРЅС‚Р°
 
 void main()
 {
 	vec3 texColor = texture(diffuseTex, interpTc).rgb;
 
-	fragColor = vec4(texColor, 1.0); //просто копируем
-	//fragColor = vec4(interpTc, 0.0, 1.0); //просто копируем
+	fragColor = vec4(texColor, 1.0); //РїСЂРѕСЃС‚Рѕ РєРѕРїРёСЂСѓРµРј
 }
