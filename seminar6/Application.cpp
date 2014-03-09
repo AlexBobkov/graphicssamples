@@ -214,7 +214,7 @@ void Application::homePos()
 
 void Application::makeSceneImplementation()
 {
-	//инициализация шейдера
+	//инициализация шейдеров
 	_commonShader.initialize();
 	_skyBoxShader.initialize();
 
@@ -227,10 +227,14 @@ void Application::makeSceneImplementation()
 	_myTexId = makeCustomTexture();
 
 	//загрузка 3д-моделей
-	makeSphere(0.8f);
-	makeCube(10.0f);
-	makePlane();
-	makeChessPlane();
+	_sphereVao = makeSphere(0.8f, _sphereNumTris);
+	_sphereModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		
+	_planeVao = makePlane(_planeNumTris);
+	_planeModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+
+	_chessVao = makeChessPlane(_chessNumTris);
+	_cubeVao = makeCube(10.0f, _cubeNumTris);	
 
 	//инициализация параметров
 	initData();

@@ -55,15 +55,16 @@ public:
 	void homePos();
 
 protected:	
-	void makeSphere(float radius);	
-	void makeCube(float size);
-	void makePlane();
-	void makeChessPlane();
 	void initData();
 
-	GLuint loadTexture(std::string filename);
-	GLuint loadTextureWithMipmaps(std::string filename);
-	GLuint makeCustomTexture();
+	GLuint makeSphere(float radius, int& numTris) const;	
+	GLuint makeCube(float size, int& numTris) const;
+	GLuint makePlane(int& numTris) const;
+	GLuint makeChessPlane(int& numTris) const;
+	
+	GLuint loadTexture(std::string filename) const;
+	GLuint loadTextureWithMipmaps(std::string filename) const;
+	GLuint makeCustomTexture() const;
 
 	GLFWwindow* _window;
 	
@@ -104,9 +105,11 @@ protected:
 	//plane
 	GLuint _planeVao;
 	glm::mat4 _planeModelMatrix;	
+	int _planeNumTris;
 
 	//chess
 	GLuint _chessVao;
+	int _chessNumTris;
 
 	float _oldTime;
 

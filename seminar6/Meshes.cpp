@@ -64,11 +64,11 @@ void getColorFromLinearPalette(float value, float& r, float& g, float& b)
 
 //=========================================================
 
-void Application::makeSphere(float radius)
+GLuint Application::makeSphere(float radius, int& numTris) const
 {
 	int N = 100;
 	int M = 50;
-	_sphereNumTris = 0;
+	numTris = 0;
 
 	std::vector<float> vertices;	
 	std::vector<float> normals;
@@ -96,7 +96,7 @@ void Application::makeSphere(float radius)
 			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)i / M);
 			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)(i + 1) / M);						
 
-			_sphereNumTris++;
+			numTris++;
 
 			//Второй треугольник, образующий квад
 			addVec3(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
@@ -111,35 +111,35 @@ void Application::makeSphere(float radius)
 			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
 			addVec2(texcoords, (float)j / N, 1.0f - (float)(i + 1) / M);			
 
-			_sphereNumTris++;
+			numTris++;
 		}
 	}
 
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-	unsigned int vbo = 0;
+	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-	_sphereVao = 0;
-	glGenVertexArrays(1, &_sphereVao);
-	glBindVertexArray(_sphereVao);
+	GLuint sphereVao = 0;
+	glGenVertexArrays(1, &sphereVao);
+	glBindVertexArray(sphereVao);
 	glEnableVertexAttribArray(0);	
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_sphereNumTris * 3 * 3 * 4));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_sphereNumTris * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
 	
 	glBindVertexArray(0);
 
-	_sphereModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	return sphereVao;
 }
 
-void Application::makeCube(float size)
+GLuint Application::makeCube(float size, int& numTris) const
 {
 	std::vector<float> vertices;	
 	std::vector<float> normals;
@@ -304,30 +304,30 @@ void Application::makeCube(float size)
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-	_cubeNumTris = 12;
+	numTris = 12;
 
-	unsigned int vbo = 0;
+	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-	_cubeVao = 0;
-	glGenVertexArrays(1, &_cubeVao);
-	glBindVertexArray(_cubeVao);
+	GLuint cubeVao = 0;
+	glGenVertexArrays(1, &cubeVao);
+	glBindVertexArray(cubeVao);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_cubeNumTris * 3 * 3 * 4));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_cubeNumTris * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
 
 	glBindVertexArray(0);
-
-	//_cubeModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+	
+	return cubeVao;
 }
 
-void Application::makePlane()
+GLuint Application::makePlane(int& numTris) const
 {
 	float size = 0.8f;
 
@@ -364,16 +364,16 @@ void Application::makePlane()
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-	int numTris = 2;
+	numTris = 2;
 
-	unsigned int vbo = 0;
+	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-	_planeVao = 0;
-	glGenVertexArrays(1, &_planeVao);
-	glBindVertexArray(_planeVao);
+	GLuint planeVao = 0;
+	glGenVertexArrays(1, &planeVao);
+	glBindVertexArray(planeVao);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -382,12 +382,12 @@ void Application::makePlane()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
 
-	glBindVertexArray(0);
+	glBindVertexArray(0);	
 
-	_planeModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+	return planeVao;
 }
 
-void Application::makeChessPlane()
+GLuint Application::makeChessPlane(int& numTris) const
 {
 	float size = 100.0f;
 	float N = 100.0f;
@@ -425,16 +425,16 @@ void Application::makeChessPlane()
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-	int numTris = 2;
+	numTris = 2;
 
-	unsigned int vbo = 0;
+	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
-	_chessVao = 0;
-	glGenVertexArrays(1, &_chessVao);
-	glBindVertexArray(_chessVao);
+	GLuint chessVao = 0;
+	glGenVertexArrays(1, &chessVao);
+	glBindVertexArray(chessVao);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
@@ -444,4 +444,6 @@ void Application::makeChessPlane()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
 
 	glBindVertexArray(0);
+
+	return chessVao;
 }

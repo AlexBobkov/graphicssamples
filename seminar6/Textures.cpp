@@ -7,7 +7,7 @@
 
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
-GLuint Application::loadTexture(std::string filename)
+GLuint Application::loadTexture(std::string filename) const
 {
 	GLuint texId;
 
@@ -48,7 +48,7 @@ GLuint Application::loadTexture(std::string filename)
 	return texId;
 }
 
-GLuint Application::loadTextureWithMipmaps(std::string filename)
+GLuint Application::loadTextureWithMipmaps(std::string filename) const
 {
 	GLuint texId;
 
@@ -81,7 +81,7 @@ GLuint Application::loadTextureWithMipmaps(std::string filename)
 	return texId;
 }
 
-GLuint Application::makeCustomTexture()
+GLuint Application::makeCustomTexture() const
 {
 	int width = 128;
 	int height = 128;
