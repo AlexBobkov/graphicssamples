@@ -1,7 +1,6 @@
 #version 330
 
-//стандартные матрицы для преобразования координат
-uniform mat4 modelMatrix; //из локальной в мировую
+uniform vec3 cameraPos; //положение виртуальной камеры в мировой системе координат
 uniform mat4 viewMatrix; //из мировой в систему координат камеры
 uniform mat4 projectionMatrix; //из системы координат камеры в усеченные координаты
 
@@ -13,7 +12,7 @@ out vec2 interpTc; //выходные текстурные координаты
 
 void main()
 {	
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp, 1.0);
+	gl_Position = projectionMatrix * viewMatrix * vec4(vp + cameraPos, 1.0);
 
 	interpTc = tc;
 }

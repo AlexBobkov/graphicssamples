@@ -196,9 +196,9 @@ void Application::update()
 
 	_distance = glm::clamp(_distance, 0.5f, 50.0f);
 
-	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
+	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
 
-	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 void Application::homePos()
@@ -207,15 +207,16 @@ void Application::homePos()
 	_thetaAng = M_PI * 0.05;
 	_distance = 20.0;
 
-	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
+	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
 
-	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 }
 
 void Application::makeSceneImplementation()
 {
 	//инициализация шейдера
 	_commonShader.initialize();
+	_skyBoxShader.initialize();
 
 	//загрузка текстур
 	_worldTexId = loadTexture("images/earth_global.jpg");
@@ -264,7 +265,30 @@ void Application::initData()
 
 void Application::drawImplementation()
 {
-	glUseProgram(_commonShader.getProgramId());
+	//====== Фоновый куб ======
+	glUseProgram(_skyBoxShader.getProgramId()); //Подключаем шейдер для фонового куба
+
+	_skyBoxShader.setCameraPos(_cameraPos);
+	_skyBoxShader.setViewMatrix(_viewMatrix);
+	_skyBoxShader.setProjectionMatrix(_projMatrix);	
+	_skyBoxShader.applyCommonUniforms();	
+	
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_skyBoxShader.setTexUnit(0);  //текстурный юнит 0
+	_skyBoxShader.applyMaterialUniforms();
+
+	glDepthMask(GL_FALSE);
+
+	glBindVertexArray(_cubeVao); //Подключаем VertexArray для куба
+	glDrawArrays(GL_TRIANGLES, 0, _cubeNumTris * 3); //Рисуем куб
+
+	glDepthMask(GL_TRUE);
+
+	//====== Остальные объекты ======	
+	glUseProgram(_commonShader.getProgramId()); //Подключаем общий шейдер для всех объектов
 
 	_commonShader.setTime((float)glfwGetTime());
 	_commonShader.setViewMatrix(_viewMatrix);
@@ -307,7 +331,7 @@ void Application::drawImplementation()
 	glBindVertexArray(_planeVao); //Подключаем VertexArray для плоскости
 	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
 
-#if 1
+#if 0
 	//====== Плоскость XY ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _chessTexId);
@@ -321,21 +345,5 @@ void Application::drawImplementation()
 
 	glBindVertexArray(_chessVao); //Подключаем VertexArray для плоскости
 	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
-#endif
-
-#if 1
-	//====== Куб ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
-
-	_commonShader.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonShader.setModelMatrix(_cubeModelMatrix);
-	_commonShader.setShininess(100.0f);
-
-	_commonShader.applyMaterialUniforms();
-
-	glBindVertexArray(_cubeVao); //Подключаем VertexArray для куба
-	glDrawArrays(GL_TRIANGLES, 0, _cubeNumTris * 3); //Рисуем куб
 #endif
 }

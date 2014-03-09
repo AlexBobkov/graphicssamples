@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 
 #include <GL/glew.h> // include GLEW and new version of GL on Windows
 #include <GLFW/glfw3.h> // GLFW helper library
@@ -16,6 +16,7 @@
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
 #include "CommonShader.h"
+#include "SkyBoxShader.h"
 
 class Application
 {
@@ -66,11 +67,13 @@ protected:
 
 	GLFWwindow* _window;
 	
-	CommonShader _commonShader;		
+	CommonShader _commonShader;	
+	SkyBoxShader _skyBoxShader;
 
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
 	glm::mat4 _viewMatrix;
-	glm::mat4 _projMatrix;	
+	glm::mat4 _projMatrix;
+	glm::vec3 _cameraPos;
 	
 	glm::vec4 _lightPos; //in world space
 	glm::vec3 _ambientColor;
