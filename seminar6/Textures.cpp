@@ -111,3 +111,42 @@ GLuint Application::makeCustomTexture() const
 
 	return texId;
 }
+
+void loadCubeTextureFace(std::string filename, GLenum target)
+{
+	try
+	{
+		std::shared_ptr<glimg::ImageSet> pImageSet;
+		pImageSet.reset(glimg::loaders::stb::LoadFromFile(filename));
+
+		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
+		glimg::Dimensions dims = pImage.GetDimensions();
+
+		glTexImage2D(target, 0, GL_RGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
+	}
+	catch(glimg::loaders::stb::StbLoaderException& e)
+	{
+		std::cerr << "Failed to load texture " << filename << std::endl;;
+		exit(1);
+	}
+}
+
+GLuint Application::loadCubeTexture(std::string basefilename) const
+{
+	GLuint texId;
+	glGenTextures(1, &texId);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
+
+	loadCubeTextureFace(basefilename + "/negx.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
+	loadCubeTextureFace(basefilename + "/posx.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+	loadCubeTextureFace(basefilename + "/posy.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+	loadCubeTextureFace(basefilename + "/negy.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+	loadCubeTextureFace(basefilename + "/negz.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
+	loadCubeTextureFace(basefilename + "/posz.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+	return texId;
+}

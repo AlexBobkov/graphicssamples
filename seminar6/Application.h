@@ -64,6 +64,7 @@ protected:
 	
 	GLuint loadTexture(std::string filename) const;
 	GLuint loadTextureWithMipmaps(std::string filename) const;
+	GLuint loadCubeTexture(std::string basefilename) const;
 	GLuint makeCustomTexture() const;
 
 	GLFWwindow* _window;
@@ -88,9 +89,11 @@ protected:
 	GLuint _specularTexId;
 	GLuint _chessTexId;
 	GLuint _myTexId;
+	GLuint _cubeTexId;
 
 	GLuint _sampler;
 	GLuint _repeatSampler;
+	GLuint _cubeSampler;
 			
 	//sphere
 	GLuint _sphereVao;	

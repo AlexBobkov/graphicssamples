@@ -194,8 +194,9 @@ void Application::update()
 		_distance -= _distance * dt;
 	}
 
+	_thetaAng = glm::clamp(_thetaAng, -(float)M_PI * 0.45f, (float)M_PI * 0.45f);
 	_distance = glm::clamp(_distance, 0.5f, 50.0f);
-
+	
 	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
 
 	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -225,6 +226,7 @@ void Application::makeSceneImplementation()
 	_specularTexId = loadTexture("images/specular.dds");
 	_chessTexId = loadTextureWithMipmaps("images/chess.dds");
 	_myTexId = makeCustomTexture();
+	_cubeTexId = loadCubeTexture("images/cube");
 
 	//загрузка 3д-моделей
 	_sphereVao = makeSphere(0.8f, _sphereNumTris);
@@ -265,6 +267,13 @@ void Application::initData()
 	glSamplerParameterf(_repeatSampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);	
+
+	glGenSamplers(1, &_cubeSampler);	
+	glSamplerParameteri(_cubeSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(_cubeSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
+	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
 }
 
 void Application::drawImplementation()
@@ -278,8 +287,8 @@ void Application::drawImplementation()
 	_skyBoxShader.applyCommonUniforms();	
 	
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, _cubeTexId);
+	glBindSampler(0, _cubeSampler);
 
 	_skyBoxShader.setTexUnit(0);  //текстурный юнит 0
 	_skyBoxShader.applyMaterialUniforms();
