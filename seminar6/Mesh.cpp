@@ -3,7 +3,7 @@
 
 #include <glimg/glimg.h>
 
-#include "Application.h"
+#include "Mesh.h"
 
 //=========================================================
 
@@ -64,11 +64,23 @@ void getColorFromLinearPalette(float value, float& r, float& g, float& b)
 
 //=========================================================
 
-GLuint Application::makeSphere(float radius, int& numTris) const
+Mesh::Mesh():
+_vao(0),
+	_numVertices(0)
+{
+}
+
+Mesh::Mesh(GLuint vao, int numVertices):
+_vao(vao),
+	_numVertices(numVertices)
+{
+}
+
+Mesh Mesh::makeSphere(float radius)
 {
 	int N = 100;
 	int M = 50;
-	numTris = 0;
+	int numVertices = 0;
 
 	std::vector<float> vertices;	
 	std::vector<float> normals;
@@ -96,7 +108,7 @@ GLuint Application::makeSphere(float radius, int& numTris) const
 			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)i / M);
 			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)(i + 1) / M);						
 
-			numTris++;
+			numVertices += 3;
 
 			//Второй треугольник, образующий квад
 			addVec3(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
@@ -111,7 +123,7 @@ GLuint Application::makeSphere(float radius, int& numTris) const
 			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
 			addVec2(texcoords, (float)j / N, 1.0f - (float)(i + 1) / M);			
 
-			numTris++;
+			numVertices += 3;
 		}
 	}
 
@@ -131,15 +143,15 @@ GLuint Application::makeSphere(float radius, int& numTris) const
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4 * 2));
 	
 	glBindVertexArray(0);
 
-	return sphereVao;
+	return Mesh(sphereVao, numVertices);
 }
 
-GLuint Application::makeCube(float size, int& numTris) const
+Mesh Mesh::makeCube(float size)
 {
 	std::vector<float> vertices;	
 	std::vector<float> normals;
@@ -304,7 +316,7 @@ GLuint Application::makeCube(float size, int& numTris) const
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-	numTris = 12;
+	int numVertices = 36;
 
 	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
@@ -319,15 +331,15 @@ GLuint Application::makeCube(float size, int& numTris) const
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4 * 2));
 
 	glBindVertexArray(0);
 	
-	return cubeVao;
+	return Mesh(cubeVao, numVertices);
 }
 
-GLuint Application::makePlane(int& numTris) const
+Mesh Mesh::makePlane()
 {
 	float size = 0.8f;
 
@@ -364,7 +376,7 @@ GLuint Application::makePlane(int& numTris) const
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-	numTris = 2;
+	int numVertices = 6;
 
 	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
@@ -379,15 +391,15 @@ GLuint Application::makePlane(int& numTris) const
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4 * 2));
 
 	glBindVertexArray(0);	
 
-	return planeVao;
+	return Mesh(planeVao, numVertices);
 }
 
-GLuint Application::makeChessPlane(int& numTris) const
+Mesh Mesh::makeChessPlane()
 {
 	float size = 100.0f;
 	float N = 100.0f;
@@ -425,7 +437,7 @@ GLuint Application::makeChessPlane(int& numTris) const
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-	numTris = 2;
+	int numVertices = 6;
 
 	GLuint vbo = 0;
 	glGenBuffers(1, &vbo);
@@ -440,10 +452,10 @@ GLuint Application::makeChessPlane(int& numTris) const
 	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4));
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numTris * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4 * 2));
 
 	glBindVertexArray(0);
 
-	return chessVao;
+	return Mesh(chessVao, numVertices);
 }

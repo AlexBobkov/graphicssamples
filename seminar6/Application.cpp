@@ -174,14 +174,10 @@ void Application::makeSceneImplementation()
 	_cubeTexId = loadCubeTexture("images/cube");
 
 	//загрузка 3д-моделей
-	_sphereVao = makeSphere(0.8f, _sphereNumTris);
-	_sphereModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		
-	_planeVao = makePlane(_planeNumTris);
-	_planeModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-
-	_chessVao = makeChessPlane(_chessNumTris);
-	_cubeVao = makeCube(10.0f, _cubeNumTris);	
+	_sphere = Mesh::makeSphere(0.8f);		
+	_plane = Mesh::makePlane();
+	_chess = Mesh::makeChessPlane();
+	_cube = Mesh::makeCube(10.0f);	
 
 	//инициализация параметров
 	initData();
@@ -236,8 +232,8 @@ void Application::drawImplementation()
 
 	glDepthMask(GL_FALSE);
 
-	glBindVertexArray(_cubeVao); //Подключаем VertexArray для куба
-	glDrawArrays(GL_TRIANGLES, 0, _cubeNumTris * 3); //Рисуем куб
+	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
+	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куб
 
 	glDepthMask(GL_TRUE);
 
@@ -262,13 +258,12 @@ void Application::drawImplementation()
 	glBindSampler(0, _sampler);
 
 	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(_sphereModelMatrix);
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	_commonMaterial.setShininess(100.0f);
-
 	_commonMaterial.applyModelSpecificUniforms();
 
-	glBindVertexArray(_sphereVao); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphereNumTris * 3); //Рисуем сферу
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
 
 	//====== Плоскость YZ ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -276,13 +271,12 @@ void Application::drawImplementation()
 	glBindSampler(0, _sampler);
 
 	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(_planeModelMatrix);
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	_commonMaterial.setShininess(100.0f);
-
 	_commonMaterial.applyModelSpecificUniforms();
 
-	glBindVertexArray(_planeVao); //Подключаем VertexArray для плоскости
-	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
+	glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
+	glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
 
 #if 0
 	//====== Плоскость XY ======
@@ -293,10 +287,9 @@ void Application::drawImplementation()
 	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
 	_commonMaterial.setModelMatrix(glm::mat4(1.0));
 	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();
 
-	_commonMaterial.applyMaterialUniforms();
-
-	glBindVertexArray(_chessVao); //Подключаем VertexArray для плоскости
-	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
+	glBindVertexArray(_chess.getVao()); //Подключаем VertexArray для плоскости
+	glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
 #endif
 }

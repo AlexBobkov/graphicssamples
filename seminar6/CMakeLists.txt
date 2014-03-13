@@ -4,7 +4,7 @@ SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Meshes.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.cpp
@@ -16,6 +16,7 @@ SET(HEADER_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.h
 )
 

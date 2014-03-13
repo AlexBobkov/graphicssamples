@@ -18,6 +18,7 @@
 #include "CommonMaterial.h"
 #include "SkyBoxMaterial.h"
 #include "Camera.h"
+#include "Mesh.h"
 
 class Application
 {
@@ -44,12 +45,7 @@ public:
 	void update();	
 
 protected:	
-	void initData();
-
-	GLuint makeSphere(float radius, int& numTris) const;	
-	GLuint makeCube(float size, int& numTris) const;
-	GLuint makePlane(int& numTris) const;
-	GLuint makeChessPlane(int& numTris) const;
+	void initData();	
 	
 	GLuint loadTexture(std::string filename) const;
 	GLuint loadTextureWithMipmaps(std::string filename) const;
@@ -63,7 +59,7 @@ protected:
 
 	Camera _mainCamera;
 
-	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
+	//параметры освещения
 	glm::vec4 _lightPos; //in world space
 	glm::vec3 _ambientColor;
 	glm::vec3 _diffuseColor;
@@ -78,28 +74,16 @@ protected:
 	GLuint _myTexId;
 	GLuint _cubeTexId;
 
+	//параметры чтения из текстуры
 	GLuint _sampler;
 	GLuint _repeatSampler;
 	GLuint _cubeSampler;
-			
-	//sphere
-	GLuint _sphereVao;	
-	glm::mat4 _sphereModelMatrix;
-	int _sphereNumTris;
 
-	//cube
-	GLuint _cubeVao;
-	glm::mat4 _cubeModelMatrix;
-	int _cubeNumTris;
-
-	//plane
-	GLuint _planeVao;
-	glm::mat4 _planeModelMatrix;	
-	int _planeNumTris;
-
-	//chess
-	GLuint _chessVao;
-	int _chessNumTris;
+	//полигональные 3д-модели
+	Mesh _sphere;
+	Mesh _cube;
+	Mesh _plane;
+	Mesh _chess;
 
 	float _oldTime;
 					
