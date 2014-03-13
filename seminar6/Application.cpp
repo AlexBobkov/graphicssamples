@@ -6,76 +6,8 @@
 #include "Application.h"
 #include "Texture.h"
 
-//Функция обратного вызова для обработки нажатий на клавиатуре
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
-
-	if (action == GLFW_PRESS)
-	{
-		if (key == GLFW_KEY_ESCAPE)
-		{
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
-		else if (key == GLFW_KEY_A)
-		{
-			camera->rotateLeft(true);
-		}
-		else if (key == GLFW_KEY_D)
-		{
-			camera->rotateRight(true);
-		}
-		else if (key == GLFW_KEY_W)
-		{
-			camera->rotateUp(true);
-		}
-		else if (key == GLFW_KEY_S)
-		{
-			camera->rotateDown(true);
-		}
-		else if (key == GLFW_KEY_R)
-		{
-			camera->zoomUp(true);
-		}
-		else if (key == GLFW_KEY_F)
-		{
-			camera->zoomDown(true);
-		}
-		else if (key == GLFW_KEY_SPACE)
-		{
-			camera->homePos();
-		}
-	}
-	else if (action == GLFW_RELEASE)
-	{
-		if (key == GLFW_KEY_A)
-		{
-			camera->rotateLeft(false);
-		}
-		else if (key == GLFW_KEY_D)
-		{
-			camera->rotateRight(false);
-		}
-		else if (key == GLFW_KEY_W)
-		{
-			camera->rotateUp(false);
-		}
-		else if (key == GLFW_KEY_S)
-		{
-			camera->rotateDown(false);
-		}
-		else if (key == GLFW_KEY_R)
-		{
-			camera->zoomUp(false);
-		}
-		else if (key == GLFW_KEY_F)
-		{
-			camera->zoomDown(false);
-		}
-	}
-}
-
-//======================================
+//Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 Application::Application():
 _oldTime(0.0f)
@@ -140,23 +72,25 @@ void Application::run()
 	}
 }
 
-void Application::draw()
-{
-	int width, height;
-	glfwGetFramebufferSize(_window, &width, &height);
-	glViewport(0, 0, width, height);		
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	_mainCamera.setWindowSize(width, height);
-
-	drawImplementation();
-
-	glfwSwapBuffers(_window);	
-}
-
 void Application::update()
 {
 	_mainCamera.update();
+}
+
+void Application::draw()
+{
+	//Настройки размеров (если пользователь изменил размеры окна)
+	int width, height;
+	glfwGetFramebufferSize(_window, &width, &height);
+	glViewport(0, 0, width, height);
+	_mainCamera.setWindowSize(width, height);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+	drawBackground(_mainCamera);
+	drawScene(_mainCamera);
+
+	glfwSwapBuffers(_window);	
 }
 
 void Application::makeSceneImplementation()
@@ -180,12 +114,6 @@ void Application::makeSceneImplementation()
 	_chess = Mesh::makeChessPlane();
 	_cube = Mesh::makeCube(10.0f);	
 
-	//инициализация параметров
-	initData();
-}
-
-void Application::initData()
-{
 	//Инициализация значений переменных освщения
 	_lightPos = glm::vec4(2.0f, 2.0f, 0.5f, 1.0f);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
@@ -214,14 +142,14 @@ void Application::initData()
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
 }
 
-void Application::drawImplementation()
+void Application::drawBackground(Camera& camera)
 {
 	//====== Фоновый куб ======
 	glUseProgram(_skyBoxMaterial.getProgramId()); //Подключаем шейдер для фонового куба
 
-	_skyBoxMaterial.setCameraPos(_mainCamera.getCameraPos());
-	_skyBoxMaterial.setViewMatrix(_mainCamera.getViewMatrix());
-	_skyBoxMaterial.setProjectionMatrix(_mainCamera.getProjMatrix());	
+	_skyBoxMaterial.setCameraPos(camera.getCameraPos());
+	_skyBoxMaterial.setViewMatrix(camera.getViewMatrix());
+	_skyBoxMaterial.setProjectionMatrix(camera.getProjMatrix());	
 	_skyBoxMaterial.applyCommonUniforms();	
 	
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -237,13 +165,16 @@ void Application::drawImplementation()
 	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куб
 
 	glDepthMask(GL_TRUE);
+}
 
+void Application::drawScene(Camera& camera)
+{
 	//====== Остальные объекты ======	
 	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
 
 	_commonMaterial.setTime((float)glfwGetTime());
-	_commonMaterial.setViewMatrix(_mainCamera.getViewMatrix());
-	_commonMaterial.setProjectionMatrix(_mainCamera.getProjMatrix());
+	_commonMaterial.setViewMatrix(camera.getViewMatrix());
+	_commonMaterial.setProjectionMatrix(camera.getProjMatrix());
 
 	_commonMaterial.setLightPos(_lightPos);
 	_commonMaterial.setAmbientColor(_ambientColor);

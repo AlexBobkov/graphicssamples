@@ -7,6 +7,7 @@ SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Navigation.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.cpp
 )

@@ -44,9 +44,7 @@ public:
 	//Обновление
 	void update();	
 
-protected:	
-	void initData();
-
+protected:
 	GLFWwindow* _window;
 	
 	CommonMaterial _commonMaterial;	
@@ -83,5 +81,6 @@ protected:
 	float _oldTime;
 					
 	void makeSceneImplementation();
-	void drawImplementation();
+	void drawScene(Camera& camera);
+	void drawBackground(Camera& camera);
 };
