@@ -8,7 +8,7 @@ SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Textures.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.cpp
 )
 
 SET(HEADER_FILES
@@ -18,6 +18,7 @@ SET(HEADER_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.h
 )
 
 ADD_EXECUTABLE(${APP_NAME} ${SRC_FILES} ${HEADER_FILES})

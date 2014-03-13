@@ -45,12 +45,7 @@ public:
 	void update();	
 
 protected:	
-	void initData();	
-	
-	GLuint loadTexture(std::string filename) const;
-	GLuint loadTextureWithMipmaps(std::string filename) const;
-	GLuint loadCubeTexture(std::string basefilename) const;
-	GLuint makeCustomTexture() const;
+	void initData();
 
 	GLFWwindow* _window;
 	

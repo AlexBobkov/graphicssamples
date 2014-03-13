@@ -3,11 +3,11 @@
 
 #include <glimg/glimg.h>
 
-#include "Application.h"
+#include "Texture.h"
 
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
-GLuint Application::loadTexture(std::string filename) const
+GLuint Texture::loadTexture(std::string filename)
 {
 	GLuint texId;
 
@@ -34,12 +34,12 @@ GLuint Application::loadTexture(std::string filename) const
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	catch(glimg::loaders::stb::StbLoaderException& e)
+	catch(glimg::loaders::stb::StbLoaderException&)
 	{
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
 	}
-	catch(glimg::loaders::dds::DdsLoaderException& e)
+	catch(glimg::loaders::dds::DdsLoaderException&)
 	{
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
@@ -48,7 +48,7 @@ GLuint Application::loadTexture(std::string filename) const
 	return texId;
 }
 
-GLuint Application::loadTextureWithMipmaps(std::string filename) const
+GLuint Texture::loadTextureWithMipmaps(std::string filename)
 {
 	GLuint texId;
 
@@ -72,7 +72,7 @@ GLuint Application::loadTextureWithMipmaps(std::string filename) const
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, pImageSet->GetMipmapCount() - 1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	catch(glimg::loaders::dds::DdsLoaderException& e)
+	catch(glimg::loaders::dds::DdsLoaderException&)
 	{
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
@@ -81,10 +81,10 @@ GLuint Application::loadTextureWithMipmaps(std::string filename) const
 	return texId;
 }
 
-GLuint Application::makeCustomTexture() const
+GLuint Texture::makeCustomTexture()
 {
-	int width = 128;
-	int height = 128;
+	unsigned int width = 128;
+	unsigned int height = 128;
 
 	std::vector<unsigned char> data;
 
@@ -124,14 +124,14 @@ void loadCubeTextureFace(std::string filename, GLenum target)
 
 		glTexImage2D(target, 0, GL_RGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
 	}
-	catch(glimg::loaders::stb::StbLoaderException& e)
+	catch(glimg::loaders::stb::StbLoaderException&)
 	{
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
 	}
 }
 
-GLuint Application::loadCubeTexture(std::string basefilename) const
+GLuint Texture::loadCubeTexture(std::string basefilename)
 {
 	GLuint texId;
 	glGenTextures(1, &texId);

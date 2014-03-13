@@ -4,6 +4,7 @@
 #include <glimg/glimg.h>
 
 #include "Application.h"
+#include "Texture.h"
 
 //Функция обратного вызова для обработки нажатий на клавиатуре
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -165,13 +166,13 @@ void Application::makeSceneImplementation()
 	_skyBoxMaterial.initialize();
 
 	//загрузка текстур
-	_worldTexId = loadTexture("images/earth_global.jpg");
-	_brickTexId = loadTexture("images/brick.jpg");
-	_grassTexId = loadTexture("images/grass.jpg");
-	_specularTexId = loadTexture("images/specular.dds");
-	_chessTexId = loadTextureWithMipmaps("images/chess.dds");
-	_myTexId = makeCustomTexture();
-	_cubeTexId = loadCubeTexture("images/cube");
+	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
+	_brickTexId = Texture::loadTexture("images/brick.jpg");
+	_grassTexId = Texture::loadTexture("images/grass.jpg");
+	_specularTexId = Texture::loadTexture("images/specular.dds");
+	_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
+	_myTexId = Texture::makeCustomTexture();
+	_cubeTexId = Texture::loadCubeTexture("images/cube");
 
 	//загрузка 3д-моделей
 	_sphere = Mesh::makeSphere(0.8f);		
