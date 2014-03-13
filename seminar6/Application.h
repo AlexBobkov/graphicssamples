@@ -67,6 +67,7 @@ protected:
 	GLuint _chessTexId;
 	GLuint _myTexId;
 	GLuint _cubeTexId;
+	GLuint _colorTexId;
 
 	//параметры чтения из текстуры
 	GLuint _sampler;

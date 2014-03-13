@@ -17,7 +17,7 @@ out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-	vec3 diffuseMaterial = texture(diffuseTex, interpTc).rgb; //читаем из текстуры
+	vec3 diffuseMaterial = texture(diffuseTex, interpTc).rgb; //читаем из текстуры	
 
 	vec3 lightDirCamSpace = lightPosCamSpace.xyz - posCamSpace.xyz; //направление на источник света
 	lightDirCamSpace = normalize(lightDirCamSpace); //нормализуем направление
@@ -37,6 +37,7 @@ void main()
 
 	//результирующий цвет
     vec3 color = diffuseMaterial * ambientColor + diffuseMaterial * diffuseColor * cosAngIncidence + specularColor * blinnTerm;
+	//vec3 color = diffuseMaterial;
 
 	fragColor = vec4(color, 1.0);
 }

@@ -6,10 +6,12 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 3;
+int demoNum = 5;
 //1 - простая кубическая текстура
 //2 - 2 камеры
 //3 - 2 плоскости (z-fighting)
+//4 - face culling
+//5 - blending
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -56,6 +58,8 @@ void Application::initGL()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+
+	glEnable(GL_POLYGON_OFFSET_FILL);	
 }
 
 void Application::makeScene()
@@ -92,7 +96,7 @@ void Application::draw()
 	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
-	//drawBackground(_mainCamera);
+	drawBackground(_mainCamera);
 	drawScene(_mainCamera);
 
 	if (demoNum == 2)
@@ -119,6 +123,7 @@ void Application::makeSceneImplementation()
 	_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
 	_myTexId = Texture::makeCustomTexture();
 	_cubeTexId = Texture::loadCubeTexture("images/cube");
+	_colorTexId = Texture::loadTexture("images/color.png");
 
 	//загрузка 3д-моделей
 	_sphere = Mesh::makeSphere(0.8f);
@@ -204,6 +209,18 @@ void Application::drawScene(Camera& camera)
 
 	_commonMaterial.applyCommonUniforms();
 
+	if (demoNum == 4 || demoNum == 5)
+	{
+		glEnable(GL_CULL_FACE);    
+		glFrontFace(GL_CW);
+		glCullFace(GL_BACK);
+	}
+
+	if (demoNum == 5)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 
 	//====== Сфера ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -214,9 +231,18 @@ void Application::drawScene(Camera& camera)
 	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	_commonMaterial.setShininess(100.0f);
 	_commonMaterial.applyModelSpecificUniforms();
-
+	
 	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
 	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+
+#if 0
+	glCullFace(GL_FRONT);
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+	glCullFace(GL_BACK);
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу	
+#endif
 
 	//====== Плоскость YZ ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -242,7 +268,16 @@ void Application::drawScene(Camera& camera)
 		_commonMaterial.setShininess(100.0f);
 		_commonMaterial.applyModelSpecificUniforms();
 
+		//glDisable(GL_DEPTH_TEST);
+		//glPolygonOffset(-1.0f, -1.0f);
+
 		glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
 		glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
+
+		//glPolygonOffset(0.0f, 0.0f);
+		//glEnable(GL_DEPTH_TEST);
 	}
+
+	glDisable(GL_BLEND);
+	glDisable(GL_CULL_FACE);
 }
