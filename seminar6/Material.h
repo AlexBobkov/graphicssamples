@@ -18,10 +18,10 @@
 /**
 	Базовый класс для шейдеров. Содержит код загрузки шейдеров.
 */
-class Shader
+class Material
 {
 public:
-	Shader();	
+	Material();	
 
 	//Инициализация шейдера
 	virtual void initialize() = 0;
@@ -30,7 +30,7 @@ public:
 	virtual void applyCommonUniforms() = 0;
 
 	//Загрузка на видеокарту значений uniform-переменных, которые различаются между 3д-моделями
-	virtual void applyMaterialUniforms() = 0;
+	virtual void applyModelSpecificUniforms() = 0;
 	
 	GLuint getProgramId() { return _programId; }
 

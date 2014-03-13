@@ -3,13 +3,13 @@
 
 #include <glimg/glimg.h>
 
-#include "CommonShader.h"
+#include "CommonMaterial.h"
 
-CommonShader::CommonShader()
+CommonMaterial::CommonMaterial()
 {
 }
 
-void CommonShader::initialize()
+void CommonMaterial::initialize()
 {
 	std::string vertFilename = "shaders6/common.vert";
 	std::string fragFilename = "shaders6/common.frag";
@@ -43,7 +43,7 @@ void CommonShader::initialize()
 	_timeUniform = glGetUniformLocation(_programId, "time");
 }
 
-void CommonShader::applyCommonUniforms() 
+void CommonMaterial::applyCommonUniforms() 
 {
 	glUniform1f(_timeUniform, _time);
 	glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
@@ -55,7 +55,7 @@ void CommonShader::applyCommonUniforms()
 	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
 }
 
-void CommonShader::applyMaterialUniforms()
+void CommonMaterial::applyModelSpecificUniforms()
 {
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_modelMatrix));	
 

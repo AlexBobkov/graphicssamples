@@ -216,8 +216,8 @@ void Application::homePos()
 void Application::makeSceneImplementation()
 {
 	//инициализация шейдеров
-	_commonShader.initialize();
-	_skyBoxShader.initialize();
+	_commonMaterial.initialize();
+	_skyBoxMaterial.initialize();
 
 	//загрузка текстур
 	_worldTexId = loadTexture("images/earth_global.jpg");
@@ -279,19 +279,19 @@ void Application::initData()
 void Application::drawImplementation()
 {
 	//====== Фоновый куб ======
-	glUseProgram(_skyBoxShader.getProgramId()); //Подключаем шейдер для фонового куба
+	glUseProgram(_skyBoxMaterial.getProgramId()); //Подключаем шейдер для фонового куба
 
-	_skyBoxShader.setCameraPos(_cameraPos);
-	_skyBoxShader.setViewMatrix(_viewMatrix);
-	_skyBoxShader.setProjectionMatrix(_projMatrix);	
-	_skyBoxShader.applyCommonUniforms();	
+	_skyBoxMaterial.setCameraPos(_cameraPos);
+	_skyBoxMaterial.setViewMatrix(_viewMatrix);
+	_skyBoxMaterial.setProjectionMatrix(_projMatrix);	
+	_skyBoxMaterial.applyCommonUniforms();	
 	
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _cubeTexId);
 	glBindSampler(0, _cubeSampler);
 
-	_skyBoxShader.setTexUnit(0);  //текстурный юнит 0
-	_skyBoxShader.applyMaterialUniforms();
+	_skyBoxMaterial.setTexUnit(0);  //текстурный юнит 0
+	_skyBoxMaterial.applyModelSpecificUniforms();
 
 	glDepthMask(GL_FALSE);
 
@@ -301,31 +301,30 @@ void Application::drawImplementation()
 	glDepthMask(GL_TRUE);
 
 	//====== Остальные объекты ======	
-	glUseProgram(_commonShader.getProgramId()); //Подключаем общий шейдер для всех объектов
+	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
 
-	_commonShader.setTime((float)glfwGetTime());
-	_commonShader.setViewMatrix(_viewMatrix);
-	_commonShader.setProjectionMatrix(_projMatrix);
+	_commonMaterial.setTime((float)glfwGetTime());
+	_commonMaterial.setViewMatrix(_viewMatrix);
+	_commonMaterial.setProjectionMatrix(_projMatrix);
 
-	_commonShader.setLightPos(_lightPos);
-	_commonShader.setAmbientColor(_ambientColor);
-	_commonShader.setDiffuseColor(_diffuseColor);
-	_commonShader.setSpecularColor(_specularColor);
+	_commonMaterial.setLightPos(_lightPos);
+	_commonMaterial.setAmbientColor(_ambientColor);
+	_commonMaterial.setDiffuseColor(_diffuseColor);
+	_commonMaterial.setSpecularColor(_specularColor);
 
-	_commonShader.applyCommonUniforms();
+	_commonMaterial.applyCommonUniforms();
 
 
 	//====== Сфера ======
-
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
 	glBindSampler(0, _sampler);
 
-	_commonShader.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonShader.setModelMatrix(_sphereModelMatrix);
-	_commonShader.setShininess(100.0f);
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(_sphereModelMatrix);
+	_commonMaterial.setShininess(100.0f);
 
-	_commonShader.applyMaterialUniforms();
+	_commonMaterial.applyModelSpecificUniforms();
 
 	glBindVertexArray(_sphereVao); //Подключаем VertexArray для сферы
 	glDrawArrays(GL_TRIANGLES, 0, _sphereNumTris * 3); //Рисуем сферу
@@ -335,11 +334,11 @@ void Application::drawImplementation()
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
 	glBindSampler(0, _sampler);
 
-	_commonShader.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonShader.setModelMatrix(_planeModelMatrix);
-	_commonShader.setShininess(100.0f);
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(_planeModelMatrix);
+	_commonMaterial.setShininess(100.0f);
 
-	_commonShader.applyMaterialUniforms();
+	_commonMaterial.applyModelSpecificUniforms();
 
 	glBindVertexArray(_planeVao); //Подключаем VertexArray для плоскости
 	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость
@@ -350,11 +349,11 @@ void Application::drawImplementation()
 	glBindTexture(GL_TEXTURE_2D, _chessTexId);
 	glBindSampler(0, _repeatSampler);
 
-	_commonShader.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonShader.setModelMatrix(glm::mat4(1.0));
-	_commonShader.setShininess(100.0f);
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(glm::mat4(1.0));
+	_commonMaterial.setShininess(100.0f);
 
-	_commonShader.applyMaterialUniforms();
+	_commonMaterial.applyMaterialUniforms();
 
 	glBindVertexArray(_chessVao); //Подключаем VertexArray для плоскости
 	glDrawArrays(GL_TRIANGLES, 0, 6); //Рисуем плоскость

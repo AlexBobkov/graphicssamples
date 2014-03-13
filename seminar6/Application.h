@@ -15,8 +15,8 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
-#include "CommonShader.h"
-#include "SkyBoxShader.h"
+#include "CommonMaterial.h"
+#include "SkyBoxMaterial.h"
 
 class Application
 {
@@ -69,8 +69,8 @@ protected:
 
 	GLFWwindow* _window;
 	
-	CommonShader _commonShader;	
-	SkyBoxShader _skyBoxShader;
+	CommonMaterial _commonMaterial;	
+	SkyBoxMaterial _skyBoxMaterial;
 
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
 	glm::mat4 _viewMatrix;

@@ -3,13 +3,13 @@
 
 #include <glimg/glimg.h>
 
-#include "Shader.h"
+#include "Material.h"
 
-Shader::Shader()
+Material::Material()
 {
 }
 
-GLuint Shader::makeShader(GLenum shaderType, std::string filename)
+GLuint Material::makeShader(GLenum shaderType, std::string filename)
 {
 	//Читаем текст шейдера из файла
 	std::ifstream vertFile(filename.c_str());
@@ -50,7 +50,7 @@ GLuint Shader::makeShader(GLenum shaderType, std::string filename)
 	return vs;
 }
 
-GLuint Shader::makeShaderProgram(std::string vertFilename, std::string fragFilename)
+GLuint Material::makeShaderProgram(std::string vertFilename, std::string fragFilename)
 {
 	GLuint vs = makeShader(GL_VERTEX_SHADER, vertFilename);
 	GLuint fs = makeShader(GL_FRAGMENT_SHADER, fragFilename);

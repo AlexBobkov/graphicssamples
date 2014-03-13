@@ -15,19 +15,19 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
-#include "Shader.h"
+#include "Material.h"
 
 /**
 	Типовой шейдер. Применяется для обычных 3д-моделей. Реализует освещение и текстурирование. Инкапсулирует работу с шейдерами: создание шейдера, хранение uniform-переменных
 */
-class CommonShader: public Shader
+class CommonMaterial: public Material
 {
 public:
-	CommonShader();
+	CommonMaterial();
 
 	void initialize() override;
 	void applyCommonUniforms() override;
-	void applyMaterialUniforms() override;
+	void applyModelSpecificUniforms() override;
 
 	void setTime(float time) { _time = time; }
 

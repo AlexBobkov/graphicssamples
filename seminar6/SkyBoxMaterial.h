@@ -15,19 +15,19 @@
 #include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
-#include "Shader.h"
+#include "Material.h"
 
 /**
 	Шейдер для фонового куба, который рисуется с помощью кубической текстуры
 */
-class SkyBoxShader: public Shader
+class SkyBoxMaterial: public Material
 {
 public:
-	SkyBoxShader();
+	SkyBoxMaterial();
 
 	void initialize() override;
 	void applyCommonUniforms() override;
-	void applyMaterialUniforms() override;
+	void applyModelSpecificUniforms() override;
 
 	void setCameraPos(glm::vec3& vec) { _cameraPos = vec; }
 	void setViewMatrix(glm::mat4& mat) { _viewMatrix = mat; }
