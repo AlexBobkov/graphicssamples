@@ -6,12 +6,13 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 5;
+int demoNum = 1;
 //1 - простая кубическая текстура
 //2 - 2 камеры
 //3 - 2 плоскости (z-fighting)
 //4 - face culling
 //5 - blending
+//6 - stencil test
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -33,6 +34,8 @@ void Application::initContext()
 		std::cerr << "ERROR: could not start GLFW3\n";		
 		exit(1);
 	} 
+
+	glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
 	_window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
 	if (!_window)
@@ -94,7 +97,7 @@ void Application::draw()
 	_mainCamera.setWindowSize(width, height);
 
 	glViewport(0, 0, width, height);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	
 
 	drawBackground(_mainCamera);
 	drawScene(_mainCamera);
@@ -222,6 +225,14 @@ void Application::drawScene(Camera& camera)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	}
 
+	if (demoNum == 6)
+	{
+		glEnable(GL_STENCIL_TEST);
+
+		glStencilFunc(GL_ALWAYS, 1, 1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+	}
+
 	//====== Сфера ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
@@ -243,6 +254,12 @@ void Application::drawScene(Camera& camera)
 	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
 	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу	
 #endif
+
+	if (demoNum == 6)
+	{
+		glStencilFunc(GL_NOTEQUAL, 1, 1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	}
 
 	//====== Плоскость YZ ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -278,6 +295,7 @@ void Application::drawScene(Camera& camera)
 		//glEnable(GL_DEPTH_TEST);
 	}
 
+	glDisable(GL_STENCIL_TEST);
 	glDisable(GL_BLEND);
 	glDisable(GL_CULL_FACE);
 }
