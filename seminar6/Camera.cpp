@@ -59,7 +59,7 @@ void Camera::update()
 	}
 
 	_thetaAng = glm::clamp(_thetaAng, -(float)M_PI * 0.45f, (float)M_PI * 0.45f);
-	_distance = glm::clamp(_distance, 0.5f, 50.0f);
+	_distance = glm::clamp(_distance, 0.5f, 500.0f);
 	
 	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
 	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));

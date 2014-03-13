@@ -339,10 +339,8 @@ Mesh Mesh::makeCube(float size)
 	return Mesh(cubeVao, numVertices);
 }
 
-Mesh Mesh::makePlane()
+Mesh Mesh::makePlane(float size)
 {
-	float size = 0.8f;
-
 	std::vector<float> vertices;	
 	std::vector<float> normals;
 	std::vector<float> texcoords;

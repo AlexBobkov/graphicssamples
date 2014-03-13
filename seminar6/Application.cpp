@@ -6,6 +6,11 @@
 #include "Application.h"
 #include "Texture.h"
 
+int demoNum = 3;
+//1 - простая кубическая текстура
+//2 - 2 камеры
+//3 - 2 плоскости (z-fighting)
+
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -50,7 +55,7 @@ void Application::initGL()
 	std::cout << "OpenGL version supported: " << version << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LEQUAL);
 }
 
 void Application::makeScene()
@@ -82,15 +87,22 @@ void Application::draw()
 	//Настройки размеров (если пользователь изменил размеры окна)
 	int width, height;
 	glfwGetFramebufferSize(_window, &width, &height);
-	glViewport(0, 0, width, height);
 	_mainCamera.setWindowSize(width, height);
 
+	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
-	drawBackground(_mainCamera);
+	//drawBackground(_mainCamera);
 	drawScene(_mainCamera);
 
-	glfwSwapBuffers(_window);	
+	if (demoNum == 2)
+	{
+		glViewport(0, 0, 200, 200);
+		glClear(GL_DEPTH_BUFFER_BIT);	
+		drawScene(_secondCamera);
+	}
+
+	glfwSwapBuffers(_window);
 }
 
 void Application::makeSceneImplementation()
@@ -109,8 +121,8 @@ void Application::makeSceneImplementation()
 	_cubeTexId = Texture::loadCubeTexture("images/cube");
 
 	//загрузка 3д-моделей
-	_sphere = Mesh::makeSphere(0.8f);		
-	_plane = Mesh::makePlane();
+	_sphere = Mesh::makeSphere(0.8f);
+	_plane = Mesh::makePlane(0.8f);
 	_chess = Mesh::makeChessPlane();
 	_cube = Mesh::makeCube(10.0f);	
 
@@ -139,7 +151,16 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
-	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
+	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	//инициализируем 2ю камеру для примера с 2мя камерами
+	glm::vec3 secondCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
+	glm::mat4 secondViewMatrix = glm::lookAt(secondCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 secondProjMatrix = glm::perspective(45.0f, 1.0f, 0.1f, 100.f);
+
+	_secondCamera.setCameraPos(secondCameraPos);
+	_secondCamera.setViewMatrix(secondViewMatrix);
+	_secondCamera.setProjMatrix(secondProjMatrix);
 }
 
 void Application::drawBackground(Camera& camera)
@@ -210,18 +231,18 @@ void Application::drawScene(Camera& camera)
 	glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
 	glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
 
-#if 0
-	//====== Плоскость XY ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _chessTexId);
-	glBindSampler(0, _repeatSampler);
+	if (demoNum == 3)
+	{
+		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _worldTexId);
+		glBindSampler(0, _sampler);
 
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::mat4(1.0));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();
+		_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+		_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0001f, -1.0f, 0.0f)));
+		_commonMaterial.setShininess(100.0f);
+		_commonMaterial.applyModelSpecificUniforms();
 
-	glBindVertexArray(_chess.getVao()); //Подключаем VertexArray для плоскости
-	glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
-#endif
+		glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
+		glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
+	}
 }

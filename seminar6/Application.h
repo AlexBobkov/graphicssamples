@@ -51,6 +51,7 @@ protected:
 	SkyBoxMaterial _skyBoxMaterial;
 
 	Camera _mainCamera;
+	Camera _secondCamera;
 
 	//параметры освещения
 	glm::vec4 _lightPos; //in world space
