@@ -2,6 +2,7 @@ SET(APP_NAME seminar6)
 
 SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp	
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Meshes.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
@@ -12,6 +13,7 @@ SET(SRC_FILES
 
 SET(HEADER_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.h

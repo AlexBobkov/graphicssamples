@@ -17,6 +17,7 @@
 
 #include "CommonMaterial.h"
 #include "SkyBoxMaterial.h"
+#include "Camera.h"
 
 class Application
 {
@@ -40,19 +41,7 @@ public:
 	void draw();
 
 	//Обновление
-	void update();
-
-	//Функции для управления положением камеры
-	void rotateLeft(bool b) { _rotateLeft = b; }
-	void rotateRight(bool b) { _rotateRight = b; }
-
-	void rotateUp(bool b) { _rotateUp = b; }
-	void rotateDown(bool b) { _rotateDown = b; }
-
-	void zoomUp(bool b) { _zoomUp = b; }
-	void zoomDown(bool b) { _zoomDown = b; }
-
-	void homePos();
+	void update();	
 
 protected:	
 	void initData();
@@ -72,11 +61,9 @@ protected:
 	CommonMaterial _commonMaterial;	
 	SkyBoxMaterial _skyBoxMaterial;
 
+	Camera _mainCamera;
+
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
-	glm::mat4 _viewMatrix;
-	glm::mat4 _projMatrix;
-	glm::vec3 _cameraPos;
-	
 	glm::vec4 _lightPos; //in world space
 	glm::vec3 _ambientColor;
 	glm::vec3 _diffuseColor;
@@ -115,20 +102,7 @@ protected:
 	int _chessNumTris;
 
 	float _oldTime;
-
-	//Состояние виртуальной камеры
-	bool _rotateLeft;
-	bool _rotateRight;
-	float _phiAng;
-
-	bool _rotateUp;
-	bool _rotateDown;
-	float _thetaAng;
-
-	bool _zoomUp;
-	bool _zoomDown;
-	float _distance;
-				
+					
 	void makeSceneImplementation();
 	void drawImplementation();
 };

@@ -8,7 +8,7 @@
 //Функция обратного вызова для обработки нажатий на клавиатуре
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	Application* app = (Application*)glfwGetWindowUserPointer(window);
+	Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
 
 	if (action == GLFW_PRESS)
 	{
@@ -18,58 +18,58 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_A)
 		{
-			app->rotateLeft(true);
+			camera->rotateLeft(true);
 		}
 		else if (key == GLFW_KEY_D)
 		{
-			app->rotateRight(true);
+			camera->rotateRight(true);
 		}
 		else if (key == GLFW_KEY_W)
 		{
-			app->rotateUp(true);
+			camera->rotateUp(true);
 		}
 		else if (key == GLFW_KEY_S)
 		{
-			app->rotateDown(true);
+			camera->rotateDown(true);
 		}
 		else if (key == GLFW_KEY_R)
 		{
-			app->zoomUp(true);
+			camera->zoomUp(true);
 		}
 		else if (key == GLFW_KEY_F)
 		{
-			app->zoomDown(true);
+			camera->zoomDown(true);
 		}
 		else if (key == GLFW_KEY_SPACE)
 		{
-			app->homePos();
+			camera->homePos();
 		}
 	}
 	else if (action == GLFW_RELEASE)
 	{
 		if (key == GLFW_KEY_A)
 		{
-			app->rotateLeft(false);
+			camera->rotateLeft(false);
 		}
 		else if (key == GLFW_KEY_D)
 		{
-			app->rotateRight(false);
+			camera->rotateRight(false);
 		}
 		else if (key == GLFW_KEY_W)
 		{
-			app->rotateUp(false);
+			camera->rotateUp(false);
 		}
 		else if (key == GLFW_KEY_S)
 		{
-			app->rotateDown(false);
+			camera->rotateDown(false);
 		}
 		else if (key == GLFW_KEY_R)
 		{
-			app->zoomUp(false);
+			camera->zoomUp(false);
 		}
 		else if (key == GLFW_KEY_F)
 		{
-			app->zoomDown(false);
+			camera->zoomDown(false);
 		}
 	}
 }
@@ -77,16 +77,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 //======================================
 
 Application::Application():
-_oldTime(0.0f),
-	_rotateLeft(false),
-	_rotateRight(false),
-	_phiAng(0.0f),
-	_rotateUp(false),
-	_rotateDown(false),
-	_thetaAng(0.0f),
-	_zoomUp(false),
-	_zoomDown(false),
-	_distance(5.0f)
+_oldTime(0.0f)
 {
 }
 
@@ -112,7 +103,7 @@ void Application::initContext()
 	}
 	glfwMakeContextCurrent(_window);
 
-	glfwSetWindowUserPointer(_window, this); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
+	glfwSetWindowUserPointer(_window, &_mainCamera); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
 }
 
 void Application::initGL()
@@ -155,7 +146,7 @@ void Application::draw()
 	glViewport(0, 0, width, height);		
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	_projMatrix = glm::perspective(45.0f, (float)width / height, 0.1f, 100.f);
+	_mainCamera.setWindowSize(width, height);
 
 	drawImplementation();
 
@@ -164,53 +155,7 @@ void Application::draw()
 
 void Application::update()
 {
-	float dt = glfwGetTime() - _oldTime;
-	_oldTime = glfwGetTime();
-
-	float speed = 1.0f;
-
-	if (_rotateLeft)
-	{
-		_phiAng -= speed * dt;
-	}
-	if (_rotateRight)
-	{
-		_phiAng += speed * dt;
-	}
-	if (_rotateUp)
-	{
-		_thetaAng += speed * dt;
-	}
-	if (_rotateDown)
-	{
-		_thetaAng -= speed * dt;
-	}
-	if (_zoomUp)
-	{
-		_distance += _distance * dt;
-	}
-	if (_zoomDown)
-	{
-		_distance -= _distance * dt;
-	}
-
-	_thetaAng = glm::clamp(_thetaAng, -(float)M_PI * 0.45f, (float)M_PI * 0.45f);
-	_distance = glm::clamp(_distance, 0.5f, 50.0f);
-	
-	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
-
-	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-}
-
-void Application::homePos()
-{
-	_phiAng = 0.0;
-	_thetaAng = M_PI * 0.05;
-	_distance = 20.0;
-
-	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
-
-	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_mainCamera.update();
 }
 
 void Application::makeSceneImplementation()
@@ -244,10 +189,6 @@ void Application::makeSceneImplementation()
 
 void Application::initData()
 {
-	//Инициализация матриц
-	_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	_projMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
-
 	//Инициализация значений переменных освщения
 	_lightPos = glm::vec4(2.0f, 2.0f, 0.5f, 1.0f);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
@@ -281,9 +222,9 @@ void Application::drawImplementation()
 	//====== Фоновый куб ======
 	glUseProgram(_skyBoxMaterial.getProgramId()); //Подключаем шейдер для фонового куба
 
-	_skyBoxMaterial.setCameraPos(_cameraPos);
-	_skyBoxMaterial.setViewMatrix(_viewMatrix);
-	_skyBoxMaterial.setProjectionMatrix(_projMatrix);	
+	_skyBoxMaterial.setCameraPos(_mainCamera.getCameraPos());
+	_skyBoxMaterial.setViewMatrix(_mainCamera.getViewMatrix());
+	_skyBoxMaterial.setProjectionMatrix(_mainCamera.getProjMatrix());	
 	_skyBoxMaterial.applyCommonUniforms();	
 	
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -304,8 +245,8 @@ void Application::drawImplementation()
 	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
 
 	_commonMaterial.setTime((float)glfwGetTime());
-	_commonMaterial.setViewMatrix(_viewMatrix);
-	_commonMaterial.setProjectionMatrix(_projMatrix);
+	_commonMaterial.setViewMatrix(_mainCamera.getViewMatrix());
+	_commonMaterial.setProjectionMatrix(_mainCamera.getProjMatrix());
 
 	_commonMaterial.setLightPos(_lightPos);
 	_commonMaterial.setAmbientColor(_ambientColor);
