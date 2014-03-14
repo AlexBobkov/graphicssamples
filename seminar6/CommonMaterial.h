@@ -31,14 +31,14 @@ public:
 
 	void setTime(float time) { _time = time; }
 
-	void setModelMatrix(glm::mat4& mat) { _modelMatrix = mat; }
-	void setViewMatrix(glm::mat4& mat) { _viewMatrix = mat; }
-	void setProjectionMatrix(glm::mat4& mat) { _projMatrix = mat; }	
+	void setModelMatrix(glm::mat4 mat) { _modelMatrix = mat; }
+	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
+	void setProjectionMatrix(glm::mat4 mat) { _projMatrix = mat; }	
 
-	void setLightPos(glm::vec4& vec) { _lightPos = vec; }	
-	void setAmbientColor(glm::vec3& vec) { _ambientColor = vec; }	
-	void setDiffuseColor(glm::vec3& vec) { _diffuseColor = vec; }	
-	void setSpecularColor(glm::vec3& vec) { _specularColor = vec; }	
+	void setLightPos(glm::vec4 vec) { _lightPos = vec; }	
+	void setAmbientColor(glm::vec3 vec) { _ambientColor = vec; }	
+	void setDiffuseColor(glm::vec3 vec) { _diffuseColor = vec; }	
+	void setSpecularColor(glm::vec3 vec) { _specularColor = vec; }	
 
 	void setShininess(float s) { _shininess = s; }
 

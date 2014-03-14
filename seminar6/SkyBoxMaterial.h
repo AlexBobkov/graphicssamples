@@ -29,9 +29,9 @@ public:
 	void applyCommonUniforms() override;
 	void applyModelSpecificUniforms() override;
 
-	void setCameraPos(glm::vec3& vec) { _cameraPos = vec; }
-	void setViewMatrix(glm::mat4& mat) { _viewMatrix = mat; }
-	void setProjectionMatrix(glm::mat4& mat) { _projMatrix = mat; }	
+	void setCameraPos(glm::vec3 vec) { _cameraPos = vec; }
+	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
+	void setProjectionMatrix(glm::mat4 mat) { _projMatrix = mat; }	
 
 	void setTexUnit(int unit) { _texUnit = unit; }
 	

@@ -13,7 +13,7 @@ GLuint Texture::loadTexture(std::string filename)
 
 	try
 	{
-		std::shared_ptr<glimg::ImageSet> pImageSet;
+		boost::shared_ptr<glimg::ImageSet> pImageSet;
 
 		if (filename.find(".dds") != std::string::npos)
 		{
@@ -54,7 +54,7 @@ GLuint Texture::loadTextureWithMipmaps(std::string filename)
 
 	try
 	{
-		std::shared_ptr<glimg::ImageSet> pImageSet;
+		boost::shared_ptr<glimg::ImageSet> pImageSet;
 		pImageSet.reset(glimg::loaders::dds::LoadFromFile(filename));
 
 		glGenTextures(1, &texId);
@@ -116,7 +116,7 @@ void loadCubeTextureFace(std::string filename, GLenum target)
 {
 	try
 	{
-		std::shared_ptr<glimg::ImageSet> pImageSet;
+		boost::shared_ptr<glimg::ImageSet> pImageSet;
 		pImageSet.reset(glimg::loaders::stb::LoadFromFile(filename));
 
 		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);

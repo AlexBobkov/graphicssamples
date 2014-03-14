@@ -24,13 +24,13 @@ public:
 	Camera();	
 
 	glm::mat4 getViewMatrix() { return _viewMatrix; }  
-	void setViewMatrix(glm::mat4& mat) { _viewMatrix = mat; }
+	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
 
 	glm::mat4 getProjMatrix() { return _projMatrix; }  
-	void setProjMatrix(glm::mat4& mat) { _projMatrix = mat; }
+	void setProjMatrix(glm::mat4 mat) { _projMatrix = mat; }
 
 	glm::vec3 getCameraPos() { return _cameraPos; }  
-	void setCameraPos(glm::vec3& mat) { _cameraPos = mat; }
+	void setCameraPos(glm::vec3 mat) { _cameraPos = mat; }
 
 	void update();
 

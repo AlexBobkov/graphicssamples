@@ -1,6 +1,8 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#include <memory>
+
 #include <glimg/glimg.h>
 
 #include "Application.h"
@@ -13,7 +15,7 @@ GLuint Application::loadTexture(std::string filename)
 
 	try
 	{
-		std::shared_ptr<glimg::ImageSet> pImageSet;
+		boost::shared_ptr<glimg::ImageSet> pImageSet;
 
 		if (filename.find(".dds") != std::string::npos)
 		{
@@ -54,7 +56,7 @@ GLuint Application::loadTextureWithMipmaps(std::string filename)
 
 	try
 	{
-		std::shared_ptr<glimg::ImageSet> pImageSet;
+		boost::shared_ptr<glimg::ImageSet> pImageSet;
 		pImageSet.reset(glimg::loaders::dds::LoadFromFile(filename));
 
 		glGenTextures(1, &texId);
