@@ -11,10 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
-
 /**
 	Содержит cтатические методы для создания текстур
 */

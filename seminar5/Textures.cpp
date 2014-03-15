@@ -36,12 +36,12 @@ GLuint Application::loadTexture(std::string filename)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	catch(glimg::loaders::stb::StbLoaderException& e)
+	catch(glimg::loaders::stb::StbLoaderException&)
 	{
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
 	}
-	catch(glimg::loaders::dds::DdsLoaderException& e)
+	catch(glimg::loaders::dds::DdsLoaderException&)
 	{
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
@@ -74,7 +74,7 @@ GLuint Application::loadTextureWithMipmaps(std::string filename)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, pImageSet->GetMipmapCount() - 1);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-	catch(glimg::loaders::dds::DdsLoaderException& e)
+	catch(glimg::loaders::dds::DdsLoaderException&)
 	{
 		std::cerr << "Failed to load texture " << filename << std::endl;;
 		exit(1);
@@ -90,9 +90,9 @@ GLuint Application::makeCustomTexture()
 
 	std::vector<unsigned char> data;
 
-	for (unsigned int row = 0; row < height; row++)
+	for (int row = 0; row < height; row++)
 	{
-		for (unsigned int column = 0; column < width; column++)
+		for (int column = 0; column < width; column++)
 		{
 			float r, g, b;
 			getColorFromLinearPalette((float)column / width, r, g, b);

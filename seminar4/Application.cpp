@@ -196,7 +196,7 @@ void Application::draw()
 	glViewport(0, 0, width, height);		
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	_projMatrix = glm::perspective(45.0f, (float)width / height, 0.1f, 100.f);
+	_projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 
 	drawImplementation();
 
@@ -292,13 +292,13 @@ void Application::makeSphere()
 	std::vector<float> normals;
 	for (int i = 0; i < M; i++)
 	{
-		float theta = M_PI * i / M;
-		float theta1 = M_PI * (i + 1) / M;
+		float theta = (float)M_PI * i / M;
+		float theta1 = (float)M_PI * (i + 1) / M;
 
 		for (int j = 0; j < N; j++)
 		{
-			float phi = 2.0 * M_PI * j / N;
-			float phi1 = 2.0 * M_PI * (j + 1) / N;
+			float phi = 2.0f * (float)M_PI * j / N;
+			float phi1 = 2.0f * (float)M_PI * (j + 1) / N;
 
 			//Первый треугольник, образующий квад
 			addPoint(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
@@ -657,7 +657,7 @@ void Application::makeShaders()
 	_normalToCameraMatrixUniform = glGetUniformLocation(_shaderProgram, "normalToCameraMatrix");
 	
 	_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	_projMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+	_projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
 
 	//=========================================================
 	//Инициализация uniform-переменных для освещения

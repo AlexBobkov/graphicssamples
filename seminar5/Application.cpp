@@ -159,7 +159,7 @@ void Application::draw()
 	glViewport(0, 0, width, height);		
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	_projMatrix = glm::perspective(45.0f, (float)width / height, 0.1f, 100.f);
+	_projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 
 	drawImplementation();
 
@@ -168,8 +168,8 @@ void Application::draw()
 
 void Application::update()
 {
-	float dt = glfwGetTime() - _oldTime;
-	_oldTime = glfwGetTime();
+	float dt = (float)glfwGetTime() - _oldTime;
+	_oldTime = (float)glfwGetTime();
 
 	float speed = 1.0f;
 
@@ -207,9 +207,9 @@ void Application::update()
 
 void Application::homePos()
 {
-	_phiAng = 0.0;
-	_thetaAng = M_PI * 0.05;
-	_distance = 20.0;
+	_phiAng = 0.0f;
+	_thetaAng = (float)M_PI * 0.05f;
+	_distance = 20.0f;
 
 	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
 
@@ -277,7 +277,7 @@ void Application::initData()
 {
 	//Инициализация матриц
 	_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	_projMatrix = glm::perspective(45.0f, 4.0f / 3.0f, 0.1f, 100.f);
+	_projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
 
 	//Инициализация значений переменных освщения
 	_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0f);
