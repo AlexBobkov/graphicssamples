@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <AntTweakBar.h>
+
 #include "CommonMaterial.h"
 #include "SkyBoxMaterial.h"
 #include "Camera.h"
@@ -28,6 +30,8 @@ public:
 	//Настройка некоторых параметров OpenGL
 	void initGL();
 
+	void initOthers();
+
 	//Создание трехмерной сцены
 	void makeScene();
 		
@@ -39,6 +43,10 @@ public:
 
 	//Обновление
 	void update();	
+
+	Camera& getMainCamera() { return _mainCamera; }
+
+	void setWindowSize(int width, int height);
 
 protected:
 	GLFWwindow* _window;
@@ -78,6 +86,11 @@ protected:
 	Mesh _bunny;
 
 	float _oldTime;
+
+	int _width;
+	int _height;
+
+	TwBar* _bar;
 					
 	void makeSceneImplementation();
 	void drawScene(Camera& camera);

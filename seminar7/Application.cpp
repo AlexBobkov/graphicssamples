@@ -11,13 +11,47 @@ int demoNum = 1;
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+void windowSizeChangedCallback(GLFWwindow* window, int width, int height)
+{
+	Application* app = (Application*)glfwGetWindowUserPointer(window);
+	app->setWindowSize(width, height);
+
+	TwWindowSize(width, height);
+}
+
+void mouseButtonPressedCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	TwEventMouseButtonGLFW(button, action);
+}
+
+void mouseCursosPosCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	TwEventMousePosGLFW(xpos, ypos);
+}
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	TwEventMouseWheelGLFW(xoffset);
+}
+
+void charCallback(GLFWwindow* window, unsigned int c)
+{
+	//TwEventCharGLFW
+}
+
+//==========================================================
+
+
 Application::Application():
-_oldTime(0.0f)
+_oldTime(0.0f),
+	_width(640),
+	_height(480)
 {
 }
 
 Application::~Application()
 {
+	TwTerminate();
 	glfwTerminate();
 }
 
@@ -31,7 +65,7 @@ void Application::initContext()
 
 	glfwWindowHint(GLFW_STENCIL_BITS, 8);
 
-	_window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+	_window = glfwCreateWindow(_width, _height, "Seminar 7", NULL, NULL);
 	if (!_window)
 	{
 		std::cerr << "ERROR: could not open window with GLFW3\n";		
@@ -40,7 +74,7 @@ void Application::initContext()
 	}
 	glfwMakeContextCurrent(_window);
 
-	glfwSetWindowUserPointer(_window, &_mainCamera); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
+	glfwSetWindowUserPointer(_window, this); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова	
 }
 
 void Application::initGL()
@@ -59,6 +93,33 @@ void Application::initGL()
 	glEnable(GL_POLYGON_OFFSET_FILL);	
 }
 
+void Application::initOthers()
+{	
+	TwInit(TW_OPENGL, NULL);
+	TwWindowSize(_width, _height);
+
+	_bar = TwNewBar("TweakBar");
+	TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
+
+	//TwAddVarRW(_bar, "speed", TW_TYPE_FLOAT, &_speed, " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ");
+	TwAddVarRW(_bar, "Color", TW_TYPE_FLOAT, &_diffuseColor.x, "step=0.01");
+
+	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
+	glfwSetMouseButtonCallback(_window, mouseButtonPressedCallback);
+	glfwSetCursorPosCallback(_window, mouseCursosPosCallback);
+	glfwSetScrollCallback(_window, scrollCallback);
+	glfwSetKeyCallback(_window, keyCallback);    
+	glfwSetCharCallback(_window, charCallback);
+}
+
+void Application::setWindowSize(int width, int height)
+{
+	_width = width;
+	_height = height;
+
+	_mainCamera.setWindowSize(_width, _height);
+}
+
 void Application::makeScene()
 {
 	makeSceneImplementation();
@@ -66,8 +127,6 @@ void Application::makeScene()
 
 void Application::run()
 {
-	glfwSetKeyCallback(_window, keyCallback);
-
 	while (!glfwWindowShouldClose(_window))
 	{
 		glfwPollEvents();
@@ -85,16 +144,14 @@ void Application::update()
 
 void Application::draw()
 {
-	//Настройки размеров (если пользователь изменил размеры окна)
-	int width, height;
-	glfwGetFramebufferSize(_window, &width, &height);
-	_mainCamera.setWindowSize(width, height);
-
-	glViewport(0, 0, width, height);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	
+
+	glViewport(0, 0, _width, _height);
 
 	drawBackground(_mainCamera);
 	drawScene(_mainCamera);
+
+	TwDraw();
 
 	glfwSwapBuffers(_window);
 }
@@ -168,7 +225,7 @@ void Application::drawBackground(Camera& camera)
 	_skyBoxMaterial.setViewMatrix(camera.getViewMatrix());
 	_skyBoxMaterial.setProjectionMatrix(camera.getProjMatrix());	
 	_skyBoxMaterial.applyCommonUniforms();	
-	
+
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_CUBE_MAP, _cubeTexId);
 	glBindSampler(0, _cubeSampler);
@@ -210,7 +267,7 @@ void Application::drawScene(Camera& camera)
 	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	_commonMaterial.setShininess(100.0f);
 	_commonMaterial.applyModelSpecificUniforms();
-	
+
 	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
 	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
 
@@ -240,4 +297,8 @@ void Application::drawScene(Camera& camera)
 
 	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray для плоскости
 	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем плоскость
+
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
 }

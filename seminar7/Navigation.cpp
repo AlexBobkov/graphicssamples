@@ -1,12 +1,15 @@
 #include <GL/glew.h> // include GLEW and new version of GL on Windows
 #include <GLFW/glfw3.h> // GLFW helper library
 
-#include "Camera.h"
+#include <AntTweakBar.h>
+
+#include "Application.h"
 
 //Функция обратного вызова для обработки нажатий на клавиатуре
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	Camera* camera = (Camera*)glfwGetWindowUserPointer(window);
+	Application* app = (Application*)glfwGetWindowUserPointer(window);
+	Camera& camera = app->getMainCamera();
 
 	if (action == GLFW_PRESS)
 	{
@@ -16,58 +19,60 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		}
 		else if (key == GLFW_KEY_A)
 		{
-			camera->rotateLeft(true);
+			camera.rotateLeft(true);
 		}
 		else if (key == GLFW_KEY_D)
 		{
-			camera->rotateRight(true);
+			camera.rotateRight(true);
 		}
 		else if (key == GLFW_KEY_W)
 		{
-			camera->rotateUp(true);
+			camera.rotateUp(true);
 		}
 		else if (key == GLFW_KEY_S)
 		{
-			camera->rotateDown(true);
+			camera.rotateDown(true);
 		}
 		else if (key == GLFW_KEY_R)
 		{
-			camera->zoomUp(true);
+			camera.zoomUp(true);
 		}
 		else if (key == GLFW_KEY_F)
 		{
-			camera->zoomDown(true);
+			camera.zoomDown(true);
 		}
 		else if (key == GLFW_KEY_SPACE)
 		{
-			camera->homePos();
+			camera.homePos();
 		}
 	}
 	else if (action == GLFW_RELEASE)
 	{
 		if (key == GLFW_KEY_A)
 		{
-			camera->rotateLeft(false);
+			camera.rotateLeft(false);
 		}
 		else if (key == GLFW_KEY_D)
 		{
-			camera->rotateRight(false);
+			camera.rotateRight(false);
 		}
 		else if (key == GLFW_KEY_W)
 		{
-			camera->rotateUp(false);
+			camera.rotateUp(false);
 		}
 		else if (key == GLFW_KEY_S)
 		{
-			camera->rotateDown(false);
+			camera.rotateDown(false);
 		}
 		else if (key == GLFW_KEY_R)
 		{
-			camera->zoomUp(false);
+			camera.zoomUp(false);
 		}
 		else if (key == GLFW_KEY_F)
 		{
-			camera->zoomDown(false);
+			camera.zoomDown(false);
 		}
 	}
+
+	TwEventKeyGLFW(key, action);
 }
