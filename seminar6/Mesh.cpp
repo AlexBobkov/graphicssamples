@@ -339,7 +339,7 @@ Mesh Mesh::makeCube(float size)
 	return Mesh(cubeVao, numVertices);
 }
 
-Mesh Mesh::makePlane(float size)
+Mesh Mesh::makeYZPlane(float size)
 {
 	std::vector<float> vertices;	
 	std::vector<float> normals;
@@ -397,11 +397,8 @@ Mesh Mesh::makePlane(float size)
 	return Mesh(planeVao, numVertices);
 }
 
-Mesh Mesh::makeChessPlane()
+Mesh Mesh::makeGroundPlane(float size, float numTiles)
 {
-	float size = 100.0f;
-	float N = 100.0f;
-
 	std::vector<float> vertices;	
 	std::vector<float> normals;
 	std::vector<float> texcoords;
@@ -415,9 +412,9 @@ Mesh Mesh::makeChessPlane()
 	addVec3(normals, 0.0, 0.0, 1.0);
 	addVec3(normals, 0.0, 0.0, 1.0);
 
-	addVec2(texcoords, -N, N);
-	addVec2(texcoords, N, N);
-	addVec2(texcoords, N, -N);
+	addVec2(texcoords, -numTiles, numTiles);
+	addVec2(texcoords, numTiles, numTiles);
+	addVec2(texcoords, numTiles, -numTiles);
 
 	//front 2
 	addVec3(vertices, -size, size, 0.0);
@@ -428,9 +425,9 @@ Mesh Mesh::makeChessPlane()
 	addVec3(normals, 0.0, 0.0, 1.0);
 	addVec3(normals, 0.0, 0.0, 1.0);
 
-	addVec2(texcoords, -N, N);
-	addVec2(texcoords, N, -N);
-	addVec2(texcoords, -N, -N);
+	addVec2(texcoords, -numTiles, numTiles);
+	addVec2(texcoords, numTiles, -numTiles);
+	addVec2(texcoords, -numTiles, -numTiles);
 
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());

@@ -130,8 +130,8 @@ void Application::makeSceneImplementation()
 
 	//загрузка 3д-моделей
 	_sphere = Mesh::makeSphere(0.8f);
-	_plane = Mesh::makePlane(0.8f);
-	_chess = Mesh::makeChessPlane();
+	_plane = Mesh::makeYZPlane(0.8f);
+	_chess = Mesh::makeGroundPlane(100.0f, 100.0f);
 	_cube = Mesh::makeCube(10.0f);	
 
 	//Инициализация значений переменных освщения

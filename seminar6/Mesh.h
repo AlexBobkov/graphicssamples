@@ -26,8 +26,8 @@ public:
 
 	static Mesh makeSphere(float radius);	
 	static Mesh makeCube(float size);
-	static Mesh makePlane(float size);
-	static Mesh makeChessPlane();
+	static Mesh makeYZPlane(float size);
+	static Mesh makeGroundPlane(float size, float numTiles);	
 
 protected:
 	GLuint _vao;
