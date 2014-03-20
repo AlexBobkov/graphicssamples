@@ -16,6 +16,7 @@
 #include "CommonMaterial.h"
 #include "SkyBoxMaterial.h"
 #include "ScreenAlignedQuadMaterial.h"
+#include "ProjectionTextureMaterial.h"
 #include "Camera.h"
 #include "Mesh.h"
 
@@ -55,9 +56,11 @@ protected:
 	CommonMaterial _commonMaterial;	
 	SkyBoxMaterial _skyBoxMaterial;
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
+	ProjectionTextureMaterial _projTextureMaterial;
 
 	Camera _mainCamera;
 	Camera _secondCamera;
+	Camera _projCamera;
 
 	//параметры освещения
 	float _lightTheta;
@@ -67,6 +70,10 @@ protected:
 	glm::vec3 _ambientColor;
 	glm::vec3 _diffuseColor;
 	glm::vec3 _specularColor;
+
+	float _projTheta;
+	float _projPhi;
+	float _projR;
 
 	//идентификаторы текстурных объектов
 	GLuint _worldTexId;
@@ -88,7 +95,7 @@ protected:
 	Mesh _cube;
 	Mesh _backgroundCube;
 	Mesh _plane;
-	Mesh _chess;
+	Mesh _ground;
 	Mesh _bunny;
 	Mesh _screenQuad;
 
@@ -101,5 +108,6 @@ protected:
 					
 	void makeSceneImplementation();
 	void drawScene(Camera& camera);
+	void drawProjScene(Camera& camera);
 	void drawBackground(Camera& camera);
 };

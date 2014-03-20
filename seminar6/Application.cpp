@@ -164,7 +164,7 @@ void Application::makeSceneImplementation()
 	//инициализируем 2ю камеру для примера с 2мя камерами
 	glm::vec3 secondCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
 	glm::mat4 secondViewMatrix = glm::lookAt(secondCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 secondProjMatrix = glm::perspective(45.0f, 1.0f, 0.1f, 100.f);
+	glm::mat4 secondProjMatrix = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.f);
 
 	_secondCamera.setCameraPos(secondCameraPos);
 	_secondCamera.setViewMatrix(secondViewMatrix);

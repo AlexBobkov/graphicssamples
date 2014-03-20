@@ -51,9 +51,12 @@ Application::Application():
 _oldTime(0.0f),
 	_width(1280),
 	_height(800),
-	_lightTheta(0.7),
-	_lightPhi(0.7),
-	_lightR(10.0)
+	_lightTheta(0.7f),
+	_lightPhi(0.7f),
+	_lightR(10.0f),
+	_projTheta(0.0f),
+	_projPhi(0.0f),
+	_projR(10.0f)
 {
 }
 
@@ -112,6 +115,12 @@ void Application::initOthers()
 	TwAddVarRW(_bar, "Color.z", TW_TYPE_FLOAT, &_diffuseColor.z, "min=0 max=1 step=0.01");
 	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
 	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "step=0.01");
+	
+	if (demoNum == 3)
+	{
+		TwAddVarRW(_bar, "Projector phi", TW_TYPE_FLOAT, &_projPhi, "step=0.01");
+		TwAddVarRW(_bar, "Projector theta", TW_TYPE_FLOAT, &_projTheta, "step=0.01");
+	}
 
 	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
 	glfwSetMouseButtonCallback(_window, mouseButtonPressedCallback);
@@ -149,6 +158,7 @@ void Application::run()
 void Application::update()
 {
 	_mainCamera.update();
+	_projCamera.update();
 }
 
 void Application::makeSceneImplementation()
@@ -157,6 +167,7 @@ void Application::makeSceneImplementation()
 	_commonMaterial.initialize();
 	_skyBoxMaterial.initialize();
 	_screenAlignedMaterial.initialize();
+	_projTextureMaterial.initialize();
 
 	//загрузка текстур
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -171,7 +182,7 @@ void Application::makeSceneImplementation()
 	//загрузка 3д-моделей
 	_sphere = Mesh::makeSphere(0.8f);
 	_plane = Mesh::makeYZPlane(0.8f);
-	_chess = Mesh::makeGroundPlane(100.0f, 100.0f);
+	_ground = Mesh::makeGroundPlane(5.0f, 5.0f);
 	_cube = Mesh::makeCube(0.8f);
 	_backgroundCube = Mesh::makeCube(10.0f);
 	_bunny = Mesh::loadFromFile("models/bunny.obj");
@@ -207,11 +218,19 @@ void Application::makeSceneImplementation()
 	//инициализируем 2ю камеру для примера с 2мя камерами
 	glm::vec3 secondCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
 	glm::mat4 secondViewMatrix = glm::lookAt(secondCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 secondProjMatrix = glm::perspective(45.0f, 1.0f, 0.1f, 100.f);
+	glm::mat4 secondProjMatrix = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.f);
 
 	_secondCamera.setCameraPos(secondCameraPos);
 	_secondCamera.setViewMatrix(secondViewMatrix);
 	_secondCamera.setProjMatrix(secondProjMatrix);
+
+	//инициализируем проектор
+	glm::vec3 projCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
+	glm::mat4 projViewMatrix = glm::lookAt(projCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 projProjMatrix = glm::perspective(glm::radians(15.0f), 1.0f, 0.1f, 100.f);
+		
+	_projCamera.setViewMatrix(projViewMatrix);
+	_projCamera.setProjMatrix(projProjMatrix);
 }
 
 void Application::draw()
@@ -221,7 +240,14 @@ void Application::draw()
 	glViewport(0, 0, _width, _height);
 
 	//drawBackground(_mainCamera);
-	drawScene(_mainCamera);
+	if (demoNum == 3)
+	{
+		drawProjScene(_mainCamera);
+	}
+	else
+	{
+		drawScene(_mainCamera);
+	}
 
 	TwDraw();
 
@@ -333,6 +359,81 @@ void Application::drawScene(Camera& camera)
 		glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray для куба
 		glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем куба
 	}
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
+}
+
+void Application::drawProjScene(Camera& camera)
+{
+	//====== Остальные объекты ======	
+	glUseProgram(_projTextureMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+
+	_projTextureMaterial.setTime((float)glfwGetTime());
+	_projTextureMaterial.setViewMatrix(camera.getViewMatrix());
+	_projTextureMaterial.setProjectionMatrix(camera.getProjMatrix());
+
+	glm::vec3 projPos = glm::vec3(glm::cos(_projPhi) * glm::cos(_projTheta) * _projR, glm::sin(_projPhi) * glm::cos(_projTheta) * _projR, glm::sin(_projTheta) * _projR);
+	glm::mat4 projViewMatrix = glm::lookAt(projPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));		
+	_projCamera.setViewMatrix(projViewMatrix);
+
+	_projTextureMaterial.setProjViewMatrix(_projCamera.getViewMatrix());
+	_projTextureMaterial.setProjProjectionMatrix(_projCamera.getProjMatrix());
+
+	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
+
+	_projTextureMaterial.setLightPos(_lightPos);
+	_projTextureMaterial.setAmbientColor(_ambientColor);
+	_projTextureMaterial.setDiffuseColor(_diffuseColor);
+	_projTextureMaterial.setSpecularColor(_specularColor);
+
+	_projTextureMaterial.applyCommonUniforms();
+
+	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
+	glBindTexture(GL_TEXTURE_2D, _worldTexId);
+	glBindSampler(1, _sampler);
+
+	//====== Сфера ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_projTextureMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_projTextureMaterial.setProjTexUnit(1); //текстурный юнит 1
+	_projTextureMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	_projTextureMaterial.setShininess(100.0f);
+	_projTextureMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+
+	//====== Куб ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_projTextureMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_projTextureMaterial.setProjTexUnit(1); //текстурный юнит 1
+	_projTextureMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	_projTextureMaterial.setShininess(100.0f);
+	_projTextureMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
+	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куба
+
+	//====== Плоскость земли ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_projTextureMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_projTextureMaterial.setProjTexUnit(1); //текстурный юнит 1
+	_projTextureMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	_projTextureMaterial.setShininess(100.0f);
+	_projTextureMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray для куба
+	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем куба
 
 	glBindSampler(0, 0);
 	glUseProgram(0);
