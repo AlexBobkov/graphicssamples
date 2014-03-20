@@ -11,8 +11,8 @@ CommonMaterial::CommonMaterial()
 
 void CommonMaterial::initialize()
 {
-	std::string vertFilename = "shaders6/common.vert";
-	std::string fragFilename = "shaders6/common.frag";
+	std::string vertFilename = "shaders7/common.vert";
+	std::string fragFilename = "shaders7/common.frag";
 
 	_programId = makeShaderProgram(vertFilename, fragFilename);
 		

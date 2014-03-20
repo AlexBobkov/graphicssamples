@@ -7,6 +7,11 @@
 #include "Texture.h"
 
 int demoNum = 1;
+//1 - Assimp and AntTweakBar demo
+//2 - screen aligned quad
+//3 - projective texture
+//4 - copy texture
+//5 - framebuffer
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -44,8 +49,11 @@ void charCallback(GLFWwindow* window, unsigned int c)
 
 Application::Application():
 _oldTime(0.0f),
-	_width(640),
-	_height(480)
+	_width(1280),
+	_height(800),
+	_lightTheta(0.0),
+	_lightPhi(0.0),
+	_lightR(10.0)
 {
 }
 
@@ -101,8 +109,9 @@ void Application::initOthers()
 	_bar = TwNewBar("TweakBar");
 	TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
 
-	//TwAddVarRW(_bar, "speed", TW_TYPE_FLOAT, &_speed, " label='Rot speed' min=0 max=2 step=0.01 keyIncr=s keyDecr=S help='Rotation speed (turns/second)' ");
-	TwAddVarRW(_bar, "Color", TW_TYPE_FLOAT, &_diffuseColor.x, "step=0.01");
+	TwAddVarRW(_bar, "Color.z", TW_TYPE_FLOAT, &_diffuseColor.z, "min=0 max=1 step=0.01");
+	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
+	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "step=0.01");
 
 	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
 	glfwSetMouseButtonCallback(_window, mouseButtonPressedCallback);
@@ -148,7 +157,7 @@ void Application::draw()
 
 	glViewport(0, 0, _width, _height);
 
-	drawBackground(_mainCamera);
+	//drawBackground(_mainCamera);
 	drawScene(_mainCamera);
 
 	TwDraw();
@@ -250,6 +259,8 @@ void Application::drawScene(Camera& camera)
 	_commonMaterial.setViewMatrix(camera.getViewMatrix());
 	_commonMaterial.setProjectionMatrix(camera.getProjMatrix());
 
+	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
+
 	_commonMaterial.setLightPos(_lightPos);
 	_commonMaterial.setAmbientColor(_ambientColor);
 	_commonMaterial.setDiffuseColor(_diffuseColor);
@@ -257,47 +268,51 @@ void Application::drawScene(Camera& camera)
 
 	_commonMaterial.applyCommonUniforms();
 
-#if 0
-	//====== Сфера ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
+	if (demoNum == 1)
+	{
+		//====== Кролик ======
+		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _brickTexId);
+		glBindSampler(0, _sampler);
 
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();
+		_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+		_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+		_commonMaterial.setShininess(100.0f);
+		_commonMaterial.applyModelSpecificUniforms();	
 
-	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+		glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray для плоскости
+		glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем плоскость
+	}
 
-	//====== Плоскость YZ ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
 
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();
+	if (demoNum != 1)
+	{
+		//====== Сфера ======
+		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _brickTexId);
+		glBindSampler(0, _sampler);
 
-	glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
-	glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
-#endif
+		_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+		_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+		_commonMaterial.setShininess(100.0f);
+		_commonMaterial.applyModelSpecificUniforms();
 
-	//====== Кролик ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
+		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
 
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();	
+		//====== Плоскость YZ ======
+		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _brickTexId);
+		glBindSampler(0, _sampler);
 
-	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray для плоскости
-	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем плоскость
+		_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+		_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+		_commonMaterial.setShininess(100.0f);
+		_commonMaterial.applyModelSpecificUniforms();
 
+		glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
+		glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
+	}
 
 	glBindSampler(0, 0);
 	glUseProgram(0);
