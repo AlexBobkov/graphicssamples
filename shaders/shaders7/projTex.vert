@@ -11,6 +11,7 @@ uniform mat3 normalToCameraMatrix;
 //стандартные матрицы для проектора
 uniform mat4 projViewMatrix; //из мировой в систему координат камеры
 uniform mat4 projProjectionMatrix; //из системы координат камеры в усеченные координаты
+uniform mat4 projScaleBiasMatrix;
 
 uniform vec4 lightPos; //положение источника света в мировой системе координат (для точечного источника)
 
@@ -23,7 +24,7 @@ out vec4 lightPosCamSpace; //положение источника света в
 out vec4 posCamSpace; //координаты вершины в системе координат камеры
 
 out vec2 interpTc; //выходные текстурные координаты
-out vec2 interProjTc;
+out vec4 interProjTc;
 
 void main()
 {
@@ -35,7 +36,5 @@ void main()
 
 	interpTc = tc; //просто копируем
 
-	vec4 projSpace = projProjectionMatrix * projViewMatrix * modelMatrix * vec4(vp, 1.0);
-	projSpace /= projSpace.w;
-	interProjTc = (projSpace.xy + 1.0) * 0.5;
+	interProjTc = projScaleBiasMatrix * projProjectionMatrix * projViewMatrix * modelMatrix * vec4(vp, 1.0);	
 };

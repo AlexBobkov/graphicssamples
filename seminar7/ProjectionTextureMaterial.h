@@ -58,7 +58,8 @@ protected:
 	GLuint _normalToCameraMatrixUniform;
 
 	GLuint _projViewMatrixUniform;
-	GLuint _projProjMatrixUniform;	
+	GLuint _projProjMatrixUniform;
+	GLuint _projScaleBiasMatrixUniform;
 	
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
@@ -80,6 +81,7 @@ protected:
 
 	glm::mat4 _projViewMatrix;
 	glm::mat4 _projProjMatrix;
+	glm::mat4 _projScaleBiasMatrix;
 	
 	//параметры освещения
 	glm::vec4 _lightPos; //in world space

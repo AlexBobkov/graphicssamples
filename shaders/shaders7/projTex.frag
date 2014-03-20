@@ -13,14 +13,19 @@ in vec4 lightPosCamSpace; //положение источника света в 
 in vec4 posCamSpace; //координаты вершины в системе координат камеры (интерполированы между вершинами треугольника)
 
 in vec2 interpTc;
-in vec2 interProjTc;
+in vec4 interProjTc;
 
 out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
 	vec3 diffuseMaterial = texture(diffuseTex, interpTc).rgb; //читаем из текстуры
-	vec3 projColor = texture(projTex, interProjTc).rgb; //читаем из текстуры
+
+	vec4 projTc = interProjTc;		
+	projTc.xyz /= projTc.w;
+	vec3 projColor = texture(projTex, projTc.xy).rgb; //читаем из текстуры
+
+	//vec3 projColor = textureProj(projTex, interProjTc).rgb; //читаем из текстуры
 
 	vec3 lightDirCamSpace = lightPosCamSpace.xyz - posCamSpace.xyz; //направление на источник света
 	lightDirCamSpace = normalize(lightDirCamSpace); //нормализуем направление

@@ -25,6 +25,7 @@ void ProjectionTextureMaterial::initialize()
 
 	_projViewMatrixUniform = glGetUniformLocation(_programId, "projViewMatrix");
 	_projProjMatrixUniform = glGetUniformLocation(_programId, "projProjectionMatrix");
+	_projScaleBiasMatrixUniform = glGetUniformLocation(_programId, "projScaleBiasMatrix");
 
 	//=========================================================
 	//Инициализация uniform-переменных для освещения		
@@ -45,6 +46,9 @@ void ProjectionTextureMaterial::initialize()
 	//=========================================================
 	//Инициализация прочих uniform-переменных
 	_timeUniform = glGetUniformLocation(_programId, "time");
+
+
+	_projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
 }
 
 void ProjectionTextureMaterial::applyCommonUniforms() 
@@ -55,6 +59,7 @@ void ProjectionTextureMaterial::applyCommonUniforms()
 
 	glUniformMatrix4fv(_projViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projViewMatrix));
 	glUniformMatrix4fv(_projProjMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projProjMatrix));
+	glUniformMatrix4fv(_projScaleBiasMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projScaleBiasMatrix));
 		
 	glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
 	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
