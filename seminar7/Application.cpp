@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 1;
+int demoNum = 3;
 //1 - Assimp and AntTweakBar demo
 //2 - screen aligned quad
 //3 - projective texture
@@ -51,8 +51,8 @@ Application::Application():
 _oldTime(0.0f),
 	_width(1280),
 	_height(800),
-	_lightTheta(0.0),
-	_lightPhi(0.0),
+	_lightTheta(0.7),
+	_lightPhi(0.7),
 	_lightR(10.0)
 {
 }
@@ -151,25 +151,12 @@ void Application::update()
 	_mainCamera.update();
 }
 
-void Application::draw()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	
-
-	glViewport(0, 0, _width, _height);
-
-	//drawBackground(_mainCamera);
-	drawScene(_mainCamera);
-
-	TwDraw();
-
-	glfwSwapBuffers(_window);
-}
-
 void Application::makeSceneImplementation()
 {
 	//инициализация шейдеров
 	_commonMaterial.initialize();
 	_skyBoxMaterial.initialize();
+	_screenAlignedMaterial.initialize();
 
 	//загрузка текстур
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -185,8 +172,10 @@ void Application::makeSceneImplementation()
 	_sphere = Mesh::makeSphere(0.8f);
 	_plane = Mesh::makeYZPlane(0.8f);
 	_chess = Mesh::makeGroundPlane(100.0f, 100.0f);
-	_cube = Mesh::makeCube(10.0f);
+	_cube = Mesh::makeCube(0.8f);
+	_backgroundCube = Mesh::makeCube(10.0f);
 	_bunny = Mesh::loadFromFile("models/bunny.obj");
+	_screenQuad = Mesh::makeScreenAlignedQuad();
 
 	//Инициализация значений переменных освщения
 	_lightPos = glm::vec4(10.0f, 10.0f, 1.0f, 1.0f);
@@ -225,6 +214,20 @@ void Application::makeSceneImplementation()
 	_secondCamera.setProjMatrix(secondProjMatrix);
 }
 
+void Application::draw()
+{
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	
+
+	glViewport(0, 0, _width, _height);
+
+	//drawBackground(_mainCamera);
+	drawScene(_mainCamera);
+
+	TwDraw();
+
+	glfwSwapBuffers(_window);
+}
+
 void Application::drawBackground(Camera& camera)
 {
 	//====== Фоновый куб ======
@@ -244,8 +247,8 @@ void Application::drawBackground(Camera& camera)
 
 	glDepthMask(GL_FALSE);
 
-	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
-	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куб
+	glBindVertexArray(_backgroundCube.getVao()); //Подключаем VertexArray для куба
+	glDrawArrays(GL_TRIANGLES, 0, _backgroundCube.getNumVertices()); //Рисуем куб
 
 	glDepthMask(GL_TRUE);
 }
@@ -310,8 +313,25 @@ void Application::drawScene(Camera& camera)
 		_commonMaterial.setShininess(100.0f);
 		_commonMaterial.applyModelSpecificUniforms();
 
-		glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
-		glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
+		glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
+		glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куба
+	}
+
+	if (demoNum == 2)
+	{
+		glUseProgram(_screenAlignedMaterial.getProgramId());
+
+		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _brickTexId);
+		glBindSampler(0, _sampler);
+
+		_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
+		_screenAlignedMaterial.applyModelSpecificUniforms();
+
+		//glViewport(0, 0, 500, 500);
+
+		glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray для куба
+		glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем куба
 	}
 
 	glBindSampler(0, 0);

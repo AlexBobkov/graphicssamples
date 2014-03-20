@@ -15,6 +15,7 @@
 
 #include "CommonMaterial.h"
 #include "SkyBoxMaterial.h"
+#include "ScreenAlignedQuadMaterial.h"
 #include "Camera.h"
 #include "Mesh.h"
 
@@ -53,6 +54,7 @@ protected:
 	
 	CommonMaterial _commonMaterial;	
 	SkyBoxMaterial _skyBoxMaterial;
+	ScreenAlignedQuadMaterial _screenAlignedMaterial;
 
 	Camera _mainCamera;
 	Camera _secondCamera;
@@ -84,9 +86,11 @@ protected:
 	//полигональные 3д-модели
 	Mesh _sphere;
 	Mesh _cube;
+	Mesh _backgroundCube;
 	Mesh _plane;
 	Mesh _chess;
 	Mesh _bunny;
+	Mesh _screenQuad;
 
 	float _oldTime;
 

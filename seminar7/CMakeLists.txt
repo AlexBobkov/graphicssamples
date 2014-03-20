@@ -9,6 +9,7 @@ SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Navigation.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.cpp
 )
 
@@ -19,6 +20,7 @@ SET(HEADER_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.h
 )
 

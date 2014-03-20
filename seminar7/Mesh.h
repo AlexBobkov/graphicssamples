@@ -27,6 +27,7 @@ public:
 	static Mesh makeSphere(float radius);	
 	static Mesh makeCube(float size);
 	static Mesh makeYZPlane(float size);
+	static Mesh makeScreenAlignedQuad();
 	static Mesh makeGroundPlane(float size, float numTiles);
 	static Mesh loadFromFile(std::string filename);
 
