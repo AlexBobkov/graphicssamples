@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 5;
+int demoNum = 1;
 //1 - Assimp and AntTweakBar demo
 //2 - screen aligned quad
 //3 - projective texture
@@ -97,7 +97,7 @@ void Application::initGL()
 	std::cout << "OpenGL version supported: " << version << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_LESS);
 
 	glEnable(GL_POLYGON_OFFSET_FILL);	
 }
@@ -228,7 +228,14 @@ void Application::makeSceneImplementation()
 	glm::mat4 projProjMatrix = glm::perspective(glm::radians(15.0f), 1.0f, 0.1f, 100.f);
 
 	_projCamera.setViewMatrix(projViewMatrix);
-	_projCamera.setProjMatrix(projProjMatrix);	
+	_projCamera.setProjMatrix(projProjMatrix);
+
+	if (demoNum == 4)
+	{
+		glGenTextures(1, &_depthTexId);	
+		glBindTexture(GL_TEXTURE_2D, _depthTexId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
+	}
 
 	if (demoNum == 5)
 	{
@@ -278,7 +285,7 @@ void Application::initFramebuffer()
 
 void Application::draw()
 {
-	glClearColor(1, 1, 1, 1);
+	glClearColor(0, 0, 0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	glViewport(0, 0, _width, _height);
 
@@ -402,6 +409,26 @@ void Application::drawScene(Camera& camera)
 		_screenAlignedMaterial.applyModelSpecificUniforms();
 
 		//glViewport(0, 0, 500, 500);
+
+		glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+		glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+	}
+
+	if (demoNum == 4)
+	{
+		glBindTexture(GL_TEXTURE_2D, _depthTexId);
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 0, 0, _width, _height, 0);
+
+		glUseProgram(_screenAlignedMaterial.getProgramId());
+
+		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _depthTexId);
+		glBindSampler(0, _sampler);
+
+		_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
+		_screenAlignedMaterial.applyModelSpecificUniforms();
+
+		glViewport(0, 0, 500, 500);
 
 		glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
 		glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем

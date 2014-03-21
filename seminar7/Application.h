@@ -85,6 +85,7 @@ protected:
 	GLuint _cubeTexId;
 	GLuint _colorTexId;
 	GLuint _renderTexId;
+	GLuint _depthTexId;
 
 	//параметры чтения из текстуры
 	GLuint _sampler;
