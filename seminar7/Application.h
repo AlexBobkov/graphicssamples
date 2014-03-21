@@ -84,6 +84,7 @@ protected:
 	GLuint _myTexId;
 	GLuint _cubeTexId;
 	GLuint _colorTexId;
+	GLuint _renderTexId;
 
 	//параметры чтения из текстуры
 	GLuint _sampler;
@@ -99,6 +100,10 @@ protected:
 	Mesh _bunny;
 	Mesh _screenQuad;
 
+	GLuint _framebufferId;
+	int _fbWidth;
+	int _fbHeight;
+
 	float _oldTime;
 
 	int _width;
@@ -107,7 +112,10 @@ protected:
 	TwBar* _bar;
 					
 	void makeSceneImplementation();
+	void initFramebuffer();
+
 	void drawScene(Camera& camera);
 	void drawProjScene(Camera& camera);
 	void drawBackground(Camera& camera);
+	void drawFramebufferDemo(Camera& camera, Camera& fbCamera);
 };

@@ -13,7 +13,7 @@ in vec4 posCamSpace; //координаты вершины в системе к�
 
 in vec2 interpTc;
 
-out vec4 fragColor; //выходной цвет фрагмента
+layout(location = 0) out vec3 fragColor; //выходной цвет фрагмента
 
 void main()
 {
@@ -39,5 +39,7 @@ void main()
     vec3 color = diffuseMaterial * ambientColor + diffuseMaterial * diffuseColor * cosAngIncidence + specularColor * blinnTerm;
 	//vec3 color = diffuseMaterial;
 
-	fragColor = vec4(color, 1.0);
+	//fragColor = vec4(color, 1.0);	
+	fragColor = color;
+	//fragColor = vec3(1.0, 0.0, 0.0);
 }

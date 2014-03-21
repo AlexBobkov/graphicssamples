@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 3;
+int demoNum = 5;
 //1 - Assimp and AntTweakBar demo
 //2 - screen aligned quad
 //3 - projective texture
@@ -74,8 +74,6 @@ void Application::initContext()
 		exit(1);
 	} 
 
-	glfwWindowHint(GLFW_STENCIL_BITS, 8);
-
 	_window = glfwCreateWindow(_width, _height, "Seminar 7", NULL, NULL);
 	if (!_window)
 	{
@@ -91,7 +89,7 @@ void Application::initContext()
 void Application::initGL()
 {
 	glewExperimental = GL_TRUE;
-	glewInit ();
+	glewInit();
 
 	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
 	const GLubyte* version = glGetString(GL_VERSION); // version as a string
@@ -115,7 +113,7 @@ void Application::initOthers()
 	TwAddVarRW(_bar, "Color.z", TW_TYPE_FLOAT, &_diffuseColor.z, "min=0 max=1 step=0.01");
 	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
 	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "step=0.01");
-	
+
 	if (demoNum == 3)
 	{
 		TwAddVarRW(_bar, "Projector phi", TW_TYPE_FLOAT, &_projPhi, "step=0.01");
@@ -197,13 +195,13 @@ void Application::makeSceneImplementation()
 	//Инициализация сэмплера - объекта, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);
 	glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glGenSamplers(1, &_repeatSampler);	
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glSamplerParameterf(_repeatSampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);	
@@ -228,21 +226,70 @@ void Application::makeSceneImplementation()
 	glm::vec3 projCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
 	glm::mat4 projViewMatrix = glm::lookAt(projCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 projProjMatrix = glm::perspective(glm::radians(15.0f), 1.0f, 0.1f, 100.f);
-		
+
 	_projCamera.setViewMatrix(projViewMatrix);
-	_projCamera.setProjMatrix(projProjMatrix);
+	_projCamera.setProjMatrix(projProjMatrix);	
+
+	if (demoNum == 5)
+	{
+		initFramebuffer();
+	}
+}
+
+void Application::initFramebuffer()
+{
+	_fbWidth = 1024;
+	_fbHeight = 1024;
+
+
+	glGenFramebuffers(1, &_framebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
+
+
+	//Создает текстуру, куда будет осуществляться рендеринг	
+	glGenTextures(1, &_renderTexId);	
+	glBindTexture(GL_TEXTURE_2D, _renderTexId);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _renderTexId, 0);
+
+
+	//Создаем буфер глубины для фреймбуфера
+	GLuint depthRenderBuffer;
+	glGenRenderbuffers(1, &depthRenderBuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _fbWidth, _fbHeight);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
+
+
+	//Указываем куда именно мы будем рендерить		
+	GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Failed to setup framebuffer\n";
+		exit(1);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Application::draw()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	
-
+	glClearColor(1, 1, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	glViewport(0, 0, _width, _height);
 
 	//drawBackground(_mainCamera);
 	if (demoNum == 3)
 	{
 		drawProjScene(_mainCamera);
+	}
+	else if (demoNum == 5)
+	{
+		drawFramebufferDemo(_mainCamera, _secondCamera);
 	}
 	else
 	{
@@ -329,7 +376,7 @@ void Application::drawScene(Camera& camera)
 		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
 		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
 
-		//====== Плоскость YZ ======
+		//====== Куб ======
 		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 		glBindTexture(GL_TEXTURE_2D, _brickTexId);
 		glBindSampler(0, _sampler);
@@ -340,7 +387,7 @@ void Application::drawScene(Camera& camera)
 		_commonMaterial.applyModelSpecificUniforms();
 
 		glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
-		glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куба
+		glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куб
 	}
 
 	if (demoNum == 2)
@@ -356,8 +403,8 @@ void Application::drawScene(Camera& camera)
 
 		//glViewport(0, 0, 500, 500);
 
-		glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray для куба
-		glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем куба
+		glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+		glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
 	}
 
 	glBindSampler(0, 0);
@@ -434,6 +481,127 @@ void Application::drawProjScene(Camera& camera)
 
 	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray для куба
 	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем куба
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
+}
+
+void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
+{	
+	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
+
+	glViewport(0, 0, _fbWidth, _fbHeight);
+
+	glClearColor(1, 1, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+
+	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+
+	_commonMaterial.setTime((float)glfwGetTime());
+	_commonMaterial.setViewMatrix(camera.getViewMatrix());
+	_commonMaterial.setProjectionMatrix(camera.getProjMatrix());
+
+	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
+
+	_commonMaterial.setLightPos(_lightPos);
+	_commonMaterial.setAmbientColor(_ambientColor);
+	_commonMaterial.setDiffuseColor(_diffuseColor);
+	_commonMaterial.setSpecularColor(_specularColor);
+
+	_commonMaterial.applyCommonUniforms();
+
+	//====== Кролик ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, sin((float)glfwGetTime()) - 1.0f)));
+	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();	
+
+	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray для плоскости
+	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем плоскость
+
+	//====== Сфера ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+
+	glUseProgram(0);
+
+	//==================================================================================
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, _width, _height);
+
+
+	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+
+	_commonMaterial.setTime((float)glfwGetTime());
+	_commonMaterial.setViewMatrix(camera.getViewMatrix());
+	_commonMaterial.setProjectionMatrix(camera.getProjMatrix());
+
+	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
+
+	_commonMaterial.setLightPos(_lightPos);
+	_commonMaterial.setAmbientColor(_ambientColor);
+	_commonMaterial.setDiffuseColor(_diffuseColor);
+	_commonMaterial.setSpecularColor(_specularColor);
+
+	_commonMaterial.applyCommonUniforms();
+
+
+	//====== Сфера ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _renderTexId);
+	glBindSampler(0, _sampler);
+
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+
+	//====== Куб ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _renderTexId);
+	glBindSampler(0, _sampler);
+
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
+	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куба
+
+#if 0
+	glUseProgram(_screenAlignedMaterial.getProgramId());
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _renderTexId);
+	glBindSampler(0, _sampler);
+
+	_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
+	_screenAlignedMaterial.applyModelSpecificUniforms();
+
+	glViewport(0, 0, 500, 500);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+#endif
 
 	glBindSampler(0, 0);
 	glUseProgram(0);
