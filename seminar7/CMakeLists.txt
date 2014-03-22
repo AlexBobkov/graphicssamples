@@ -1,4 +1,5 @@
 SET(APP_NAME seminar7)
+SET(SHADERS_FOLDER shaders7)
 
 SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
@@ -24,6 +25,17 @@ SET(HEADER_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SkyBoxMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.h
+)
+
+SET(SHADER_FILES
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/common.vert	
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/common.frag
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/projTex.vert	
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/projTex.frag
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/quad.vert	
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/quad.frag
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/skybox.vert	
+	${DemoApplication_SOURCE_DIR}/shaders/${SHADERS_FOLDER}/skybox.frag
 )
 
 IF(GLIMAGE_FOUND AND ASSIMP_FOUND AND ANTTWEAKBAR_FOUND)

@@ -24,7 +24,7 @@ void SkyBoxMaterial::initialize()
 		
 	//=========================================================
 	//Инициализация uniform-переменных для текстурирования
-	_texUniform = glGetUniformLocation(_programId, "tex");
+	_texUniform = glGetUniformLocation(_programId, "cubeTex");
 }
 
 void SkyBoxMaterial::applyCommonUniforms() 

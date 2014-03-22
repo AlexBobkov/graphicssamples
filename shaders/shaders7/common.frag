@@ -37,9 +37,6 @@ void main()
 
 	//результирующий цвет
     vec3 color = diffuseMaterial * ambientColor + diffuseMaterial * diffuseColor * cosAngIncidence + specularColor * blinnTerm;
-	//vec3 color = diffuseMaterial;
 
-	//fragColor = vec4(color, 1.0);	
 	fragColor = color;
-	//fragColor = vec3(1.0, 0.0, 0.0);
 }

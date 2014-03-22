@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 1;
+int demoNum = 5;
 //1 - Assimp and AntTweakBar demo
 //2 - screen aligned quad
 //3 - projective texture
@@ -104,6 +104,7 @@ void Application::initGL()
 
 void Application::initOthers()
 {	
+	//Настраиваем библиотеку AntTweakBar
 	TwInit(TW_OPENGL, NULL);
 	TwWindowSize(_width, _height);
 
@@ -161,13 +162,13 @@ void Application::update()
 
 void Application::makeSceneImplementation()
 {
-	//инициализация шейдеров
+	//Инициализируем шейдеры
 	_commonMaterial.initialize();
 	_skyBoxMaterial.initialize();
 	_screenAlignedMaterial.initialize();
 	_projTextureMaterial.initialize();
 
-	//загрузка текстур
+	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
 	_grassTexId = Texture::loadTexture("images/grass.jpg");
@@ -177,7 +178,7 @@ void Application::makeSceneImplementation()
 	_cubeTexId = Texture::loadCubeTexture("images/cube");
 	_colorTexId = Texture::loadTexture("images/color.png");
 
-	//загрузка 3д-моделей
+	//Загружаем 3д-модели
 	_sphere = Mesh::makeSphere(0.8f);
 	_plane = Mesh::makeYZPlane(0.8f);
 	_ground = Mesh::makeGroundPlane(5.0f, 5.0f);
@@ -186,13 +187,13 @@ void Application::makeSceneImplementation()
 	_bunny = Mesh::loadFromFile("models/bunny.obj");
 	_screenQuad = Mesh::makeScreenAlignedQuad();
 
-	//Инициализация значений переменных освщения
+	//Инициализацируем значения переменных освщения
 	_lightPos = glm::vec4(10.0f, 10.0f, 1.0f, 1.0f);
 	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
 	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
 	_specularColor = glm::vec3(0.5, 0.5, 0.5);
 
-	//Инициализация сэмплера - объекта, который хранит параметры чтения из текстуры
+	//Инициализируем сэмплер - объект, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);
 	glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -213,7 +214,7 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	//инициализируем 2ю камеру для примера с 2мя камерами
+	//Инициализируем 2ю камеру для примера с 2мя камерами
 	glm::vec3 secondCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
 	glm::mat4 secondViewMatrix = glm::lookAt(secondCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 secondProjMatrix = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.f);
@@ -222,7 +223,7 @@ void Application::makeSceneImplementation()
 	_secondCamera.setViewMatrix(secondViewMatrix);
 	_secondCamera.setProjMatrix(secondProjMatrix);
 
-	//инициализируем проектор
+	//Инициализируем проектор
 	glm::vec3 projCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
 	glm::mat4 projViewMatrix = glm::lookAt(projCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	glm::mat4 projProjMatrix = glm::perspective(glm::radians(15.0f), 1.0f, 0.1f, 100.f);
@@ -232,6 +233,7 @@ void Application::makeSceneImplementation()
 
 	if (demoNum == 4)
 	{
+		//Создаем текстуру, куда будем впоследствии копировать буфер глубины
 		glGenTextures(1, &_depthTexId);	
 		glBindTexture(GL_TEXTURE_2D, _depthTexId);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, _width, _height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, 0);
@@ -249,11 +251,12 @@ void Application::initFramebuffer()
 	_fbHeight = 1024;
 
 
+	//Создаем фреймбуфер
 	glGenFramebuffers(1, &_framebufferId);
 	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
 
-	//Создает текстуру, куда будет осуществляться рендеринг	
+	//Создаем текстуру, куда будет осуществляться рендеринг	
 	glGenTextures(1, &_renderTexId);	
 	glBindTexture(GL_TEXTURE_2D, _renderTexId);
 
@@ -363,8 +366,8 @@ void Application::drawScene(Camera& camera)
 		_commonMaterial.setShininess(100.0f);
 		_commonMaterial.applyModelSpecificUniforms();	
 
-		glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray для плоскости
-		glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем плоскость
+		glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray
+		glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем
 	}
 
 
@@ -498,7 +501,7 @@ void Application::drawProjScene(Camera& camera)
 	//====== Плоскость земли ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
+	glBindSampler(0, _repeatSampler);
 
 	_projTextureMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
 	_projTextureMaterial.setProjTexUnit(1); //текстурный юнит 1
@@ -506,8 +509,8 @@ void Application::drawProjScene(Camera& camera)
 	_projTextureMaterial.setShininess(100.0f);
 	_projTextureMaterial.applyModelSpecificUniforms();
 
-	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray для куба
-	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем куба
+	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем
 
 	glBindSampler(0, 0);
 	glUseProgram(0);
@@ -515,6 +518,7 @@ void Application::drawProjScene(Camera& camera)
 
 void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
 {	
+	//=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========
 	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
 	glViewport(0, 0, _fbWidth, _fbHeight);
@@ -526,8 +530,8 @@ void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
 	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
 
 	_commonMaterial.setTime((float)glfwGetTime());
-	_commonMaterial.setViewMatrix(camera.getViewMatrix());
-	_commonMaterial.setProjectionMatrix(camera.getProjMatrix());
+	_commonMaterial.setViewMatrix(fbCamera.getViewMatrix());
+	_commonMaterial.setProjectionMatrix(fbCamera.getProjMatrix());
 
 	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
 
@@ -548,8 +552,8 @@ void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
 	_commonMaterial.setShininess(100.0f);
 	_commonMaterial.applyModelSpecificUniforms();	
 
-	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray для плоскости
-	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем плоскость
+	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем
 
 	//====== Сфера ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -567,6 +571,7 @@ void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
 	glUseProgram(0);
 
 	//==================================================================================
+	//=========== Теперь отключаем фреймбуфер и рендерим на экран ==========
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, _width, _height);
@@ -614,21 +619,6 @@ void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
 	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
 	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куба
 
-#if 0
-	glUseProgram(_screenAlignedMaterial.getProgramId());
-
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _renderTexId);
-	glBindSampler(0, _sampler);
-
-	_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
-	_screenAlignedMaterial.applyModelSpecificUniforms();
-
-	glViewport(0, 0, 500, 500);
-
-	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
-	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
-#endif
 
 	glBindSampler(0, 0);
 	glUseProgram(0);

@@ -20,11 +20,13 @@ out vec4 fragColor; //выходной цвет фрагмента
 void main()
 {
 	vec3 diffuseMaterial = texture(diffuseTex, interpTc).rgb; //читаем из текстуры
-
+	
+	//первый вариант: вручную выполняем перспективное деление
 	vec4 projTc = interProjTc;		
 	projTc.xyz /= projTc.w;
 	vec3 projColor = texture(projTex, projTc.xy).rgb; //читаем из текстуры
 
+	//второй вариант: используем функцию textureProj
 	//vec3 projColor = textureProj(projTex, interProjTc).rgb; //читаем из текстуры
 
 	vec3 lightDirCamSpace = lightPosCamSpace.xyz - posCamSpace.xyz; //направление на источник света
@@ -46,9 +48,8 @@ void main()
 	//результирующий цвет
     vec3 color = diffuseMaterial * ambientColor + diffuseMaterial * diffuseColor * cosAngIncidence + specularColor * blinnTerm;
 	
-	color *= projColor;
+	color += projColor;
 
-	//fragColor = vec4(color, 1.0);
-	fragColor = vec4(projColor, 1.0);
-	//fragColor = vec4(interProjTc, 0.0, 1.0);
+	fragColor = vec4(color, 1.0);
+	//fragColor = vec4(projColor, 1.0);
 }
