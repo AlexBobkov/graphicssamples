@@ -16,6 +16,7 @@
 #include "CommonMaterial.h"
 #include "ScreenAlignedQuadMaterial.h"
 #include "ShadowMaterial.h"
+#include "RenderToGBufferMaterial.h"
 #include "RenderToShadowMaterial.h"
 #include "ColorMaterial.h"
 #include "Camera.h"
@@ -58,6 +59,7 @@ protected:
 	CommonMaterial _commonMaterial;	
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
 	ShadowMaterial _shadowMaterial;
+	RenderToGBufferMaterial _renderToGBufferMaterial;
 	RenderToShadowMaterial _renderToShadowMaterial;
 	ColorMaterial _colorMaterial;
 
@@ -78,9 +80,10 @@ protected:
 	GLuint _chessTexId;
 	GLuint _myTexId;
 	GLuint _cubeTexId;
-	GLuint _colorTexId;
-	GLuint _renderTexId;
+	GLuint _colorTexId;	
 	GLuint _depthTexId;
+	GLuint _normalsTexId;
+	GLuint _diffuseTexId;
 
 	//параметры чтения из текстуры
 	GLuint _sampler;
@@ -113,9 +116,13 @@ protected:
 	void makeSceneImplementation();
 
 	void initShadowFramebuffer();
+	void initDeferredRenderingFramebuffer();
 
 	void drawToShadowMap(Camera& lightCamera);
 	void drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera);
 
 	void drawMultiObjectScene(Camera& mainCamera);
+
+	void drawToFramebuffer(Camera& mainCamera);
+	void debugDraw();
 };

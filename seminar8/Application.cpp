@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 2;
+int demoNum = 3;
 //1 - shadow map
 //2 - many objects standard rendering
 //3 - deferred rendering
@@ -143,6 +143,7 @@ void Application::makeSceneImplementation()
 	_shadowMaterial.initialize();
 	_renderToShadowMaterial.initialize();
 	_colorMaterial.initialize();
+	_renderToGBufferMaterial.initialize();
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -197,6 +198,10 @@ void Application::makeSceneImplementation()
 	{
 		initShadowFramebuffer();
 	}
+	else if (demoNum == 3)
+	{
+		initDeferredRenderingFramebuffer();
+	}
 
 	float size = 20.0f;
 	for (int i = 0; i < 10; i++)
@@ -226,6 +231,49 @@ void Application::initShadowFramebuffer()
 	//Указываем куда именно мы будем рендерить		
 	GLenum buffers[] = { GL_NONE };
 	glDrawBuffers(1, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Failed to setup framebuffer\n";
+		exit(1);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Application::initDeferredRenderingFramebuffer()
+{
+	_fbWidth = 1024;
+	_fbHeight = 1024;
+
+
+	//Создаем фреймбуфер
+	glGenFramebuffers(1, &_framebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
+
+
+	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
+	glGenTextures(1, &_normalsTexId);	
+	glBindTexture(GL_TEXTURE_2D, _normalsTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _normalsTexId, 0);
+
+	//Создаем текстуру, куда будет осуществляться рендеринг диффузного цвета
+	glGenTextures(1, &_diffuseTexId);	
+	glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, _diffuseTexId, 0);
+	
+	//Создаем текстуру, куда будем впоследствии копировать буфер глубины
+	glGenTextures(1, &_depthTexId);	
+	glBindTexture(GL_TEXTURE_2D, _depthTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _fbWidth, _fbHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexId, 0);
+
+
+	//Указываем куда именно мы будем рендерить		
+	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, buffers);
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -267,6 +315,11 @@ void Application::draw()
 	else if (demoNum == 2)
 	{
 		drawMultiObjectScene(_mainCamera);
+	}
+	else if (demoNum == 3)
+	{
+		drawToFramebuffer(_mainCamera);
+		debugDraw();
 	}
 
 	TwDraw();
@@ -476,6 +529,80 @@ void Application::drawMultiObjectScene(Camera& mainCamera)
 	glBindSampler(0, 0);
 	glUseProgram(0);
 }
+
+void Application::drawToFramebuffer(Camera& mainCamera)
+{
+	//=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========
+	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
+
+	glViewport(0, 0, _fbWidth, _fbHeight);
+	glClearColor(0, 0, 0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+
+	glUseProgram(_renderToGBufferMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+
+	_renderToGBufferMaterial.setViewMatrix(mainCamera.getViewMatrix());
+	_renderToGBufferMaterial.setProjectionMatrix(mainCamera.getProjMatrix());	
+	_renderToGBufferMaterial.applyCommonUniforms();
+
+	//====== Сфера ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_renderToGBufferMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
+
+	for (unsigned int i = 0; i < _positions.size(); i++)
+	{
+		_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i]));
+		_renderToGBufferMaterial.applyModelSpecificUniforms();
+
+		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+	}
+
+	//====== Плоскость земли ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _repeatSampler);
+
+	_renderToGBufferMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
+	_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));	
+	_renderToGBufferMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем
+
+	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Application::debugDraw()
+{
+	glViewport(0, 0, _width, _height);
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//====== В целях отладки рисуем на экран прямоугольник с теневой картой
+	glUseProgram(_screenAlignedMaterial.getProgramId());
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
+	glBindSampler(0, _sampler);
+
+	_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
+	_screenAlignedMaterial.applyModelSpecificUniforms();
+
+	glViewport(0, 0, 400, 400);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
+}
+
 
 /*
 void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
