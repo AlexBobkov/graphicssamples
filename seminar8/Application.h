@@ -17,6 +17,7 @@
 #include "ScreenAlignedQuadMaterial.h"
 #include "ProjectionTextureMaterial.h"
 #include "RenderToShadowMaterial.h"
+#include "ColorMaterial.h"
 #include "Camera.h"
 #include "Mesh.h"
 
@@ -57,6 +58,7 @@ protected:
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
 	ProjectionTextureMaterial _projTextureMaterial;
 	RenderToShadowMaterial _renderToShadowMaterial;
+	ColorMaterial _colorMaterial;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -95,6 +97,7 @@ protected:
 	Mesh _ground;
 	Mesh _bunny;
 	Mesh _screenQuad;
+	Mesh _sphereMarker;
 
 	GLuint _framebufferId;
 	int _fbWidth;

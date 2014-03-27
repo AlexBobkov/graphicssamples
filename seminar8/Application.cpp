@@ -139,6 +139,7 @@ void Application::makeSceneImplementation()
 	_screenAlignedMaterial.initialize();
 	_projTextureMaterial.initialize();
 	_renderToShadowMaterial.initialize();
+	_colorMaterial.initialize();
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -158,6 +159,7 @@ void Application::makeSceneImplementation()
 	_backgroundCube = Mesh::makeCube(10.0f);
 	_bunny = Mesh::loadFromFile("models/bunny.obj");
 	_screenQuad = Mesh::makeScreenAlignedQuad();
+	_sphereMarker = Mesh::makeSphere(0.1f);
 
 	//Инициализацируем значения переменных освщения
 	_lightPos = glm::vec4(10.0f, 10.0f, 1.0f, 1.0f);
@@ -346,6 +348,20 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 
 	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем
+
+	//====== Для наглядности рисуем небольшую сферу-маркер для источника света
+	glUseProgram(_colorMaterial.getProgramId());
+		
+	_colorMaterial.setViewMatrix(mainCamera.getViewMatrix());
+	_colorMaterial.setProjectionMatrix(mainCamera.getProjMatrix());
+	_colorMaterial.applyCommonUniforms();
+	
+	_colorMaterial.setColor(_diffuseColor);	
+	_colorMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(_lightPos.x, _lightPos.y, _lightPos.z)));	
+	_colorMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_sphereMarker.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphereMarker.getNumVertices()); //Рисуем сферу
 
 
 	//====== В целях отладки рисуем на экран прямоугольник с теневой картой
