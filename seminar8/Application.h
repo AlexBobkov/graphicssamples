@@ -20,6 +20,7 @@
 #include "ColorMaterial.h"
 #include "Camera.h"
 #include "Mesh.h"
+#include "Light.h"
 
 class Application
 {
@@ -67,10 +68,7 @@ protected:
 	float _lightTheta;
 	float _lightPhi;
 	float _lightR;
-	glm::vec4 _lightPos; //in world space
-	glm::vec3 _ambientColor;
-	glm::vec3 _diffuseColor;
-	glm::vec3 _specularColor;
+	Light _light;
 
 	//идентификаторы текстурных объектов
 	GLuint _worldTexId;

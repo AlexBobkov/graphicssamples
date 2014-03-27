@@ -1,8 +1,6 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-#include <glimg/glimg.h>
-
 #include "Camera.h"
 
 Camera::Camera():

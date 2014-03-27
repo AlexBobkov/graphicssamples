@@ -106,8 +106,7 @@ void Application::initOthers()
 
 	_bar = TwNewBar("TweakBar");
 	TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
-
-	TwAddVarRW(_bar, "Color.z", TW_TYPE_FLOAT, &_diffuseColor.z, "min=0 max=1 step=0.01");
+		
 	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
 	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "min=0.01 max=1.56 step=0.01");
 
@@ -162,11 +161,10 @@ void Application::makeSceneImplementation()
 	_sphereMarker = Mesh::makeSphere(0.1f);
 
 	//Инициализацируем значения переменных освщения
-	_lightPos = glm::vec4(10.0f, 10.0f, 1.0f, 1.0f);
-	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
-	_specularColor = glm::vec3(0.5, 0.5, 0.5);
-
+	_light.setAmbientColor(glm::vec3(0.2, 0.2, 0.2));
+	_light.setDiffuseColor(glm::vec3(0.8, 0.8, 0.8));
+	_light.setSpecularColor(glm::vec3(0.5, 0.5, 0.5));
+	
 	//Инициализируем сэмплер - объект, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);
 	glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -241,9 +239,9 @@ void Application::update()
 {
 	_mainCamera.update();
 	
-	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
-	_lightCamera.setCameraPos(glm::vec3(_lightPos.x, _lightPos.y, _lightPos.z));
-	_lightCamera.setViewMatrix(glm::lookAt(glm::vec3(_lightPos.x, _lightPos.y, _lightPos.z), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	_light.setLightPos(glm::vec3(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR));
+	_lightCamera.setCameraPos(_light.getLightPos());
+	_lightCamera.setViewMatrix(glm::lookAt(_light.getLightPos(), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
 }
 
 void Application::draw()
@@ -302,10 +300,10 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	_commonMaterial.setViewMatrix(mainCamera.getViewMatrix());
 	_commonMaterial.setProjectionMatrix(mainCamera.getProjMatrix());
 
-	_commonMaterial.setLightPos(_lightPos);
-	_commonMaterial.setAmbientColor(_ambientColor);
-	_commonMaterial.setDiffuseColor(_diffuseColor);
-	_commonMaterial.setSpecularColor(_specularColor);
+	_commonMaterial.setLightPos(_light.getLightPos4());
+	_commonMaterial.setAmbientColor(_light.getAmbientColor());
+	_commonMaterial.setDiffuseColor(_light.getDiffuseColor());
+	_commonMaterial.setSpecularColor(_light.getSpecularColor());
 
 	_commonMaterial.applyCommonUniforms();
 
@@ -356,8 +354,8 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	_colorMaterial.setProjectionMatrix(mainCamera.getProjMatrix());
 	_colorMaterial.applyCommonUniforms();
 	
-	_colorMaterial.setColor(_diffuseColor);	
-	_colorMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(_lightPos.x, _lightPos.y, _lightPos.z)));	
+	_colorMaterial.setColor(_light.getDiffuseColor());	
+	_colorMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _light.getLightPos()));	
 	_colorMaterial.applyModelSpecificUniforms();
 
 	glBindVertexArray(_sphereMarker.getVao()); //Подключаем VertexArray для сферы

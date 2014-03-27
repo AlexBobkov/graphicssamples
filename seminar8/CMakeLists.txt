@@ -3,7 +3,8 @@ SET(SHADERS_FOLDER shaders8)
 
 SET(SRC_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.cpp	
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.cpp	
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Navigation.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp	
@@ -13,6 +14,7 @@ SET(SRC_FILES
 SET(HEADER_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.h
 )
