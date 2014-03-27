@@ -15,7 +15,7 @@
 
 #include "CommonMaterial.h"
 #include "ScreenAlignedQuadMaterial.h"
-#include "ProjectionTextureMaterial.h"
+#include "ShadowMaterial.h"
 #include "RenderToShadowMaterial.h"
 #include "ColorMaterial.h"
 #include "Camera.h"
@@ -57,7 +57,7 @@ protected:
 	
 	CommonMaterial _commonMaterial;	
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
-	ProjectionTextureMaterial _projTextureMaterial;
+	ShadowMaterial _shadowMaterial;
 	RenderToShadowMaterial _renderToShadowMaterial;
 	ColorMaterial _colorMaterial;
 

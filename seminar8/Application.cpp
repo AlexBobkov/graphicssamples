@@ -8,9 +8,7 @@
 
 int demoNum = 1;
 //1 - shadow map
-//2 - advanced shadow map
-//3 - many objects
-//4 - 
+//2 - deferred rendering
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -136,7 +134,7 @@ void Application::makeSceneImplementation()
 	//Инициализируем шейдеры
 	_commonMaterial.initialize();
 	_screenAlignedMaterial.initialize();
-	_projTextureMaterial.initialize();
+	_shadowMaterial.initialize();
 	_renderToShadowMaterial.initialize();
 	_colorMaterial.initialize();
 
@@ -289,34 +287,41 @@ void Application::drawToShadowMap(Camera& lightCamera)
 void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 {
 	glViewport(0, 0, _width, _height);
-	glClearColor(199.0 / 255.0, 221.0 / 255.0, 235.0 / 255.0, 1); //blue color
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
 
 	//====== Рисуем на экран тех же самых кролика и сферу
-	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+	glUseProgram(_shadowMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
 
-	_commonMaterial.setTime((float)glfwGetTime());
-	_commonMaterial.setViewMatrix(mainCamera.getViewMatrix());
-	_commonMaterial.setProjectionMatrix(mainCamera.getProjMatrix());
+	_shadowMaterial.setViewMatrix(mainCamera.getViewMatrix());
+	_shadowMaterial.setProjectionMatrix(mainCamera.getProjMatrix());
 
-	_commonMaterial.setLightPos(_light.getLightPos4());
-	_commonMaterial.setAmbientColor(_light.getAmbientColor());
-	_commonMaterial.setDiffuseColor(_light.getDiffuseColor());
-	_commonMaterial.setSpecularColor(_light.getSpecularColor());
+	_shadowMaterial.setLightViewMatrix(lightCamera.getViewMatrix());
+	_shadowMaterial.setLightProjectionMatrix(lightCamera.getProjMatrix());
 
-	_commonMaterial.applyCommonUniforms();
+	_shadowMaterial.setLightPos(_light.getLightPos4());
+	_shadowMaterial.setAmbientColor(_light.getAmbientColor());
+	_shadowMaterial.setDiffuseColor(_light.getDiffuseColor());
+	_shadowMaterial.setSpecularColor(_light.getSpecularColor());
 
+	_shadowMaterial.applyCommonUniforms();
+
+	_shadowMaterial.setShadowTexUnit(1); //текстурный юнит 1
+
+	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
+	glBindTexture(GL_TEXTURE_2D, _depthTexId);
+	glBindSampler(1, _sampler);
 
 	//====== Кролик ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
 	glBindSampler(0, _sampler);
 
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, sin((float)glfwGetTime()))));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();	
+	_shadowMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_shadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, sin((float)glfwGetTime()))));
+	_shadowMaterial.setShininess(100.0f);
+	_shadowMaterial.applyModelSpecificUniforms();	
 
 	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем
@@ -326,10 +331,10 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
 	glBindSampler(0, _sampler);
 
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();
+	_shadowMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_shadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	_shadowMaterial.setShininess(100.0f);
+	_shadowMaterial.applyModelSpecificUniforms();
 
 	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
 	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
@@ -339,13 +344,14 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
 	glBindSampler(0, _repeatSampler);
 
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();
+	_shadowMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
+	_shadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	_shadowMaterial.setShininess(100.0f);
+	_shadowMaterial.applyModelSpecificUniforms();
 
 	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем
+
 
 	//====== Для наглядности рисуем небольшую сферу-маркер для источника света
 	glUseProgram(_colorMaterial.getProgramId());
@@ -489,81 +495,6 @@ void Application::drawMultiObjectScene(Camera& camera)
 */
 
 /*
-void Application::drawProjScene(Camera& camera)
-{
-	//====== Остальные объекты ======	
-	glUseProgram(_projTextureMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
-
-	_projTextureMaterial.setTime((float)glfwGetTime());
-	_projTextureMaterial.setViewMatrix(camera.getViewMatrix());
-	_projTextureMaterial.setProjectionMatrix(camera.getProjMatrix());
-
-	glm::vec3 projPos = glm::vec3(glm::cos(_projPhi) * glm::cos(_projTheta) * _projR, glm::sin(_projPhi) * glm::cos(_projTheta) * _projR, glm::sin(_projTheta) * _projR);
-	glm::mat4 projViewMatrix = glm::lookAt(projPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));		
-	_projCamera.setViewMatrix(projViewMatrix);
-
-	_projTextureMaterial.setProjViewMatrix(_projCamera.getViewMatrix());
-	_projTextureMaterial.setProjProjectionMatrix(_projCamera.getProjMatrix());
-
-	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
-
-	_projTextureMaterial.setLightPos(_lightPos);
-	_projTextureMaterial.setAmbientColor(_ambientColor);
-	_projTextureMaterial.setDiffuseColor(_diffuseColor);
-	_projTextureMaterial.setSpecularColor(_specularColor);
-
-	_projTextureMaterial.applyCommonUniforms();
-
-	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
-	glBindTexture(GL_TEXTURE_2D, _worldTexId);
-	glBindSampler(1, _sampler);
-
-	//====== Сфера ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
-
-	_projTextureMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_projTextureMaterial.setProjTexUnit(1); //текстурный юнит 1
-	_projTextureMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-	_projTextureMaterial.setShininess(100.0f);
-	_projTextureMaterial.applyModelSpecificUniforms();
-
-	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
-
-	//====== Куб ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
-
-	_projTextureMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_projTextureMaterial.setProjTexUnit(1); //текстурный юнит 1
-	_projTextureMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	_projTextureMaterial.setShininess(100.0f);
-	_projTextureMaterial.applyModelSpecificUniforms();
-
-	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
-	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куба
-
-	//====== Плоскость земли ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _repeatSampler);
-
-	_projTextureMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_projTextureMaterial.setProjTexUnit(1); //текстурный юнит 1
-	_projTextureMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-	_projTextureMaterial.setShininess(100.0f);
-	_projTextureMaterial.applyModelSpecificUniforms();
-
-	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray
-	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем
-
-	glBindSampler(0, 0);
-	glUseProgram(0);
-}
-
 void Application::drawFramebufferDemo(Camera& camera, Camera& fbCamera)
 {	
 	//=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========

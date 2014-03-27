@@ -19,25 +19,23 @@
 #include "Material.h"
 
 /**
-	Шейдер для наложения проективной текстуры.
+	Шейдер для наложения теней
 */
-class ProjectionTextureMaterial: public Material
+class ShadowMaterial: public Material
 {
 public:
-	ProjectionTextureMaterial();
+	ShadowMaterial();
 
 	void initialize() override;
 	void applyCommonUniforms() override;
 	void applyModelSpecificUniforms() override;
-
-	void setTime(float time) { _time = time; }
-
+	
 	void setModelMatrix(glm::mat4 mat) { _modelMatrix = mat; }
 	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
 	void setProjectionMatrix(glm::mat4 mat) { _projMatrix = mat; }
 
-	void setProjViewMatrix(glm::mat4 mat) { _projViewMatrix = mat; }
-	void setProjProjectionMatrix(glm::mat4 mat) { _projProjMatrix = mat; }	
+	void setLightViewMatrix(glm::mat4 mat) { _lightViewMatrix = mat; }
+	void setLightProjectionMatrix(glm::mat4 mat) { _lightProjMatrix = mat; }	
 
 	void setLightPos(glm::vec4 vec) { _lightPos = vec; }	
 	void setAmbientColor(glm::vec3 vec) { _ambientColor = vec; }	
@@ -47,7 +45,7 @@ public:
 	void setShininess(float s) { _shininess = s; }
 
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
-	void setProjTexUnit(int unit) { _projTexUnit = unit; }
+	void setShadowTexUnit(int unit) { _shadowTexUnit = unit; }
 	
 protected:	
 	//====== идентификаторы uniform-переменных ======
@@ -57,9 +55,9 @@ protected:
 	GLuint _projMatrixUniform;	
 	GLuint _normalToCameraMatrixUniform;
 
-	GLuint _projViewMatrixUniform;
-	GLuint _projProjMatrixUniform;
-	GLuint _projScaleBiasMatrixUniform;
+	GLuint _lightViewMatrixUniform;
+	GLuint _lightProjMatrixUniform;
+	GLuint _lightScaleBiasMatrixUniform;
 	
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
@@ -69,19 +67,17 @@ protected:
 	GLuint _shininessUniform;
 
 	GLuint _diffuseTexUniform;
-	GLuint _projTexUniform;
+	GLuint _shadowTexUniform;
 
 	//====== переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров ======
-	float _time;
-
 	//матрицы
 	glm::mat4 _modelMatrix;
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
 
-	glm::mat4 _projViewMatrix;
-	glm::mat4 _projProjMatrix;
-	glm::mat4 _projScaleBiasMatrix;
+	glm::mat4 _lightViewMatrix;
+	glm::mat4 _lightProjMatrix;
+	glm::mat4 _lightScaleBiasMatrix;
 	
 	//параметры освещения
 	glm::vec4 _lightPos; //in world space
@@ -94,5 +90,5 @@ protected:
 
 	//текстурные юниты
 	int _diffuseTexUnit;
-	int _projTexUnit;
+	int _shadowTexUnit;
 };

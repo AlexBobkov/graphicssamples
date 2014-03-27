@@ -3,16 +3,16 @@
 
 #include <glimg/glimg.h>
 
-#include "ProjectionTextureMaterial.h"
+#include "ShadowMaterial.h"
 
-ProjectionTextureMaterial::ProjectionTextureMaterial()
+ShadowMaterial::ShadowMaterial()
 {
 }
 
-void ProjectionTextureMaterial::initialize()
+void ShadowMaterial::initialize()
 {
-	std::string vertFilename = "shaders8/common.vert";
-	std::string fragFilename = "shaders8/common.frag";
+	std::string vertFilename = "shaders8/shadow.vert";
+	std::string fragFilename = "shaders8/shadow.frag";
 
 	_programId = makeShaderProgram(vertFilename, fragFilename);
 		
@@ -23,9 +23,9 @@ void ProjectionTextureMaterial::initialize()
 	_projMatrixUniform = glGetUniformLocation(_programId, "projectionMatrix");
 	_normalToCameraMatrixUniform = glGetUniformLocation(_programId, "normalToCameraMatrix");	
 
-	_projViewMatrixUniform = glGetUniformLocation(_programId, "projViewMatrix");
-	_projProjMatrixUniform = glGetUniformLocation(_programId, "projProjectionMatrix");
-	_projScaleBiasMatrixUniform = glGetUniformLocation(_programId, "projScaleBiasMatrix");
+	_lightViewMatrixUniform = glGetUniformLocation(_programId, "lightViewMatrix");
+	_lightProjMatrixUniform = glGetUniformLocation(_programId, "lightProjectionMatrix");
+	_lightScaleBiasMatrixUniform = glGetUniformLocation(_programId, "lightScaleBiasMatrix");
 
 	//=========================================================
 	//Инициализация uniform-переменных для освещения		
@@ -41,25 +41,24 @@ void ProjectionTextureMaterial::initialize()
 	//=========================================================
 	//Инициализация uniform-переменных для текстурирования
 	_diffuseTexUniform = glGetUniformLocation(_programId, "diffuseTex");	
-	_projTexUniform = glGetUniformLocation(_programId, "projTex");
+	_shadowTexUniform = glGetUniformLocation(_programId, "shadowTex");
 
 	//=========================================================
 	//Инициализация прочих uniform-переменных
 	_timeUniform = glGetUniformLocation(_programId, "time");
 
 
-	_projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
+	_lightScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
 }
 
-void ProjectionTextureMaterial::applyCommonUniforms() 
+void ShadowMaterial::applyCommonUniforms() 
 {
-	glUniform1f(_timeUniform, _time);
 	glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 	glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
-	glUniformMatrix4fv(_projViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projViewMatrix));
-	glUniformMatrix4fv(_projProjMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projProjMatrix));
-	glUniformMatrix4fv(_projScaleBiasMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projScaleBiasMatrix));
+	glUniformMatrix4fv(_lightViewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_lightViewMatrix));
+	glUniformMatrix4fv(_lightProjMatrixUniform, 1, GL_FALSE, glm::value_ptr(_lightProjMatrix));
+	glUniformMatrix4fv(_lightScaleBiasMatrixUniform, 1, GL_FALSE, glm::value_ptr(_lightScaleBiasMatrix));
 		
 	glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
 	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
@@ -67,7 +66,7 @@ void ProjectionTextureMaterial::applyCommonUniforms()
 	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
 }
 
-void ProjectionTextureMaterial::applyModelSpecificUniforms()
+void ShadowMaterial::applyModelSpecificUniforms()
 {
 	glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_modelMatrix));	
 
@@ -77,5 +76,5 @@ void ProjectionTextureMaterial::applyModelSpecificUniforms()
 	glUniform1f(_shininessUniform, _shininess);	
 
 	glUniform1i(_diffuseTexUniform, _diffuseTexUnit);
-	glUniform1i(_projTexUniform, _projTexUnit);
+	glUniform1i(_shadowTexUniform, _shadowTexUnit);
 }
