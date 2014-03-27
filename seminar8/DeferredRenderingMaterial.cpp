@@ -40,14 +40,13 @@ void DeferredRenderingMaterial::applyCommonUniforms()
 
 	glUniform1i(_normalsTexUniform, _normalsTexUnit);
 	glUniform1i(_diffuseTexUniform, _diffuseTexUnit);
-	glUniform1i(_depthTexUniform, _depthTexUnit);
-
-	glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
-	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
-	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
-	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
+	glUniform1i(_depthTexUniform, _depthTexUnit);	
 }
 
 void DeferredRenderingMaterial::applyModelSpecificUniforms()
 {
+	glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
+	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
+	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
+	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
 }

@@ -74,6 +74,8 @@ protected:
 	float _lightR;
 	Light _light;
 
+	std::vector<Light> _lights;
+
 	//идентификаторы текстурных объектов
 	GLuint _worldTexId;
 	GLuint _brickTexId;
@@ -127,5 +129,6 @@ protected:
 
 	void drawToFramebuffer(Camera& mainCamera);	
 	void drawDeferred(Camera& mainCamera);
+	void drawDeferredManyLights(Camera& mainCamera);
 	void drawDebug();
 };
