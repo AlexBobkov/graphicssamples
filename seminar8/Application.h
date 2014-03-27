@@ -97,6 +97,8 @@ protected:
 	Mesh _screenQuad;
 	Mesh _sphereMarker;
 
+	std::vector<glm::vec3> _positions;
+
 	GLuint _framebufferId;
 	int _fbWidth;
 	int _fbHeight;
@@ -115,5 +117,5 @@ protected:
 	void drawToShadowMap(Camera& lightCamera);
 	void drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera);
 
-	//void drawMultiObjectScene(Camera& camera);
+	void drawMultiObjectScene(Camera& mainCamera);
 };
