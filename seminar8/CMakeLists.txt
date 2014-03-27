@@ -27,6 +27,7 @@ SET(MATERIAL_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToGBufferMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToShadowMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/DeferredRenderingMaterial.h
 	
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp	
@@ -35,6 +36,7 @@ SET(MATERIAL_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToGBufferMaterial.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToShadowMaterial.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/DeferredRenderingMaterial.cpp
 )
 
 SOURCE_GROUP("Materials" FILES

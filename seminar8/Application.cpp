@@ -144,6 +144,7 @@ void Application::makeSceneImplementation()
 	_renderToShadowMaterial.initialize();
 	_colorMaterial.initialize();
 	_renderToGBufferMaterial.initialize();
+	_deferredRenderingMaterial.initialize();
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -319,7 +320,8 @@ void Application::draw()
 	else if (demoNum == 3)
 	{
 		drawToFramebuffer(_mainCamera);
-		debugDraw();
+		drawDeferred(_mainCamera);
+		drawDebug();
 	}
 
 	TwDraw();
@@ -578,11 +580,9 @@ void Application::drawToFramebuffer(Camera& mainCamera)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Application::debugDraw()
+void Application::drawDebug()
 {
-	glViewport(0, 0, _width, _height);
-	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, 400, 400);
 
 	//====== В целях отладки рисуем на экран прямоугольник с теневой картой
 	glUseProgram(_screenAlignedMaterial.getProgramId());
@@ -594,10 +594,62 @@ void Application::debugDraw()
 	_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
 	_screenAlignedMaterial.applyModelSpecificUniforms();
 
-	glViewport(0, 0, 400, 400);
+	glDisable(GL_DEPTH_TEST);
 
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
+}
+
+void Application::drawDeferred(Camera& mainCamera)
+{
+	glViewport(0, 0, _width, _height);
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//====== Рисуем на экран прямоугольник
+	glUseProgram(_deferredRenderingMaterial.getProgramId());
+	
+	_deferredRenderingMaterial.setViewMatrix(mainCamera.getViewMatrix());
+	_deferredRenderingMaterial.setProjMatrixInverse(glm::inverse(mainCamera.getProjMatrix()));
+
+	_deferredRenderingMaterial.setLightPos(_light.getLightPos4());
+	_deferredRenderingMaterial.setAmbientColor(_light.getAmbientColor());
+	_deferredRenderingMaterial.setDiffuseColor(_light.getDiffuseColor());
+	_deferredRenderingMaterial.setSpecularColor(_light.getSpecularColor());
+
+	_deferredRenderingMaterial.setNormalsTexUnit(0);
+	_deferredRenderingMaterial.setDiffuseTexUnit(1);
+	_deferredRenderingMaterial.setDepthTexUnit(2);
+
+	_deferredRenderingMaterial.setLightPos(_light.getLightPos4());
+	_deferredRenderingMaterial.setAmbientColor(_light.getAmbientColor());
+	_deferredRenderingMaterial.setDiffuseColor(_light.getDiffuseColor());
+	_deferredRenderingMaterial.setSpecularColor(_light.getSpecularColor());
+
+	_deferredRenderingMaterial.applyCommonUniforms();
+
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _normalsTexId);
+	glBindSampler(0, _sampler);
+
+	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
+	glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
+	glBindSampler(1, _sampler);
+
+	glActiveTexture(GL_TEXTURE0 + 2);  //текстурный юнит 2
+	glBindTexture(GL_TEXTURE_2D, _depthTexId);
+	glBindSampler(2, _sampler);
+	
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
 
 	glBindSampler(0, 0);
 	glUseProgram(0);

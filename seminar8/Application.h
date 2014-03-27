@@ -19,6 +19,7 @@
 #include "RenderToGBufferMaterial.h"
 #include "RenderToShadowMaterial.h"
 #include "ColorMaterial.h"
+#include "DeferredRenderingMaterial.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Light.h"
@@ -62,6 +63,7 @@ protected:
 	RenderToGBufferMaterial _renderToGBufferMaterial;
 	RenderToShadowMaterial _renderToShadowMaterial;
 	ColorMaterial _colorMaterial;
+	DeferredRenderingMaterial _deferredRenderingMaterial;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -123,6 +125,7 @@ protected:
 
 	void drawMultiObjectScene(Camera& mainCamera);
 
-	void drawToFramebuffer(Camera& mainCamera);
-	void debugDraw();
+	void drawToFramebuffer(Camera& mainCamera);	
+	void drawDeferred(Camera& mainCamera);
+	void drawDebug();
 };
