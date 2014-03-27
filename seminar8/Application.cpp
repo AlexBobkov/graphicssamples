@@ -52,7 +52,7 @@ _oldTime(0.0f),
 	_height(800),
 	_lightTheta(0.7f),
 	_lightPhi(0.7f),
-	_lightR(5.0f)
+	_lightR(7.0f)
 {
 }
 
@@ -109,7 +109,7 @@ void Application::initOthers()
 
 	TwAddVarRW(_bar, "Color.z", TW_TYPE_FLOAT, &_diffuseColor.z, "min=0 max=1 step=0.01");
 	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
-	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "step=0.01");
+	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "min=0.01 max=1.56 step=0.01");
 
 	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
 	glfwSetMouseButtonCallback(_window, mouseButtonPressedCallback);
@@ -130,27 +130,6 @@ void Application::setWindowSize(int width, int height)
 void Application::makeScene()
 {
 	makeSceneImplementation();
-}
-
-void Application::run()
-{
-	while (!glfwWindowShouldClose(_window))
-	{
-		glfwPollEvents();
-
-		update();
-
-		draw();
-	}
-}
-
-void Application::update()
-{
-	_mainCamera.update();
-	
-	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);		
-	glm::mat4 lightViewMatrix = glm::lookAt(glm::vec3(_lightPos.x, _lightPos.y, _lightPos.z), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));		
-	_lightCamera.setViewMatrix(lightViewMatrix);
 }
 
 void Application::makeSceneImplementation()
@@ -208,13 +187,7 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	//Инициализируем 2ю камеру для примера с 2мя камерами
-	glm::vec3 lightCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
-	glm::mat4 lightViewMatrix = glm::lookAt(lightCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 lightProjMatrix = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 10.f);
-
-	_lightCamera.setCameraPos(lightCameraPos);
-	_lightCamera.setViewMatrix(lightViewMatrix);
-	_lightCamera.setProjMatrix(lightProjMatrix);
+	_lightCamera.setProjMatrix(glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 20.f));
 
 	initShadowFramebuffer();
 }
@@ -250,6 +223,27 @@ void Application::initShadowFramebuffer()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Application::run()
+{
+	while (!glfwWindowShouldClose(_window))
+	{
+		glfwPollEvents();
+
+		update();
+
+		draw();
+	}
+}
+
+void Application::update()
+{
+	_mainCamera.update();
+	
+	_lightPos = glm::vec4(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR, 1.0);
+	_lightCamera.setCameraPos(glm::vec3(_lightPos.x, _lightPos.y, _lightPos.z));
+	_lightCamera.setViewMatrix(glm::lookAt(glm::vec3(_lightPos.x, _lightPos.y, _lightPos.z), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+}
+
 void Application::draw()
 {
 	drawToShadowMap(_lightCamera);
@@ -275,8 +269,7 @@ void Application::drawToShadowMap(Camera& lightCamera)
 	_renderToShadowMaterial.applyCommonUniforms();
 
 	//====== Кролик ======
-	//_renderToShadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, sin((float)glfwGetTime()) - 1.0f)));
-	_renderToShadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f)));
+	_renderToShadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, sin((float)glfwGetTime()))));	
 	_renderToShadowMaterial.applyModelSpecificUniforms();	
 
 	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray
@@ -296,9 +289,66 @@ void Application::drawToShadowMap(Camera& lightCamera)
 void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 {
 	glViewport(0, 0, _width, _height);
-	glClearColor(0, 0, 0, 1);
+	glClearColor(199.0 / 255.0, 221.0 / 255.0, 235.0 / 255.0, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-			
+
+
+	//====== Рисуем на экран тех же самых кролика и сферу
+	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+
+	_commonMaterial.setTime((float)glfwGetTime());
+	_commonMaterial.setViewMatrix(mainCamera.getViewMatrix());
+	_commonMaterial.setProjectionMatrix(mainCamera.getProjMatrix());
+
+	_commonMaterial.setLightPos(_lightPos);
+	_commonMaterial.setAmbientColor(_ambientColor);
+	_commonMaterial.setDiffuseColor(_diffuseColor);
+	_commonMaterial.setSpecularColor(_specularColor);
+
+	_commonMaterial.applyCommonUniforms();
+
+
+	//====== Кролик ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, sin((float)glfwGetTime()))));
+	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();	
+
+	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем
+
+	//====== Сфера ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+
+	//====== Плоскость земли ======
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _repeatSampler);
+
+	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
+	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	_commonMaterial.setShininess(100.0f);
+	_commonMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_ground.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем
+
+
+	//====== В целях отладки рисуем на экран прямоугольник с теневой картой
 	glUseProgram(_screenAlignedMaterial.getProgramId());
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -308,7 +358,7 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
 	_screenAlignedMaterial.applyModelSpecificUniforms();
 
-	//glViewport(0, 0, 400, 400);
+	glViewport(0, 0, 400, 400);
 
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
