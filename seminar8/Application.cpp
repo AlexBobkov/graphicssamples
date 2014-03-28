@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 3;
+int demoNum = 1;
 //1 - shadow map
 //2 - many objects standard rendering
 //3 - deferred rendering
@@ -179,6 +179,14 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		
+	glGenSamplers(1, &_depthSampler);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
 	glGenSamplers(1, &_repeatSampler);	
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -195,7 +203,7 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	//Инициализируем 2ю камеру для примера с 2мя камерами
-	_lightCamera.setProjMatrix(glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 20.f));
+	_lightCamera.setProjMatrix(glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f));
 
 	if (demoNum == 1)
 	{
@@ -369,8 +377,8 @@ void Application::drawToShadowMap(Camera& lightCamera)
 	_renderToShadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, sin((float)glfwGetTime()))));	
 	_renderToShadowMaterial.applyModelSpecificUniforms();	
 
-	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray
-	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем
+	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем
 
 	//====== Сфера ======
 	_renderToShadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
@@ -410,7 +418,8 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 
 	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
 	glBindTexture(GL_TEXTURE_2D, _depthTexId);
-	glBindSampler(1, _sampler);
+	glBindSampler(1, _depthSampler);
+	//glBindSampler(1, _sampler);
 
 	//====== Кролик ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -422,8 +431,8 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	_shadowMaterial.setShininess(100.0f);
 	_shadowMaterial.applyModelSpecificUniforms();	
 
-	glBindVertexArray(_bunny.getVao()); //Подключаем VertexArray
-	glDrawArrays(GL_TRIANGLES, 0, _bunny.getNumVertices()); //Рисуем
+	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем
 
 	//====== Сфера ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0

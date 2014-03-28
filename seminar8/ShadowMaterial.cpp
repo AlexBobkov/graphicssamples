@@ -12,7 +12,7 @@ ShadowMaterial::ShadowMaterial()
 void ShadowMaterial::initialize()
 {
 	std::string vertFilename = "shaders8/shadow.vert";
-	std::string fragFilename = "shaders8/shadow.frag";
+	std::string fragFilename = "shaders8/shadow2.frag";
 
 	_programId = makeShaderProgram(vertFilename, fragFilename);
 		

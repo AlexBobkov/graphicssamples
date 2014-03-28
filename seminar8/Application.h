@@ -91,6 +91,7 @@ protected:
 
 	//параметры чтения из текстуры
 	GLuint _sampler;
+	GLuint _depthSampler;
 	GLuint _repeatSampler;
 	GLuint _cubeSampler;
 
