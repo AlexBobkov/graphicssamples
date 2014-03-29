@@ -19,7 +19,7 @@
 #include "Material.h"
 
 /**
-	Рендерит в G-буфер: нормали и диффузный цвет
+Шейдер для рендеринга в G-буфер: нормали и диффузный цвет
 */
 class RenderToGBufferMaterial: public Material
 {
@@ -35,7 +35,7 @@ public:
 	void setProjectionMatrix(glm::mat4 mat) { _projMatrix = mat; }	
 
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
-	
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _timeUniform;
@@ -43,7 +43,7 @@ protected:
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;	
 	GLuint _normalToCameraMatrixUniform;
-	
+
 	GLuint _diffuseTexUniform;
 
 	//====== переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров ======
@@ -51,7 +51,7 @@ protected:
 	glm::mat4 _modelMatrix;
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
-	
+
 	//текстурные юниты
 	int _diffuseTexUnit;
 };

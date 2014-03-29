@@ -19,7 +19,7 @@
 #include "Material.h"
 
 /**
-	Простой шейдер для рендера одноцветных объектов (например, маркеров для источников света)
+Простой шейдер для рендера одноцветных объектов (например, маркеров для источников света)
 */
 class ColorMaterial: public Material
 {
@@ -35,7 +35,7 @@ public:
 	void setProjectionMatrix(glm::mat4 mat) { _projMatrix = mat; }
 
 	void setColor(glm::vec3 color) { _color = color; }
-	
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _modelMatrixUniform;

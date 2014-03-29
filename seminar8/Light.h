@@ -17,16 +17,17 @@
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 
 /**
-	Источник света
+Источник света. Содержит положение и интенсивности разных компонент освещения.
 */
 class Light
 {
 public:
 	Light();	
 
-	glm::vec3 getLightPos() { return _lightPos; }
-	glm::vec4 getLightPos4() { return glm::vec4(_lightPos, 1.0); }
+	glm::vec3 getLightPos() { return _lightPos; }	
 	void setLightPos(glm::vec3 pos) { _lightPos = pos; }
+
+	glm::vec4 getLightPos4() { return glm::vec4(_lightPos, 1.0); }
 
 	glm::vec3 getAmbientColor() { return _ambientColor; }  
 	void setAmbientColor(glm::vec3 color) { _ambientColor = color; }

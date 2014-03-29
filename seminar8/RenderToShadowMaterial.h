@@ -19,7 +19,7 @@
 #include "Material.h"
 
 /**
-	Простой шейдер для рендера в теневую текстур
+Простой шейдер для рендера в теневую текстур
 */
 class RenderToShadowMaterial: public Material
 {
@@ -33,7 +33,7 @@ public:
 	void setModelMatrix(glm::mat4 mat) { _modelMatrix = mat; }
 	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
 	void setProjectionMatrix(glm::mat4 mat) { _projMatrix = mat; }	
-	
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _modelMatrixUniform;

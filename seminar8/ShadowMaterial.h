@@ -19,7 +19,7 @@
 #include "Material.h"
 
 /**
-	Шейдер для наложения теней
+Шейдер, который рендерит сцену с освещением и использует теневую карту для показа теней
 */
 class ShadowMaterial: public Material
 {
@@ -29,7 +29,7 @@ public:
 	void initialize() override;
 	void applyCommonUniforms() override;
 	void applyModelSpecificUniforms() override;
-	
+
 	void setModelMatrix(glm::mat4 mat) { _modelMatrix = mat; }
 	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
 	void setProjectionMatrix(glm::mat4 mat) { _projMatrix = mat; }
@@ -46,7 +46,7 @@ public:
 
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
 	void setShadowTexUnit(int unit) { _shadowTexUnit = unit; }
-	
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _timeUniform;
@@ -58,7 +58,7 @@ protected:
 	GLuint _lightViewMatrixUniform;
 	GLuint _lightProjMatrixUniform;
 	GLuint _lightScaleBiasMatrixUniform;
-	
+
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
 	GLuint _diffuseColorUniform;
@@ -78,7 +78,7 @@ protected:
 	glm::mat4 _lightViewMatrix;
 	glm::mat4 _lightProjMatrix;
 	glm::mat4 _lightScaleBiasMatrix;
-	
+
 	//параметры освещения
 	glm::vec4 _lightPos; //in world space
 	glm::vec3 _ambientColor;

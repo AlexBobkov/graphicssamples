@@ -19,7 +19,7 @@
 #include "Material.h"
 
 /**
-	Шейдер для прямоугольника с текстурой, который всегда смотрит в камеру
+Шейдер для прямоугольника с текстурой, который всегда смотрит в камеру
 */
 class ScreenAlignedQuadMaterial: public Material
 {
@@ -29,13 +29,13 @@ public:
 	void initialize() override;
 	void applyCommonUniforms() override;
 	void applyModelSpecificUniforms() override;
-	
+
 	void setTexUnit(int unit) { _texUnit = unit; }
-	
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _texUniform;
-		
+
 	//текстурные юниты
 	int _texUnit;
 };

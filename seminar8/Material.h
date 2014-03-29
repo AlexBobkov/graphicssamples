@@ -12,7 +12,7 @@
 #include <string.h>
 
 /**
-	Базовый класс для шейдеров. Содержит код загрузки шейдеров.
+Базовый класс для шейдеров. Содержит код загрузки шейдеров.
 */
 class Material
 {
@@ -27,12 +27,12 @@ public:
 
 	//Загрузка на видеокарту значений uniform-переменных, которые различаются между 3д-моделями
 	virtual void applyModelSpecificUniforms() = 0;
-	
+
 	GLuint getProgramId() { return _programId; }
 
 protected:
 	GLuint makeShader(GLenum shaderType, std::string filename); //Читает текст шейдера из файла и создает объект
 	GLuint makeShaderProgram(std::string vertFilename, std::string fragFilename);
-		
+
 	GLuint _programId;
 };

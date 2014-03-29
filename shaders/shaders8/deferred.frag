@@ -23,6 +23,12 @@ void main()
 
 	vec3 normalColor = texture(normalsTex, interpTc).rgb;	
 	vec3 normal = normalColor * 2.0 - 1.0;
+
+	if (length(normalColor) < 0.5)
+	{
+		discard;
+		return;
+	}
 	
 	vec3 depthColor = texture(depthTex, interpTc).rgb;
 	vec3 normCoords = vec3(interpTc * 2.0 - 1.0, depthColor.z * 2.0 - 1.0);

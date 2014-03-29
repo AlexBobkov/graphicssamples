@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 1;
+int demoNum = 3;
 //1 - shadow map
 //2 - many objects standard rendering
 //3 - deferred rendering
@@ -113,8 +113,11 @@ void Application::initOthers()
 	_bar = TwNewBar("TweakBar");
 	TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
 		
-	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
-	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "min=0.01 max=1.56 step=0.01");
+	if (demoNum != 3)
+	{
+		TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
+		TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "min=0.01 max=1.56 step=0.01");
+	}
 
 	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
 	glfwSetMouseButtonCallback(_window, mouseButtonPressedCallback);
@@ -168,10 +171,12 @@ void Application::makeSceneImplementation()
 	_screenQuad = Mesh::makeScreenAlignedQuad();
 	_sphereMarker = Mesh::makeSphere(0.1f);
 
-	//Инициализацируем значения переменных освщения
+	//Инициализацируем значения переменных освщения	
 	_light.setAmbientColor(glm::vec3(0.2, 0.2, 0.2));
 	_light.setDiffuseColor(glm::vec3(0.8, 0.8, 0.8));
 	_light.setSpecularColor(glm::vec3(0.5, 0.5, 0.5));
+
+	_lightCamera.setProjMatrix(glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f));
 	
 	//Инициализируем сэмплер - объект, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);
@@ -202,24 +207,24 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
 	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	//Инициализируем 2ю камеру для примера с 2мя камерами
-	_lightCamera.setProjMatrix(glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f));
-
+	
 	if (demoNum == 1)
 	{
-		initShadowFramebuffer();
+		initShadowFramebuffer(); //инициализация фреймбуфера для рендеринга в теневую карту
 	}
 	else if (demoNum == 3)
 	{
-		initDeferredRenderingFramebuffer();
+		initDeferredRenderingFramebuffer(); //инициализация фреймбуфера для рендеринга в G-буфер (текстура с нормалями, текстура с диффузным цветом, текстура с глубинами)
 	}
 
+	//инициализируем положения центров сфер
 	float size = 20.0f;
 	for (int i = 0; i < 10; i++)
 	{
 		_positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
 	}
 
+	//инициализируем рандомные источники света
 	size = 30.0f;
 	for (int i = 0; i < 10; i++)
 	{
@@ -230,12 +235,9 @@ void Application::makeSceneImplementation()
 		getColorFromLinearPalette(frand(), r, g, b);
 
 		light.setAmbientColor(glm::vec3(0.0 * r, 0.0 * g, 0.0 * b));
-		light.setDiffuseColor(glm::vec3(0.4 * r, 0.4 * g, 0.4 * b));
-		//light.setDiffuseColor(glm::vec3(r, g, b));
+		light.setDiffuseColor(glm::vec3(0.4 * r, 0.4 * g, 0.4 * b));		
 		light.setSpecularColor(glm::vec3(0.5, 0.5, 0.5));
-
-		std::cout << "Color " << r << " " << g << " " << b << std::endl;
-
+				
 		_lights.push_back(light);
 	}
 }
@@ -367,13 +369,13 @@ void Application::drawToShadowMap(Camera& lightCamera)
 	glViewport(0, 0, _fbWidth, _fbHeight);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
-	glUseProgram(_renderToShadowMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+	glUseProgram(_renderToShadowMaterial.getProgramId()); //Подключаем легкий шейдер для рендеринга в теневую карту
 
 	_renderToShadowMaterial.setViewMatrix(lightCamera.getViewMatrix());
 	_renderToShadowMaterial.setProjectionMatrix(lightCamera.getProjMatrix());
 	_renderToShadowMaterial.applyCommonUniforms();
 
-	//====== Кролик ======
+	//====== Куб ======
 	_renderToShadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, sin((float)glfwGetTime()))));	
 	_renderToShadowMaterial.applyModelSpecificUniforms();	
 
@@ -384,11 +386,11 @@ void Application::drawToShadowMap(Camera& lightCamera)
 	_renderToShadowMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 	_renderToShadowMaterial.applyModelSpecificUniforms();
 
-	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
 
 	glUseProgram(0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); //Отключаем фреймбуфер
 }
 
 void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
@@ -398,8 +400,8 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
 
-	//====== Рисуем на экран тех же самых кролика и сферу
-	glUseProgram(_shadowMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+	//====== Рисуем на экран те же самые объекты
+	glUseProgram(_shadowMaterial.getProgramId()); //Подключаем шейдер, который рендерит сцену с освещением и с тенями
 
 	_shadowMaterial.setViewMatrix(mainCamera.getViewMatrix());
 	_shadowMaterial.setProjectionMatrix(mainCamera.getProjMatrix());
@@ -418,10 +420,10 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 
 	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
 	glBindTexture(GL_TEXTURE_2D, _depthTexId);
-	glBindSampler(1, _depthSampler);
+	glBindSampler(1, _depthSampler); //специальный семплер, который нужно использовать в связке с типом sampler2DShadow в шейдере
 	//glBindSampler(1, _sampler);
 
-	//====== Кролик ======
+	//====== Куб ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _brickTexId);
 	glBindSampler(0, _sampler);
@@ -444,8 +446,8 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	_shadowMaterial.setShininess(100.0f);
 	_shadowMaterial.applyModelSpecificUniforms();
 
-	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
 
 	//====== Плоскость земли ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -472,11 +474,13 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	_colorMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _light.getLightPos()));	
 	_colorMaterial.applyModelSpecificUniforms();
 
-	glBindVertexArray(_sphereMarker.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphereMarker.getNumVertices()); //Рисуем сферу
+	glBindVertexArray(_sphereMarker.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _sphereMarker.getNumVertices()); //Рисуем
 
 
 	//====== В целях отладки рисуем на экран прямоугольник с теневой картой
+	glViewport(0, 0, 300, 300);
+
 	glUseProgram(_screenAlignedMaterial.getProgramId());
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -484,9 +488,7 @@ void Application::drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera)
 	glBindSampler(0, _sampler);
 
 	_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
-	_screenAlignedMaterial.applyModelSpecificUniforms();
-
-	glViewport(0, 0, 400, 400);
+	_screenAlignedMaterial.applyModelSpecificUniforms();	
 
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
@@ -501,7 +503,7 @@ void Application::drawMultiObjectScene(Camera& mainCamera)
 	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 		
-	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+	glUseProgram(_commonMaterial.getProgramId()); //Подключаем стандартный шейдер, который рендерит сцену с освещением
 
 	_commonMaterial.setTime((float)glfwGetTime());
 	_commonMaterial.setViewMatrix(mainCamera.getViewMatrix());
@@ -527,8 +529,8 @@ void Application::drawMultiObjectScene(Camera& mainCamera)
 		_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i]));
 		_commonMaterial.applyModelSpecificUniforms();
 
-		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
+		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
 	}
 
 	//====== Плоскость земли ======
@@ -573,7 +575,7 @@ void Application::drawToFramebuffer(Camera& mainCamera)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
 
-	glUseProgram(_renderToGBufferMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
+	glUseProgram(_renderToGBufferMaterial.getProgramId()); //Подключаем шейдер, который рендерит в 3 текстуры: текстуру с нормалями, с глубинами, с диффузным цветом
 
 	_renderToGBufferMaterial.setViewMatrix(mainCamera.getViewMatrix());
 	_renderToGBufferMaterial.setProjectionMatrix(mainCamera.getProjMatrix());	
@@ -588,11 +590,11 @@ void Application::drawToFramebuffer(Camera& mainCamera)
 
 	for (unsigned int i = 0; i < _positions.size(); i++)
 	{
-		_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i]));
+		_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i])); //считаем матрицу модели, используя координаты центра сферы
 		_renderToGBufferMaterial.applyModelSpecificUniforms();
 
-		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
+		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
+		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
 	}
 
 	//====== Плоскость земли ======
@@ -643,7 +645,7 @@ void Application::drawDeferred(Camera& mainCamera)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//====== Рисуем на экран прямоугольник
-	glUseProgram(_deferredRenderingMaterial.getProgramId());
+	glUseProgram(_deferredRenderingMaterial.getProgramId()); //шейдер для отложенного освещения, который принимает на вход 3 текстуры: текстуру с нормалями, с глубинами, с диффузным цветом
 	
 	_deferredRenderingMaterial.setViewMatrix(mainCamera.getViewMatrix());
 	_deferredRenderingMaterial.setProjMatrixInverse(glm::inverse(mainCamera.getProjMatrix()));
@@ -684,8 +686,8 @@ void Application::drawDeferred(Camera& mainCamera)
 
 void Application::drawDeferredManyLights(Camera& mainCamera)
 {
-	glViewport(0, 0, _width, _height);
-	glClearColor(0, 0, 0, 1);
+	glViewport(0, 0, _width, _height);	
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//====== Рисуем на экран прямоугольник
@@ -717,11 +719,23 @@ void Application::drawDeferredManyLights(Camera& mainCamera)
 	glBindTexture(GL_TEXTURE_2D, _depthTexId);
 	glBindSampler(2, _sampler);
 
+
+	//========= Сначала рендерим прямоугольник для 0го источника света (чтобы перезаписать цвет фона)
+	_deferredRenderingMaterial.setLightPos(_lights[0].getLightPos4());
+	_deferredRenderingMaterial.setAmbientColor(_lights[0].getAmbientColor());
+	_deferredRenderingMaterial.setDiffuseColor(_lights[0].getDiffuseColor());
+	_deferredRenderingMaterial.setSpecularColor(_lights[0].getSpecularColor());
+	_deferredRenderingMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+	
+	//========= Затем рендерим для каждого источника света по 1му прямоугольнику на весь экран (при этом включаем суммирование цветов)
 	glDisable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE);
 
-	for (unsigned i = 0; i < _lights.size(); i++)
+	for (unsigned i = 1; i < _lights.size(); i++)
 	{
 		_deferredRenderingMaterial.setLightPos(_lights[i].getLightPos4());
 		_deferredRenderingMaterial.setAmbientColor(_lights[i].getAmbientColor());

@@ -19,7 +19,7 @@
 #include "Material.h"
 
 /**
-	Типовой шейдер. Применяется для обычных 3д-моделей. Реализует освещение и текстурирование. Инкапсулирует работу с шейдерами: создание шейдера, хранение uniform-переменных
+Типовой шейдер. Применяется для обычных 3д-моделей. Реализует освещение и текстурирование. Инкапсулирует работу с шейдерами: создание шейдера, хранение uniform-переменных
 */
 class CommonMaterial: public Material
 {
@@ -44,7 +44,7 @@ public:
 	void setShininess(float s) { _shininess = s; }
 
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
-	
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _timeUniform;
@@ -52,7 +52,7 @@ protected:
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;	
 	GLuint _normalToCameraMatrixUniform;
-	
+
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
 	GLuint _diffuseColorUniform;
@@ -69,7 +69,7 @@ protected:
 	glm::mat4 _modelMatrix;
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
-	
+
 	//параметры освещения
 	glm::vec4 _lightPos; //in world space
 	glm::vec3 _ambientColor;
