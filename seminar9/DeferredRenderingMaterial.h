@@ -31,7 +31,12 @@ public:
 	void applyModelSpecificUniforms() override;
 
 	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
+
+	void setViewMatrixInverse(glm::mat4 mat) { _viewMatrixInverse = mat; }
 	void setProjMatrixInverse(glm::mat4 mat) { _projMatrixInverse = mat; }
+
+	void setLightViewMatrix(glm::mat4 mat) { _lightViewMatrix = mat; }
+	void setLightProjectionMatrix(glm::mat4 mat) { _lightProjMatrix = mat; }
 
 	void setLightPos(glm::vec4 vec) { _lightPos = vec; }	
 	void setAmbientColor(glm::vec3 vec) { _ambientColor = vec; }	
@@ -41,15 +46,23 @@ public:
 	void setNormalsTexUnit(int unit) { _normalsTexUnit = unit; }
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
 	void setDepthTexUnit(int unit) { _depthTexUnit = unit; }
+	void setShadowTexUnit(int unit) { _shadowTexUnit = unit; }
 
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _viewMatrixUniform;
+
+	GLuint _viewMatrixInverseUniform;
 	GLuint _projMatrixInverseUniform;
+
+	GLuint _lightViewMatrixUniform;
+	GLuint _lightProjMatrixUniform;
+	GLuint _lightScaleBiasMatrixUniform;
 
 	GLuint _normalsTexUniform;
 	GLuint _diffuseTexUniform;
 	GLuint _depthTexUniform;
+	GLuint _shadowTexUniform;
 
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
@@ -57,12 +70,19 @@ protected:
 	GLuint _specularColorUniform;	
 
 	glm::mat4 _viewMatrix;
+
+	glm::mat4 _viewMatrixInverse;
 	glm::mat4 _projMatrixInverse;
+
+	glm::mat4 _lightViewMatrix;
+	glm::mat4 _lightProjMatrix;
+	glm::mat4 _lightScaleBiasMatrix;
 
 	//текстурные юниты
 	int _normalsTexUnit;
 	int _diffuseTexUnit;
 	int _depthTexUnit;
+	int _shadowTexUnit;
 
 	//параметры освещения
 	glm::vec4 _lightPos; //in world space

@@ -124,6 +124,6 @@ protected:
 
 	void renderToShadowMap(Camera& lightCamera);
 	void renderToGBuffer(Camera& mainCamera);	
-	void renderDeferred(Camera& mainCamera);		 
+	void renderDeferred(Camera& mainCamera, Camera& lightCamera);		 
 	void renderDebug(int x, int y, int width, int height, GLuint texId);
 };
