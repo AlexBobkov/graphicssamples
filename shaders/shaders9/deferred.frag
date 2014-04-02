@@ -3,8 +3,7 @@
 uniform sampler2D normalsTex;
 uniform sampler2D diffuseTex;
 uniform sampler2D depthTex;
-//uniform sampler2DShadow shadowTex;
-uniform sampler2D shadowTex;
+uniform sampler2DShadow shadowTex;
 
 uniform mat4 projMatrixInverse;
 uniform mat4 viewMatrixInverse;
@@ -57,19 +56,10 @@ void main()
 	vec4 shadowTc = lightScaleBiasMatrix * lightProjectionMatrix * lightViewMatrix * viewMatrixInverse * vec4(pos.xyz, 1.0);	
 	shadowTc.xyz /= shadowTc.w;
 
-	//float visibility = 1.0;
-	//for (int i = 0; i < 4; i++)
-	//{		
-	//	visibility -= 0.2 * (1.0 - texture(shadowTex, vec3(shadowTc.xy + poissonDisk[i] / 700.0, shadowTc.z - bias)));
-	//}
-
-	float fragDepth = shadowTc.z; //глубина фрагмента в пространстве источника света
-	float shadowDepth = texture(shadowTex, shadowTc.xy).z; //глубина ближайшего фрагмента в пространстве источника света
-
 	float visibility = 1.0;
-	if (fragDepth > shadowDepth)
-	{
-		visibility = 0.5;
+	for (int i = 0; i < 4; i++)
+	{		
+		visibility -= 0.2 * (1.0 - texture(shadowTex, vec3(shadowTc.xy + poissonDisk[i] / 700.0, shadowTc.z - bias)));
 	}
 
 

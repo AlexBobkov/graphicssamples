@@ -331,6 +331,9 @@ void Application::renderToShadowMap(Camera& lightCamera)
 	_renderToShadowMaterial.setProjectionMatrix(lightCamera.getProjMatrix());
 	_renderToShadowMaterial.applyCommonUniforms();
 
+	glEnable(GL_CULL_FACE);    
+	glFrontFace(GL_CW);
+	glCullFace(GL_FRONT);
 
 	//====== Сфера ======
 	for (unsigned int i = 0; i < _positions.size(); i++)
@@ -341,6 +344,8 @@ void Application::renderToShadowMap(Camera& lightCamera)
 		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
 		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
 	}
+
+	glDisable(GL_CULL_FACE);
 
 	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
@@ -467,8 +472,7 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera)
 
 	glActiveTexture(GL_TEXTURE0 + 3);  //текстурный юнит 3
 	glBindTexture(GL_TEXTURE_2D, _shadowMapTexId);
-	//glBindSampler(3, _depthSampler);
-	glBindSampler(3, _sampler);
+	glBindSampler(3, _depthSampler);
 	
 
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
