@@ -11,8 +11,8 @@ DeferredRenderingMaterial::DeferredRenderingMaterial()
 
 void DeferredRenderingMaterial::initialize()
 {
-	std::string vertFilename = "shaders8/deferred.vert";
-	std::string fragFilename = "shaders8/deferred.frag";
+	std::string vertFilename = "shaders9/deferred.vert";
+	std::string fragFilename = "shaders9/deferred.frag";
 
 	_programId = makeShaderProgram(vertFilename, fragFilename);		
 

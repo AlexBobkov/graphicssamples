@@ -74,26 +74,23 @@ protected:
 	float _lightR;
 	Light _light;
 
-	std::vector<Light> _lights;
-
 	//идентификаторы текстурных объектов
 	GLuint _worldTexId;
 	GLuint _brickTexId;
-	GLuint _grassTexId;	
-	GLuint _specularTexId;
-	GLuint _chessTexId;
-	GLuint _myTexId;
-	GLuint _cubeTexId;
-	GLuint _colorTexId;	
+	GLuint _grassTexId;
+
+	//текстуры для G-буфера
 	GLuint _depthTexId;
 	GLuint _normalsTexId;
 	GLuint _diffuseTexId;
+
+	//текстуры для карты теней
+	GLuint _shadowMapTexId;
 
 	//параметры чтения из текстуры
 	GLuint _sampler;
 	GLuint _depthSampler;
 	GLuint _repeatSampler;
-	GLuint _cubeSampler;
 
 	//полигональные 3д-модели
 	Mesh _sphere;
@@ -107,7 +104,9 @@ protected:
 
 	std::vector<glm::vec3> _positions;
 
-	GLuint _framebufferId;
+	GLuint _shadowFramebufferId;
+	GLuint _deferredRenderingFramebufferId;
+
 	int _shadowMapWidth;
 	int _shadowMapHeight;
 
@@ -123,13 +122,8 @@ protected:
 	void initShadowFramebuffer();
 	void initDeferredRenderingFramebuffer();
 
-	void drawToShadowMap(Camera& lightCamera);
-	void drawSceneWithShadow(Camera& mainCamera, Camera& lightCamera);
-
-	void drawMultiObjectScene(Camera& mainCamera);
-
-	void drawToFramebuffer(Camera& mainCamera);	
-	void drawDeferred(Camera& mainCamera);
-	void drawDeferredManyLights(Camera& mainCamera);
-	void drawDebug();
+	void renderToShadowMap(Camera& lightCamera);
+	void renderToGBuffer(Camera& mainCamera);	
+	void renderDeferred(Camera& mainCamera);		 
+	void renderDebug(int x, int y, int width, int height, GLuint texId);
 };
