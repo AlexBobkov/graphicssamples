@@ -150,9 +150,7 @@ void Application::makeScene()
 void Application::makeSceneImplementation()
 {
 	//Инициализируем шейдеры
-	_commonMaterial.initialize();
 	_screenAlignedMaterial.initialize();
-	_shadowMaterial.initialize();
 	_renderToShadowMaterial.initialize();
 	_colorMaterial.initialize();
 	_renderToGBufferMaterial.initialize();

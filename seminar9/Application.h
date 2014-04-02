@@ -13,9 +13,7 @@
 
 #include <AntTweakBar.h>
 
-#include "CommonMaterial.h"
 #include "ScreenAlignedQuadMaterial.h"
-#include "ShadowMaterial.h"
 #include "RenderToGBufferMaterial.h"
 #include "RenderToShadowMaterial.h"
 #include "ColorMaterial.h"
@@ -57,9 +55,7 @@ public:
 protected:
 	GLFWwindow* _window;
 	
-	CommonMaterial _commonMaterial;	
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
-	ShadowMaterial _shadowMaterial;
 	RenderToGBufferMaterial _renderToGBufferMaterial;
 	RenderToShadowMaterial _renderToShadowMaterial;
 	ColorMaterial _colorMaterial;
