@@ -23,6 +23,7 @@ void ScreenAlignedQuadMaterial::initialize()
 	}
 	else if (_gamma)
 	{
+		fragFilename = "shaders9/gamma.frag";
 	}
 
 	_programId = makeShaderProgram(vertFilename, fragFilename);		

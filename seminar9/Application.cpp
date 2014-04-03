@@ -9,6 +9,8 @@
 int demoNum = 1;
 
 bool hdr = false;
+bool grayscale = false;
+bool gamma = true;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -163,6 +165,9 @@ void Application::makeSceneImplementation()
 
 	_grayscaleEffect.setGrayscale(true);
 	_grayscaleEffect.initialize();
+
+	_gammaEffect.setGamma(true);
+	_gammaEffect.initialize();
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -562,9 +567,24 @@ void Application::renderFinal(GLuint fbId)
 
 	glViewport(0, 0, _width, _height);
 
-	glUseProgram(_grayscaleEffect.getProgramId());
-	_grayscaleEffect.setTexUnit(0); //текстурный юнит 0		
-	_grayscaleEffect.applyModelSpecificUniforms();
+	if (grayscale)
+	{
+		glUseProgram(_grayscaleEffect.getProgramId());
+		_grayscaleEffect.setTexUnit(0); //текстурный юнит 0		
+		_grayscaleEffect.applyModelSpecificUniforms();
+	}
+	else if (gamma)
+	{
+		glUseProgram(_gammaEffect.getProgramId());
+		_gammaEffect.setTexUnit(0); //текстурный юнит 0		
+		_gammaEffect.applyModelSpecificUniforms();
+	}
+	else
+	{
+		glUseProgram(_screenAlignedMaterial.getProgramId());
+		_screenAlignedMaterial.setTexUnit(0); //текстурный юнит 0		
+		_screenAlignedMaterial.applyModelSpecificUniforms();
+	}
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _originImageTexId);

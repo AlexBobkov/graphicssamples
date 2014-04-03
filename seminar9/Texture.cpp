@@ -5,7 +5,7 @@
 
 #include "Texture.h"
 
-bool useSRGB = false;
+extern bool gamma;
 
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
@@ -29,7 +29,7 @@ GLuint Texture::loadTexture(std::string filename)
 		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
 		glimg::Dimensions dims = pImage.GetDimensions();
 
-		GLint internalFormat = useSRGB ? GL_SRGB8 : GL_RGB8;
+		GLint internalFormat = gamma ? GL_SRGB8 : GL_RGB8;
 		
 		glGenTextures(1, &texId);
 		glBindTexture(GL_TEXTURE_2D, texId);
@@ -64,7 +64,7 @@ GLuint Texture::loadTextureWithMipmaps(std::string filename)
 		glGenTextures(1, &texId);
 		glBindTexture(GL_TEXTURE_2D, texId);
 
-		GLint internalFormat = useSRGB ? GL_SRGB8 : GL_RGB8;
+		GLint internalFormat = gamma ? GL_SRGB8 : GL_RGB8;
 
 		for(int mipmapLevel = 0; mipmapLevel < pImageSet->GetMipmapCount(); mipmapLevel++)
 		{
@@ -128,7 +128,7 @@ void loadCubeTextureFace(std::string filename, GLenum target)
 		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
 		glimg::Dimensions dims = pImage.GetDimensions();
 
-		GLint internalFormat = useSRGB ? GL_SRGB8 : GL_RGB8;
+		GLint internalFormat = gamma ? GL_SRGB8 : GL_RGB8;
 
 		glTexImage2D(target, 0, internalFormat, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
 	}

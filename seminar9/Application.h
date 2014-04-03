@@ -61,6 +61,7 @@ protected:
 	DeferredRenderingMaterial _deferredRenderingMaterial;
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
 	ScreenAlignedQuadMaterial _grayscaleEffect;
+	ScreenAlignedQuadMaterial _gammaEffect;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
