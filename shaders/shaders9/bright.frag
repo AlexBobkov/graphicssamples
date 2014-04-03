@@ -12,7 +12,7 @@ void main()
 
 	fragColor = vec4(texColor, 1.0);
 
-	if (length(texColor) < 0.8)
+	if (length(texColor) < 1.5)
 	{
         fragColor.rgb = vec3(0.0);
 	}

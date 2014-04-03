@@ -35,6 +35,7 @@ void BloomEffect::initialize()
 	//=========================================================
 	//Инициализация uniform-переменных для текстурирования
 	_texUniform = glGetUniformLocation(_programId, "tex");
+	_texSizeUniform = glGetUniformLocation(_programId, "texSize");
 }
 
 void BloomEffect::applyCommonUniforms() 
@@ -44,4 +45,5 @@ void BloomEffect::applyCommonUniforms()
 void BloomEffect::applyModelSpecificUniforms()
 {
 	glUniform1i(_texUniform, _texUnit);
+	glUniform2fv(_texSizeUniform, 1, glm::value_ptr(_texSize));
 }

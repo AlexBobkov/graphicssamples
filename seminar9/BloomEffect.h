@@ -33,13 +33,16 @@ public:
 	void setPassNumber(int pass) { _pass = pass; }
 
 	void setTexUnit(int unit) { _texUnit = unit; }
+	void setTexSize(glm::vec2 size) { _texSize = size; }
 
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _texUniform;
+	GLuint _texSizeUniform;
 	
 	//текстурные юниты
 	int _texUnit;
+	glm::vec2 _texSize;
 	
 	int _pass;
 };

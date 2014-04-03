@@ -504,7 +504,9 @@ void Application::draw()
 
 	//renderFinal(0, _originImageTexId);
 	//renderFinal(0, _toneMappedImageTexId);
-	renderFinal(0, _brightImageTexId);
+	//renderFinal(0, _brightImageTexId);
+	//renderFinal(0, _horizBlurImageTexId);
+	renderFinal(0, _vertBlurImageTexId);
 
 	renderDebug(0, 0, 400, 400, _originImageTexId);
 
@@ -729,6 +731,62 @@ void Application::renderBloom()
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
+	glBindSampler(0, _sampler);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//=======================================================
+
+	glBindFramebuffer(GL_FRAMEBUFFER, _horizBlurFramebufferId);
+
+	glViewport(0, 0, _width / 2, _height / 2);
+
+
+	glUseProgram(_horizBlurPass.getProgramId());	
+	_horizBlurPass.setTexUnit(0); //текстурный юнит 0
+	_horizBlurPass.setTexSize(glm::vec2(_width / 2, _height / 2));
+	_horizBlurPass.applyModelSpecificUniforms();
+
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brightImageTexId);
+	glBindSampler(0, _sampler);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//=======================================================
+
+	glBindFramebuffer(GL_FRAMEBUFFER, _vertBlurFramebufferId);
+
+	glViewport(0, 0, _width / 2, _height / 2);
+
+
+	glUseProgram(_vertBlurPass.getProgramId());	
+	_vertBlurPass.setTexUnit(0); //текстурный юнит 0
+	_vertBlurPass.setTexSize(glm::vec2(_width / 2, _height / 2));
+	_vertBlurPass.applyModelSpecificUniforms();
+
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _horizBlurImageTexId);
 	glBindSampler(0, _sampler);
 
 	glDisable(GL_DEPTH_TEST);
