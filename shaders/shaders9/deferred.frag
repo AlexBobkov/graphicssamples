@@ -17,13 +17,6 @@ uniform vec3 ambientColor; //цвет окружающего света (апп�
 uniform vec3 diffuseColor; //цвет источника света
 uniform vec3 specularColor; //бликовый цвет источника света
 
-const float shininessFactor = 200.0; //блеск (свойство материала, влияет на размер блика)
-
-in vec4 lightPosCamSpace; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
-in vec2 interpTc; //текстурные координаты (интерполированы между вершинами треугольника)
-
-out vec4 fragColor; //выходной цвет фрагмента
-
 vec2 poissonDisk[4] = vec2[]( 
 	vec2( -0.94201624, -0.39906216 ), 
 	vec2( 0.94558609, -0.76890725 ), 
@@ -32,6 +25,14 @@ vec2 poissonDisk[4] = vec2[](
 	);
 
 const float bias = 0.0005;
+
+const float shininessFactor = 200.0; //блеск (свойство материала, влияет на размер блика)
+const float attenuation = 0.01;
+
+in vec4 lightPosCamSpace; //положение источника света в системе координат камеры (интерполировано между вершинами треугольника)
+in vec2 interpTc; //текстурные координаты (интерполированы между вершинами треугольника)
+
+out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {	
@@ -64,6 +65,7 @@ void main()
 
 
 	vec3 lightDirCamSpace = lightPosCamSpace.xyz - pos.xyz; //направление на источник света
+	float lightDistance = length(lightDirCamSpace);
 	lightDirCamSpace = normalize(lightDirCamSpace); //нормализуем направление
 
 	float cosAngIncidence = dot(normal, lightDirCamSpace); //интенсивность диффузного света
@@ -78,7 +80,7 @@ void main()
 	blinnTerm = pow(blinnTerm, shininessFactor);  //регулируем размер блика
 
 	//результирующий цвет
-	vec3 color = diffuseMaterial * ambientColor + visibility * diffuseMaterial * diffuseColor * cosAngIncidence + visibility * specularColor * blinnTerm;
+	vec3 color = diffuseMaterial * ambientColor + (visibility * diffuseMaterial * diffuseColor * cosAngIncidence + visibility * specularColor * blinnTerm) / (1.0 + attenuation * lightDistance * lightDistance);
 
 	//vec3 gamma = vec3(1.0 / 2.2);	
 	//fragColor = vec4(pow(color, gamma), 1.0);

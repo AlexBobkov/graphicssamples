@@ -70,6 +70,8 @@ protected:
 	float _lightTheta;
 	float _lightPhi;
 	float _lightR;
+	float _diffuseIntensity;
+	float _specularIntensity;
 	Light _light;
 
 	//идентификаторы текстурных объектов

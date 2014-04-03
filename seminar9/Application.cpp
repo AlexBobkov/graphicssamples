@@ -59,7 +59,9 @@ _oldTime(0.0f),
 	_height(800),
 	_lightTheta(0.7f),
 	_lightPhi(0.7f),
-	_lightR(10.0f)
+	_lightR(10.0f),
+	_diffuseIntensity(0.8),
+	_specularIntensity(0.5)
 {
 }
 
@@ -117,6 +119,9 @@ void Application::initOthers()
 
 	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
 	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "min=0.01 max=1.56 step=0.01");
+	TwAddVarRW(_bar, "Light R", TW_TYPE_FLOAT, &_lightR, "min=5.0 max=100.0 step=0.1");
+	TwAddVarRW(_bar, "Diffuse intensity", TW_TYPE_FLOAT, &_diffuseIntensity, "min=0.0 max=100.0 step=0.1");
+	TwAddVarRW(_bar, "Specular intensity", TW_TYPE_FLOAT, &_specularIntensity, "min=0.0 max=100.0 step=0.1");
 
 
 	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
@@ -186,8 +191,8 @@ void Application::makeSceneImplementation()
 
 	//Инициализацируем значения переменных освщения	
 	_light.setAmbientColor(glm::vec3(0.2, 0.2, 0.2));
-	_light.setDiffuseColor(glm::vec3(0.8, 0.8, 0.8));
-	_light.setSpecularColor(glm::vec3(0.5, 0.5, 0.5));
+	_light.setDiffuseColor(glm::vec3(_diffuseIntensity, _diffuseIntensity, _diffuseIntensity));
+	_light.setSpecularColor(glm::vec3(_specularIntensity, _specularIntensity, _specularIntensity));
 
 	//_lightCamera.setProjMatrix(glm::perspective(glm::radians(90.0f), 1.0f, 5.0f, 20.f));
 	_lightCamera.setProjMatrix(glm::perspective(glm::radians(90.0f), 1.0f, 1.0f, 30.f));
@@ -369,6 +374,9 @@ void Application::update()
 	_light.setLightPos(glm::vec3(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR));
 	_lightCamera.setCameraPos(_light.getLightPos());
 	_lightCamera.setViewMatrix(glm::lookAt(_light.getLightPos(), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+
+	_light.setDiffuseColor(glm::vec3(_diffuseIntensity, _diffuseIntensity, _diffuseIntensity));
+	_light.setSpecularColor(glm::vec3(_specularIntensity, _specularIntensity, _specularIntensity));
 }
 
 void Application::draw()
