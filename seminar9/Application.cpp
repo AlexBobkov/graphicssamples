@@ -176,7 +176,8 @@ void Application::makeSceneImplementation()
 	_light.setDiffuseColor(glm::vec3(0.8, 0.8, 0.8));
 	_light.setSpecularColor(glm::vec3(0.5, 0.5, 0.5));
 
-	_lightCamera.setProjMatrix(glm::perspective(glm::radians(90.0f), 1.0f, 5.0f, 20.f));
+	//_lightCamera.setProjMatrix(glm::perspective(glm::radians(90.0f), 1.0f, 5.0f, 20.f));
+	_lightCamera.setProjMatrix(glm::perspective(glm::radians(90.0f), 1.0f, 1.0f, 30.f));
 	
 	//Инициализируем сэмплер - объект, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);

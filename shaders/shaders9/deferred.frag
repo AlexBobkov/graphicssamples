@@ -25,11 +25,11 @@ in vec2 interpTc; //текстурные координаты (интерпол�
 out vec4 fragColor; //выходной цвет фрагмента
 
 vec2 poissonDisk[4] = vec2[]( 
-   vec2( -0.94201624, -0.39906216 ), 
-   vec2( 0.94558609, -0.76890725 ), 
-   vec2( -0.094184101, -0.92938870 ), 
-   vec2( 0.34495938, 0.29387760 )
-);
+	vec2( -0.94201624, -0.39906216 ), 
+	vec2( 0.94558609, -0.76890725 ), 
+	vec2( -0.094184101, -0.92938870 ), 
+	vec2( 0.34495938, 0.29387760 )
+	);
 
 const float bias = 0.0005;
 
@@ -45,7 +45,7 @@ void main()
 		discard;
 		return;
 	}
-	
+
 	vec3 depthColor = texture(depthTex, interpTc).rgb;
 	vec3 normCoords = vec3(interpTc * 2.0 - 1.0, depthColor.z * 2.0 - 1.0);
 	vec4 pos = projMatrixInverse * vec4(normCoords, 1.0);
@@ -65,12 +65,12 @@ void main()
 
 	vec3 lightDirCamSpace = lightPosCamSpace.xyz - pos.xyz; //направление на источник света
 	lightDirCamSpace = normalize(lightDirCamSpace); //нормализуем направление
-			    
-    float cosAngIncidence = dot(normal, lightDirCamSpace); //интенсивность диффузного света
-    cosAngIncidence = clamp(cosAngIncidence, 0, 1);
+
+	float cosAngIncidence = dot(normal, lightDirCamSpace); //интенсивность диффузного света
+	cosAngIncidence = clamp(cosAngIncidence, 0, 1);
 
 	vec3 viewDirection = normalize(-pos.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
-		
+
 	vec3 halfAngle = normalize(lightDirCamSpace + viewDirection); //биссектриса между направлениями на камеру и на источник света
 	float blinnTerm = dot(normal, halfAngle); //интенсивность бликового освещения по Блинну
 	blinnTerm = clamp(blinnTerm, 0, 1);
@@ -78,10 +78,11 @@ void main()
 	blinnTerm = pow(blinnTerm, shininessFactor);  //регулируем размер блика
 
 	//результирующий цвет
-    vec3 color = diffuseMaterial * ambientColor + visibility * diffuseMaterial * diffuseColor * cosAngIncidence + visibility * specularColor * blinnTerm;
+	vec3 color = diffuseMaterial * ambientColor + visibility * diffuseMaterial * diffuseColor * cosAngIncidence + visibility * specularColor * blinnTerm;
 
-	fragColor = vec4(color, 1.0);
-	
+	vec3 gamma = vec3(1.0 / 2.2);	
+	fragColor = vec4(pow(color, gamma), 1.0);
+
 	//fragColor = vec4(diffuseMaterial, 1.0);
 	//fragColor = vec4(normalColor, 1.0);
 	//fragColor = vec4(depthColor, 1.0);
