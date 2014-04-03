@@ -74,17 +74,22 @@ protected:
 	GLuint _worldTexId;
 	GLuint _brickTexId;
 	GLuint _grassTexId;
+		
+	//текстуры для карты теней
+	GLuint _shadowMapTexId;
 
+	//======= Текстуры, которые должны растягиваться на весь экран VVV
 	//текстуры для G-буфера
 	GLuint _depthTexId;
 	GLuint _normalsTexId;
 	GLuint _diffuseTexId;
 
-	//текстуры для карты теней
-	GLuint _shadowMapTexId;
+	GLuint _originImageTexId;
+	//================================================================
 
 	//параметры чтения из текстуры
 	GLuint _sampler;
+	GLuint _pixelPreciseSampler;
 	GLuint _depthSampler;
 	GLuint _repeatSampler;
 
@@ -101,7 +106,9 @@ protected:
 	std::vector<glm::vec3> _positions;
 
 	GLuint _shadowFramebufferId;
-	GLuint _deferredRenderingFramebufferId;
+	GLuint _GBufferFramebufferId;
+	GLuint _originImageFramebufferId;
+	//GLuint _finalFramebufferId;
 
 	int _shadowMapWidth;
 	int _shadowMapHeight;
@@ -116,10 +123,11 @@ protected:
 	void makeSceneImplementation();
 
 	void initShadowFramebuffer();
-	void initDeferredRenderingFramebuffer();
+	void initGBufferFramebuffer();
+	void initOriginImageFramebuffer();
 
-	void renderToShadowMap(Camera& lightCamera);
-	void renderToGBuffer(Camera& mainCamera);	
-	void renderDeferred(Camera& mainCamera, Camera& lightCamera);		 
+	void renderToShadowMap(Camera& lightCamera, GLuint fbId);
+	void renderToGBuffer(Camera& mainCamera, GLuint fbId);	
+	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);		 
 	void renderDebug(int x, int y, int width, int height, GLuint texId);
 };

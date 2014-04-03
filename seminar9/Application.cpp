@@ -8,6 +8,8 @@
 
 int demoNum = 1;
 
+bool hdr = false;
+
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -139,6 +141,9 @@ void Application::setWindowSize(int width, int height)
 	glBindTexture(GL_TEXTURE_2D, _depthTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
+	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, hdr ? GL_RGB16F : GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);	
+	
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -181,19 +186,11 @@ void Application::makeSceneImplementation()
 	
 	//Инициализируем сэмплер - объект, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);
-	glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		
-	glGenSamplers(1, &_depthSampler);
-	glSamplerParameteri(_depthSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(_depthSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-	glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
+	
 	glGenSamplers(1, &_repeatSampler);	
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -201,8 +198,24 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+	glGenSamplers(1, &_pixelPreciseSampler);
+	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	//Сэмплер для чтения из карты теней
+	glGenSamplers(1, &_depthSampler);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+	glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);	
+
 	initShadowFramebuffer(); //инициализация фреймбуфера для рендеринга в теневую карту
-	initDeferredRenderingFramebuffer(); //инициализация фреймбуфера для рендеринга в G-буфер (текстура с нормалями, текстура с диффузным цветом, текстура с глубинами)
+	initGBufferFramebuffer(); //инициализация фреймбуфера для рендеринга в G-буфер (текстура с нормалями, текстура с диффузным цветом, текстура с глубинами)
+	initOriginImageFramebuffer();
 
 	//инициализируем положения центров сфер
 	float size = 10.0f;
@@ -217,18 +230,15 @@ void Application::initShadowFramebuffer()
 	_shadowMapWidth = 1024;
 	_shadowMapHeight = 1024;
 
-
 	//Создаем фреймбуфер
 	glGenFramebuffers(1, &_shadowFramebufferId);
 	glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferId);
-
 
 	////Создаем текстуру, куда будем впоследствии копировать буфер глубины
 	glGenTextures(1, &_shadowMapTexId);	
 	glBindTexture(GL_TEXTURE_2D, _shadowMapTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _shadowMapWidth, _shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _shadowMapTexId, 0);
-
 
 	//Указываем куда именно мы будем рендерить		
 	GLenum buffers[] = { GL_NONE };
@@ -243,12 +253,11 @@ void Application::initShadowFramebuffer()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Application::initDeferredRenderingFramebuffer()
+void Application::initGBufferFramebuffer()
 {
 	//Создаем фреймбуфер
-	glGenFramebuffers(1, &_deferredRenderingFramebufferId);
-	glBindFramebuffer(GL_FRAMEBUFFER, _deferredRenderingFramebufferId);
-
+	glGenFramebuffers(1, &_GBufferFramebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, _GBufferFramebufferId);
 
 	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
 	glGenTextures(1, &_normalsTexId);	
@@ -268,7 +277,6 @@ void Application::initDeferredRenderingFramebuffer()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexId, 0);
 
-
 	//Указываем куда именно мы будем рендерить		
 	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, buffers);
@@ -281,6 +289,58 @@ void Application::initDeferredRenderingFramebuffer()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
+
+void Application::initOriginImageFramebuffer()
+{
+	//Создаем фреймбуфер
+	glGenFramebuffers(1, &_originImageFramebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, _originImageFramebufferId);
+
+	GLint internalFormat = hdr ? GL_RGB16F : GL_RGB8;
+
+	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
+	glGenTextures(1, &_originImageTexId);	
+	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _originImageTexId, 0);
+
+	//Указываем куда именно мы будем рендерить		
+	GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Failed to setup framebuffer\n";
+		exit(1);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+//void Application::initFinalFramebuffer()
+//{
+//	//Создаем фреймбуфер
+//	glGenFramebuffers(1, &_finalFramebufferId);
+//	glBindFramebuffer(GL_FRAMEBUFFER, _finalFramebufferId);
+//
+//	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
+//	glGenTextures(1, &_normalsTexId);	
+//	glBindTexture(GL_TEXTURE_2D, _normalsTexId);
+//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _normalsTexId, 0);
+//
+//	//Указываем куда именно мы будем рендерить		
+//	GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+//	glDrawBuffers(1, buffers);
+//
+//	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+//	{
+//		std::cerr << "Failed to setup framebuffer\n";
+//		exit(1);
+//	}
+//
+//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//}
 
 void Application::run()
 {
@@ -305,21 +365,21 @@ void Application::update()
 
 void Application::draw()
 {
-	renderToShadowMap(_lightCamera);
-	renderToGBuffer(_mainCamera);
-	renderDeferred(_mainCamera, _lightCamera);
+	renderToShadowMap(_lightCamera, _shadowFramebufferId);
+	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
+	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
 
-	renderDebug(0, 0, 400, 400, _shadowMapTexId);
+	renderDebug(0, 0, 400, 400, _originImageTexId);
 
 	TwDraw();
 
 	glfwSwapBuffers(_window);
 }
 
-void Application::renderToShadowMap(Camera& lightCamera)
+void Application::renderToShadowMap(Camera& lightCamera, GLuint fbId)
 {
 	//=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========
-	glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
 
 	glViewport(0, 0, _shadowMapWidth, _shadowMapHeight);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -353,10 +413,10 @@ void Application::renderToShadowMap(Camera& lightCamera)
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); //Отключаем фреймбуфер
 }
 
-void Application::renderToGBuffer(Camera& mainCamera)
+void Application::renderToGBuffer(Camera& mainCamera, GLuint fbId)
 {
 	//=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========
-	glBindFramebuffer(GL_FRAMEBUFFER, _deferredRenderingFramebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
 
 	glViewport(0, 0, _width, _height);
 	glClearColor(0, 0, 0, 1);
@@ -426,8 +486,10 @@ void Application::renderDebug(int x, int y, int width, int height, GLuint texId)
 	glUseProgram(0);
 }
 
-void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera)
+void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId)
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
+
 	glViewport(0, 0, _width, _height);
 	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -459,15 +521,15 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera)
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _normalsTexId);
-	glBindSampler(0, _sampler);
+	glBindSampler(0, _pixelPreciseSampler);
 
 	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
 	glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
-	glBindSampler(1, _sampler);
+	glBindSampler(1, _pixelPreciseSampler);
 
 	glActiveTexture(GL_TEXTURE0 + 2);  //текстурный юнит 2
 	glBindTexture(GL_TEXTURE_2D, _depthTexId);
-	glBindSampler(2, _sampler);
+	glBindSampler(2, _pixelPreciseSampler);
 
 	glActiveTexture(GL_TEXTURE0 + 3);  //текстурный юнит 3
 	glBindTexture(GL_TEXTURE_2D, _shadowMapTexId);
@@ -478,6 +540,10 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera)
 	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
 
 
+	glBindSampler(3, 0);
+	glBindSampler(2, 0);
+	glBindSampler(1, 0);
 	glBindSampler(0, 0);
 	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
