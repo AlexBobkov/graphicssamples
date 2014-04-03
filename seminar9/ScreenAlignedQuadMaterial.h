@@ -26,6 +26,9 @@ class ScreenAlignedQuadMaterial: public Material
 public:
 	ScreenAlignedQuadMaterial();
 
+	void setGrayscale(bool b) { _grayscale = b; _gamma = !b; }
+	void setGamma(bool b) { _gamma = b; _grayscale = !b; }
+
 	void initialize() override;
 	void applyCommonUniforms() override;
 	void applyModelSpecificUniforms() override;
@@ -38,4 +41,7 @@ protected:
 
 	//текстурные юниты
 	int _texUnit;
+
+	bool _grayscale;
+	bool _gamma;
 };

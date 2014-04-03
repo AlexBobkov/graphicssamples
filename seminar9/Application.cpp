@@ -161,6 +161,9 @@ void Application::makeSceneImplementation()
 	_renderToGBufferMaterial.initialize();
 	_deferredRenderingMaterial.initialize();
 
+	_grayscaleEffect.setGrayscale(true);
+	_grayscaleEffect.initialize();
+
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
@@ -368,6 +371,7 @@ void Application::draw()
 	renderToShadowMap(_lightCamera, _shadowFramebufferId);
 	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
 	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
+	renderFinal(0);
 
 	renderDebug(0, 0, 400, 400, _originImageTexId);
 
@@ -492,7 +496,7 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 
 	glViewport(0, 0, _width, _height);
 	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	//====== Рисуем на экран прямоугольник
 	glUseProgram(_deferredRenderingMaterial.getProgramId()); //шейдер для отложенного освещения, который принимает на вход 3 текстуры: текстуру с нормалями, с глубинами, с диффузным цветом
@@ -536,13 +540,43 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	glBindSampler(3, _depthSampler);
 	
 
+	glDisable(GL_DEPTH_TEST);
+
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
 
 
 	glBindSampler(3, 0);
 	glBindSampler(2, 0);
 	glBindSampler(1, 0);
+	glBindSampler(0, 0);
+	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Application::renderFinal(GLuint fbId)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
+
+	glViewport(0, 0, _width, _height);
+
+	glUseProgram(_grayscaleEffect.getProgramId());
+	_grayscaleEffect.setTexUnit(0); //текстурный юнит 0		
+	_grayscaleEffect.applyModelSpecificUniforms();
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
+	glBindSampler(0, _pixelPreciseSampler);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
+
 	glBindSampler(0, 0);
 	glUseProgram(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

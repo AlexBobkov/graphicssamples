@@ -55,11 +55,12 @@ public:
 protected:
 	GLFWwindow* _window;
 	
-	ScreenAlignedQuadMaterial _screenAlignedMaterial;
-	RenderToGBufferMaterial _renderToGBufferMaterial;
-	RenderToShadowMaterial _renderToShadowMaterial;
-	ColorMaterial _colorMaterial;
+	ColorMaterial _colorMaterial;	
+	RenderToShadowMaterial _renderToShadowMaterial;	
+	RenderToGBufferMaterial _renderToGBufferMaterial;	
 	DeferredRenderingMaterial _deferredRenderingMaterial;
+	ScreenAlignedQuadMaterial _screenAlignedMaterial;
+	ScreenAlignedQuadMaterial _grayscaleEffect;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -128,6 +129,7 @@ protected:
 
 	void renderToShadowMap(Camera& lightCamera, GLuint fbId);
 	void renderToGBuffer(Camera& mainCamera, GLuint fbId);	
-	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);		 
+	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);
+	void renderFinal(GLuint fbId);
 	void renderDebug(int x, int y, int width, int height, GLuint texId);
 };
