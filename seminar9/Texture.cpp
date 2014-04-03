@@ -5,6 +5,8 @@
 
 #include "Texture.h"
 
+bool useSRGB = false;
+
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
 GLuint Texture::loadTexture(std::string filename)
@@ -26,10 +28,12 @@ GLuint Texture::loadTexture(std::string filename)
 
 		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
 		glimg::Dimensions dims = pImage.GetDimensions();
+
+		GLint internalFormat = useSRGB ? GL_SRGB8 : GL_RGB8;
 		
 		glGenTextures(1, &texId);
 		glBindTexture(GL_TEXTURE_2D, texId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_SRGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -60,12 +64,14 @@ GLuint Texture::loadTextureWithMipmaps(std::string filename)
 		glGenTextures(1, &texId);
 		glBindTexture(GL_TEXTURE_2D, texId);
 
+		GLint internalFormat = useSRGB ? GL_SRGB8 : GL_RGB8;
+
 		for(int mipmapLevel = 0; mipmapLevel < pImageSet->GetMipmapCount(); mipmapLevel++)
 		{
 			glimg::SingleImage pImage = pImageSet->GetImage(mipmapLevel, 0, 0);
 			glimg::Dimensions dims = pImage.GetDimensions();
 
-			glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_SRGB8, dims.width, dims.height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, pImage.GetImageData());
+			glTexImage2D(GL_TEXTURE_2D, mipmapLevel, internalFormat, dims.width, dims.height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, pImage.GetImageData());
 		}
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
@@ -122,7 +128,9 @@ void loadCubeTextureFace(std::string filename, GLenum target)
 		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
 		glimg::Dimensions dims = pImage.GetDimensions();
 
-		glTexImage2D(target, 0, GL_SRGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
+		GLint internalFormat = useSRGB ? GL_SRGB8 : GL_RGB8;
+
+		glTexImage2D(target, 0, internalFormat, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
 	}
 	catch(glimg::loaders::stb::StbLoaderException&)
 	{

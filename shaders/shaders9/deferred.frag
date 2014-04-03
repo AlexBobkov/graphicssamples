@@ -80,8 +80,9 @@ void main()
 	//результирующий цвет
 	vec3 color = diffuseMaterial * ambientColor + visibility * diffuseMaterial * diffuseColor * cosAngIncidence + visibility * specularColor * blinnTerm;
 
-	vec3 gamma = vec3(1.0 / 2.2);	
-	fragColor = vec4(pow(color, gamma), 1.0);
+	//vec3 gamma = vec3(1.0 / 2.2);	
+	//fragColor = vec4(pow(color, gamma), 1.0);
+	fragColor = vec4(color, 1.0);
 
 	//fragColor = vec4(diffuseMaterial, 1.0);
 	//fragColor = vec4(normalColor, 1.0);
