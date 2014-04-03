@@ -503,10 +503,10 @@ void Application::draw()
 	renderToneMapping(_toneMappingFramebufferId);
 
 	//renderFinal(0, _originImageTexId);
-	//renderFinal(0, _toneMappedImageTexId);
+	renderFinal(0, _toneMappedImageTexId);
 	//renderFinal(0, _brightImageTexId);
 	//renderFinal(0, _horizBlurImageTexId);
-	renderFinal(0, _vertBlurImageTexId);
+	//renderFinal(0, _vertBlurImageTexId);
 
 	renderDebug(0, 0, 400, 400, _originImageTexId);
 
@@ -811,12 +811,18 @@ void Application::renderToneMapping(GLuint fbId)
 	glUseProgram(_toneMappingEffect.getProgramId());
 	_toneMappingEffect.setExposure(_exposure);
 	_toneMappingEffect.setTexUnit(0); //текстурный юнит 0		
+	_toneMappingEffect.setBloomTexUnit(1); //текстурный юнит 1
 	_toneMappingEffect.applyModelSpecificUniforms();
 
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
 	glBindSampler(0, _pixelPreciseSampler);
+
+	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _vertBlurImageTexId);
+	glBindSampler(1, _sampler);
+
 
 	glDisable(GL_DEPTH_TEST);
 

@@ -22,6 +22,7 @@ void ToneMappingEffect::initialize()
 	//=========================================================
 	//Инициализация uniform-переменных для текстурирования
 	_texUniform = glGetUniformLocation(_programId, "tex");
+	_bloomTexUniform = glGetUniformLocation(_programId, "bloomTex");
 	_exposureUniform = glGetUniformLocation(_programId, "exposure");
 }
 
@@ -32,5 +33,6 @@ void ToneMappingEffect::applyCommonUniforms()
 void ToneMappingEffect::applyModelSpecificUniforms()
 {
 	glUniform1i(_texUniform, _texUnit);
+	glUniform1i(_bloomTexUniform, _bloomTexUnit);
 	glUniform1f(_exposureUniform, _exposure);
 }

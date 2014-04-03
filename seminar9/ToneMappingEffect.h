@@ -32,13 +32,16 @@ public:
 
 	void setExposure(float e) { _exposure = e; }
 	void setTexUnit(int unit) { _texUnit = unit; }
+	void setBloomTexUnit(int unit) { _bloomTexUnit = unit; }
 
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _texUniform;
+	GLuint _bloomTexUniform;
 	GLuint _exposureUniform;
 
 	//текстурные юниты
 	int _texUnit;
+	int _bloomTexUnit;
 	float _exposure;
 };
