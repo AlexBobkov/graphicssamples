@@ -17,6 +17,8 @@ uniform vec3 ambientColor; //цвет окружающего света (апп�
 uniform vec3 diffuseColor; //цвет источника света
 uniform vec3 specularColor; //бликовый цвет источника света
 
+uniform bool addShadow;
+
 vec2 poissonDisk[4] = vec2[]( 
 	vec2( -0.94201624, -0.39906216 ), 
 	vec2( 0.94558609, -0.76890725 ), 
@@ -58,9 +60,12 @@ void main()
 	shadowTc.xyz /= shadowTc.w;
 
 	float visibility = 1.0;
-	for (int i = 0; i < 4; i++)
-	{		
-		visibility -= 0.2 * (1.0 - texture(shadowTex, vec3(shadowTc.xy + poissonDisk[i] / 700.0, shadowTc.z - bias)));
+	if (addShadow)
+	{
+		for (int i = 0; i < 4; i++)
+		{		
+			visibility -= 0.2 * (1.0 - texture(shadowTex, vec3(shadowTc.xy + poissonDisk[i] / 700.0, shadowTc.z - bias)));
+		}
 	}
 
 

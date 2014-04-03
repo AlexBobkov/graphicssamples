@@ -72,9 +72,12 @@ protected:
 	float _lightTheta;
 	float _lightPhi;
 	float _lightR;
+	float _ambientIntensity;
 	float _diffuseIntensity;
 	float _specularIntensity;
 	Light _light;
+
+	Light _light2;
 
 	//идентификаторы текстурных объектов
 	GLuint _worldTexId;

@@ -48,6 +48,8 @@ public:
 	void setDepthTexUnit(int unit) { _depthTexUnit = unit; }
 	void setShadowTexUnit(int unit) { _shadowTexUnit = unit; }
 
+	void setAddShadow(bool addShadow) { _addShadow = addShadow; }
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _viewMatrixUniform;
@@ -67,7 +69,9 @@ protected:
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
 	GLuint _diffuseColorUniform;
-	GLuint _specularColorUniform;	
+	GLuint _specularColorUniform;
+
+	GLuint _addShadowUniform;
 
 	glm::mat4 _viewMatrix;
 
@@ -89,4 +93,6 @@ protected:
 	glm::vec3 _ambientColor;
 	glm::vec3 _diffuseColor;
 	glm::vec3 _specularColor;
+
+	bool _addShadow;
 };

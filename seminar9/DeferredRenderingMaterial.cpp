@@ -40,6 +40,8 @@ void DeferredRenderingMaterial::initialize()
 	_specularColorUniform = glGetUniformLocation(_programId, "specularColor");
 
 	_lightScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
+
+	_addShadowUniform = glGetUniformLocation(_programId, "addShadow");
 }
 
 void DeferredRenderingMaterial::applyCommonUniforms() 
@@ -65,4 +67,6 @@ void DeferredRenderingMaterial::applyModelSpecificUniforms()
 	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
 	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
 	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
+
+	glUniform1f(_addShadowUniform, _addShadow);
 }

@@ -11,6 +11,7 @@ int demoNum = 1;
 bool hdr = true;
 bool grayscale = false;
 bool gamma = true;
+bool secondLight = true;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -60,6 +61,7 @@ _oldTime(0.0f),
 	_lightTheta(0.7f),
 	_lightPhi(0.7f),
 	_lightR(10.0f),
+	_ambientIntensity(0.2f),
 	_diffuseIntensity(0.8f),
 	_specularIntensity(0.5f),
 	_exposure(1.0f)
@@ -121,6 +123,7 @@ void Application::initOthers()
 	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
 	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "min=0.01 max=1.56 step=0.01");
 	TwAddVarRW(_bar, "Light R", TW_TYPE_FLOAT, &_lightR, "min=5.0 max=100.0 step=0.1");
+	TwAddVarRW(_bar, "Ambient intensity", TW_TYPE_FLOAT, &_ambientIntensity, "min=0.0 max=100.0 step=0.1");
 	TwAddVarRW(_bar, "Diffuse intensity", TW_TYPE_FLOAT, &_diffuseIntensity, "min=0.0 max=100.0 step=0.1");
 	TwAddVarRW(_bar, "Specular intensity", TW_TYPE_FLOAT, &_specularIntensity, "min=0.0 max=100.0 step=0.1");
 	TwAddVarRW(_bar, "Exposure", TW_TYPE_FLOAT, &_exposure, "min=0.01 max=100.0 step=0.01");	
@@ -197,12 +200,17 @@ void Application::makeSceneImplementation()
 	_sphereMarker = Mesh::makeSphere(0.1f);
 
 	//Инициализацируем значения переменных освщения	
-	_light.setAmbientColor(glm::vec3(0.2, 0.2, 0.2));
+	_light.setAmbientColor(glm::vec3(_ambientIntensity, _ambientIntensity, _ambientIntensity));	
 	_light.setDiffuseColor(glm::vec3(_diffuseIntensity, _diffuseIntensity, _diffuseIntensity));
 	_light.setSpecularColor(glm::vec3(_specularIntensity, _specularIntensity, _specularIntensity));
 
 	//_lightCamera.setProjMatrix(glm::perspective(glm::radians(90.0f), 1.0f, 5.0f, 20.f));
 	_lightCamera.setProjMatrix(glm::perspective(glm::radians(90.0f), 1.0f, 1.0f, 30.f));
+
+	_light2.setLightPos(glm::vec3(0.0, 0.0, 1.0));
+	_light2.setAmbientColor(glm::vec3(0.0, 0.0, 0.0));
+	_light2.setDiffuseColor(glm::vec3(0.2, 0.2, 0.2));
+	_light2.setSpecularColor(glm::vec3(0.0, 0.0, 0.0));
 	
 	//Инициализируем сэмплер - объект, который хранит параметры чтения из текстуры
 	glGenSamplers(1, &_sampler);
@@ -383,6 +391,7 @@ void Application::update()
 	_lightCamera.setCameraPos(_light.getLightPos());
 	_lightCamera.setViewMatrix(glm::lookAt(_light.getLightPos(), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
 
+	_light.setAmbientColor(glm::vec3(_ambientIntensity, _ambientIntensity, _ambientIntensity));
 	_light.setDiffuseColor(glm::vec3(_diffuseIntensity, _diffuseIntensity, _diffuseIntensity));
 	_light.setSpecularColor(glm::vec3(_specularIntensity, _specularIntensity, _specularIntensity));
 }
@@ -542,6 +551,7 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	_deferredRenderingMaterial.setAmbientColor(_light.getAmbientColor());
 	_deferredRenderingMaterial.setDiffuseColor(_light.getDiffuseColor());
 	_deferredRenderingMaterial.setSpecularColor(_light.getSpecularColor());
+	_deferredRenderingMaterial.setAddShadow(true);
 
 	_deferredRenderingMaterial.applyCommonUniforms();
 	_deferredRenderingMaterial.applyModelSpecificUniforms();
@@ -568,9 +578,27 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+	
+	
+	if (secondLight)
+	{
+		_deferredRenderingMaterial.setLightPos(_light2.getLightPos4());
+		_deferredRenderingMaterial.setAmbientColor(_light2.getAmbientColor());
+		_deferredRenderingMaterial.setDiffuseColor(_light2.getDiffuseColor());
+		_deferredRenderingMaterial.setSpecularColor(_light2.getSpecularColor());
+		_deferredRenderingMaterial.setAddShadow(false);
+		_deferredRenderingMaterial.applyModelSpecificUniforms();
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_ONE, GL_ONE);
+
+		glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+		glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+		glDisable(GL_BLEND);
+	}
 
 	glEnable(GL_DEPTH_TEST);
-
 
 	glBindSampler(3, 0);
 	glBindSampler(2, 0);
