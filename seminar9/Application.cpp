@@ -8,7 +8,7 @@
 
 int demoNum = 1;
 
-bool hdr = false;
+bool hdr = true;
 bool grayscale = false;
 bool gamma = true;
 
@@ -60,8 +60,9 @@ _oldTime(0.0f),
 	_lightTheta(0.7f),
 	_lightPhi(0.7f),
 	_lightR(10.0f),
-	_diffuseIntensity(0.8),
-	_specularIntensity(0.5)
+	_diffuseIntensity(0.8f),
+	_specularIntensity(0.5f),
+	_exposure(1.0f)
 {
 }
 
@@ -122,6 +123,7 @@ void Application::initOthers()
 	TwAddVarRW(_bar, "Light R", TW_TYPE_FLOAT, &_lightR, "min=5.0 max=100.0 step=0.1");
 	TwAddVarRW(_bar, "Diffuse intensity", TW_TYPE_FLOAT, &_diffuseIntensity, "min=0.0 max=100.0 step=0.1");
 	TwAddVarRW(_bar, "Specular intensity", TW_TYPE_FLOAT, &_specularIntensity, "min=0.0 max=100.0 step=0.1");
+	TwAddVarRW(_bar, "Exposure", TW_TYPE_FLOAT, &_exposure, "min=0.01 max=100.0 step=0.01");	
 
 
 	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
@@ -150,6 +152,9 @@ void Application::setWindowSize(int width, int height)
 
 	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, hdr ? GL_RGB16F : GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);	
+
+	glBindTexture(GL_TEXTURE_2D, _toneMappedImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -173,6 +178,8 @@ void Application::makeSceneImplementation()
 
 	_gammaEffect.setGamma(true);
 	_gammaEffect.initialize();
+
+	_toneMappingEffect.initialize();
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -229,6 +236,7 @@ void Application::makeSceneImplementation()
 	initShadowFramebuffer(); //инициализация фреймбуфера для рендеринга в теневую карту
 	initGBufferFramebuffer(); //инициализация фреймбуфера для рендеринга в G-буфер (текстура с нормалями, текстура с диффузным цветом, текстура с глубинами)
 	initOriginImageFramebuffer();
+	initToneMappingFramebuffer();
 
 	//инициализируем положения центров сфер
 	float size = 10.0f;
@@ -330,30 +338,30 @@ void Application::initOriginImageFramebuffer()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-//void Application::initFinalFramebuffer()
-//{
-//	//Создаем фреймбуфер
-//	glGenFramebuffers(1, &_finalFramebufferId);
-//	glBindFramebuffer(GL_FRAMEBUFFER, _finalFramebufferId);
-//
-//	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
-//	glGenTextures(1, &_normalsTexId);	
-//	glBindTexture(GL_TEXTURE_2D, _normalsTexId);
-//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-//	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _normalsTexId, 0);
-//
-//	//Указываем куда именно мы будем рендерить		
-//	GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
-//	glDrawBuffers(1, buffers);
-//
-//	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-//	{
-//		std::cerr << "Failed to setup framebuffer\n";
-//		exit(1);
-//	}
-//
-//	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//}
+void Application::initToneMappingFramebuffer()
+{
+	//Создаем фреймбуфер
+	glGenFramebuffers(1, &_toneMappingFramebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, _toneMappingFramebufferId);
+
+	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
+	glGenTextures(1, &_toneMappedImageTexId);	
+	glBindTexture(GL_TEXTURE_2D, _toneMappedImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _toneMappedImageTexId, 0);
+
+	//Указываем куда именно мы будем рендерить		
+	GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Failed to setup framebuffer\n";
+		exit(1);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
 
 void Application::run()
 {
@@ -383,8 +391,11 @@ void Application::draw()
 {
 	renderToShadowMap(_lightCamera, _shadowFramebufferId);
 	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
-	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
-	renderFinal(0);
+	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);		
+	renderToneMapping(_toneMappingFramebufferId);
+
+	//renderFinal(0, _originImageTexId);
+	renderFinal(0, _toneMappedImageTexId);
 
 	renderDebug(0, 0, 400, 400, _originImageTexId);
 
@@ -569,7 +580,36 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Application::renderFinal(GLuint fbId)
+void Application::renderToneMapping(GLuint fbId)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
+
+	glViewport(0, 0, _width, _height);
+
+
+	glUseProgram(_toneMappingEffect.getProgramId());
+	_toneMappingEffect.setExposure(_exposure);
+	_toneMappingEffect.setTexUnit(0); //текстурный юнит 0		
+	_toneMappingEffect.applyModelSpecificUniforms();
+
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
+	glBindSampler(0, _pixelPreciseSampler);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
+
+	glBindSampler(0, 0);
+	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Application::renderFinal(GLuint fbId, GLuint texId)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
 
@@ -595,7 +635,7 @@ void Application::renderFinal(GLuint fbId)
 	}
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
+	glBindTexture(GL_TEXTURE_2D, texId);
 	glBindSampler(0, _pixelPreciseSampler);
 
 	glDisable(GL_DEPTH_TEST);
