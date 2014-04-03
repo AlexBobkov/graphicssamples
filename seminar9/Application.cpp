@@ -158,6 +158,16 @@ void Application::setWindowSize(int width, int height)
 
 	glBindTexture(GL_TEXTURE_2D, _toneMappedImageTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	glBindTexture(GL_TEXTURE_2D, _brightImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width / 2, _height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	glBindTexture(GL_TEXTURE_2D, _horizBlurImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width / 2, _height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+	glBindTexture(GL_TEXTURE_2D, _vertBlurImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width / 2, _height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -183,6 +193,16 @@ void Application::makeSceneImplementation()
 	_gammaEffect.initialize();
 
 	_toneMappingEffect.initialize();
+
+	_brightPass.setPassNumber(1);
+	_brightPass.initialize();
+
+	_horizBlurPass.setPassNumber(2);
+	_horizBlurPass.initialize();
+
+	_vertBlurPass.setPassNumber(3);
+	_vertBlurPass.initialize();
+
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -247,6 +267,7 @@ void Application::makeSceneImplementation()
 	initGBufferFramebuffer(); //инициализация фреймбуфера для рендеринга в G-буфер (текстура с нормалями, текстура с диффузным цветом, текстура с глубинами)
 	initOriginImageFramebuffer();
 	initToneMappingFramebuffer();
+	initBloomFramebuffer();
 
 	//инициализируем положения центров сфер
 	float size = 10.0f;
@@ -329,7 +350,7 @@ void Application::initOriginImageFramebuffer()
 
 	GLint internalFormat = hdr ? GL_RGB16F : GL_RGB8;
 
-	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
+	//Создаем текстуру, куда будет осуществляться рендеринг
 	glGenTextures(1, &_originImageTexId);	
 	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
@@ -354,7 +375,7 @@ void Application::initToneMappingFramebuffer()
 	glGenFramebuffers(1, &_toneMappingFramebufferId);
 	glBindFramebuffer(GL_FRAMEBUFFER, _toneMappingFramebufferId);
 
-	//Создаем текстуру, куда будет осуществляться рендеринг нормалей
+	//Создаем текстуру, куда будет осуществляться рендеринг
 	glGenTextures(1, &_toneMappedImageTexId);	
 	glBindTexture(GL_TEXTURE_2D, _toneMappedImageTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
@@ -371,6 +392,81 @@ void Application::initToneMappingFramebuffer()
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Application::initBloomFramebuffer()
+{
+	{
+		//Создаем фреймбуфер
+		glGenFramebuffers(1, &_brightFramebufferId);
+		glBindFramebuffer(GL_FRAMEBUFFER, _brightFramebufferId);
+
+		//Создаем текстуру, куда будет осуществляться рендеринг
+		glGenTextures(1, &_brightImageTexId);	
+		glBindTexture(GL_TEXTURE_2D, _brightImageTexId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width / 2, _height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _brightImageTexId, 0);
+
+		//Указываем куда именно мы будем рендерить		
+		GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, buffers);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cerr << "Failed to setup framebuffer\n";
+			exit(1);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	{
+		//Создаем фреймбуфер
+		glGenFramebuffers(1, &_horizBlurFramebufferId);
+		glBindFramebuffer(GL_FRAMEBUFFER, _horizBlurFramebufferId);
+
+		//Создаем текстуру, куда будет осуществляться рендеринг
+		glGenTextures(1, &_horizBlurImageTexId);	
+		glBindTexture(GL_TEXTURE_2D, _horizBlurImageTexId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width / 2, _height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _horizBlurImageTexId, 0);
+
+		//Указываем куда именно мы будем рендерить		
+		GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, buffers);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cerr << "Failed to setup framebuffer\n";
+			exit(1);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	{
+		//Создаем фреймбуфер
+		glGenFramebuffers(1, &_vertBlurFramebufferId);
+		glBindFramebuffer(GL_FRAMEBUFFER, _vertBlurFramebufferId);
+
+		//Создаем текстуру, куда будет осуществляться рендеринг
+		glGenTextures(1, &_vertBlurImageTexId);	
+		glBindTexture(GL_TEXTURE_2D, _vertBlurImageTexId);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width / 2, _height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _vertBlurImageTexId, 0);
+
+		//Указываем куда именно мы будем рендерить		
+		GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, buffers);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cerr << "Failed to setup framebuffer\n";
+			exit(1);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 }
 
 void Application::run()
@@ -402,11 +498,13 @@ void Application::draw()
 {
 	renderToShadowMap(_lightCamera, _shadowFramebufferId);
 	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
-	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);		
+	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
+	renderBloom();
 	renderToneMapping(_toneMappingFramebufferId);
 
 	//renderFinal(0, _originImageTexId);
-	renderFinal(0, _toneMappedImageTexId);
+	//renderFinal(0, _toneMappedImageTexId);
+	renderFinal(0, _brightImageTexId);
 
 	renderDebug(0, 0, 400, 400, _originImageTexId);
 
@@ -612,6 +710,34 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	glBindSampler(3, 0);
 	glBindSampler(2, 0);
 	glBindSampler(1, 0);
+	glBindSampler(0, 0);
+	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Application::renderBloom()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, _brightFramebufferId);
+
+	glViewport(0, 0, _width / 2, _height / 2);
+
+
+	glUseProgram(_brightPass.getProgramId());	
+	_brightPass.setTexUnit(0); //текстурный юнит 0		
+	_brightPass.applyModelSpecificUniforms();
+
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _originImageTexId);
+	glBindSampler(0, _sampler);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
+
 	glBindSampler(0, 0);
 	glUseProgram(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

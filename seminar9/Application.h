@@ -19,6 +19,7 @@
 #include "ColorMaterial.h"
 #include "DeferredRenderingMaterial.h"
 #include "ToneMappingEffect.h"
+#include "BloomEffect.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Light.h"
@@ -64,6 +65,9 @@ protected:
 	ScreenAlignedQuadMaterial _grayscaleEffect;
 	ScreenAlignedQuadMaterial _gammaEffect;
 	ToneMappingEffect _toneMappingEffect;
+	BloomEffect _brightPass;
+	BloomEffect _horizBlurPass;
+	BloomEffect _vertBlurPass;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -96,6 +100,9 @@ protected:
 
 	GLuint _originImageTexId;
 	GLuint _toneMappedImageTexId;
+	GLuint _brightImageTexId;
+	GLuint _horizBlurImageTexId;
+	GLuint _vertBlurImageTexId;
 	//================================================================
 
 	//параметры чтения из текстуры
@@ -121,6 +128,9 @@ protected:
 	GLuint _GBufferFramebufferId;
 	GLuint _originImageFramebufferId;
 	GLuint _toneMappingFramebufferId;
+	GLuint _brightFramebufferId;
+	GLuint _horizBlurFramebufferId;
+	GLuint _vertBlurFramebufferId;
 
 	float _exposure;
 
@@ -140,10 +150,12 @@ protected:
 	void initGBufferFramebuffer();
 	void initOriginImageFramebuffer();
 	void initToneMappingFramebuffer();
+	void initBloomFramebuffer();
 
 	void renderToShadowMap(Camera& lightCamera, GLuint fbId);
 	void renderToGBuffer(Camera& mainCamera, GLuint fbId);	
 	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);
+	void renderBloom();
 	void renderToneMapping(GLuint fbId);
 	void renderFinal(GLuint fbId, GLuint texId);
 	void renderDebug(int x, int y, int width, int height, GLuint texId);
