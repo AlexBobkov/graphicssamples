@@ -188,6 +188,7 @@ void Application::makeSceneImplementation()
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
 	_grassTexId = Texture::loadTexture("images/grass.jpg");
+	_colorTexId = Texture::makeCustomTexture();
 
 	//Загружаем 3д-модели
 	_sphere = Mesh::makeSphere(0.8f);
@@ -196,6 +197,7 @@ void Application::makeSceneImplementation()
 	_cube = Mesh::makeCube(0.8f);
 	_backgroundCube = Mesh::makeCube(10.0f);
 	_bunny = Mesh::loadFromFile("models/bunny.obj");
+	_teapot = Mesh::loadFromFile("models/teapot.obj");
 	_screenQuad = Mesh::makeScreenAlignedQuad();
 	_sphereMarker = Mesh::makeSphere(0.1f);
 
@@ -475,12 +477,19 @@ void Application::renderToGBuffer(Camera& mainCamera, GLuint fbId)
 
 	for (unsigned int i = 0; i < _positions.size(); i++)
 	{
-		_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i])); //считаем матрицу модели, используя координаты центра сферы
+		_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i])); //считаем матрицу модели, используя координаты центра сферы		
 		_renderToGBufferMaterial.applyModelSpecificUniforms();
 
 		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
 		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
 	}
+
+	glBindTexture(GL_TEXTURE_2D, _colorTexId);
+	_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f)), glm::vec3(0.0, -20.0, 0.0)));	
+	_renderToGBufferMaterial.applyModelSpecificUniforms();
+
+	glBindVertexArray(_teapot.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _teapot.getNumVertices()); //Рисуем
 
 	//====== Плоскость земли ======
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0

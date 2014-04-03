@@ -83,6 +83,7 @@ protected:
 	GLuint _worldTexId;
 	GLuint _brickTexId;
 	GLuint _grassTexId;
+	GLuint _colorTexId;
 		
 	//текстуры для карты теней
 	GLuint _shadowMapTexId;
@@ -110,6 +111,7 @@ protected:
 	Mesh _plane;
 	Mesh _ground;
 	Mesh _bunny;
+	Mesh _teapot;
 	Mesh _screenQuad;
 	Mesh _sphereMarker;
 

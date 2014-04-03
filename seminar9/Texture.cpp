@@ -99,7 +99,10 @@ GLuint Texture::makeCustomTexture()
 		for (unsigned int column = 0; column < width; column++)
 		{
 			float r, g, b;
-			getColorFromLinearPalette((float)column / width, r, g, b);
+			//getColorFromLinearPalette((float)column / width, r, g, b);
+			r = 1.0;
+			g = 0.0;
+			b = 0.0;
 
 			data.push_back((unsigned char)(255 * r));
 			data.push_back((unsigned char)(255 * g));
