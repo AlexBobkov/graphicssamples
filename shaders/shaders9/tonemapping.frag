@@ -19,16 +19,16 @@ out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-	vec3 depthColor = texture(depthTex, interpTc).rgb;
-	vec3 normCoords = vec3(interpTc * 2.0 - 1.0, depthColor.z * 2.0 - 1.0);
-	vec4 pos = projMatrixInverse * vec4(normCoords, 1.0);
-	pos.xyz /= pos.w; //cam space
+	//vec3 depthColor = texture(depthTex, interpTc).rgb;
+	//vec3 normCoords = vec3(interpTc * 2.0 - 1.0, depthColor.z * 2.0 - 1.0);
+	//vec4 pos = projMatrixInverse * vec4(normCoords, 1.0);
+	//pos.xyz /= pos.w; //cam space
 
-	vec3 sharpColor = texture(tex, interpTc).rgb;
-	vec3 blurColor = texture(blurTex, interpTc).rgb;
-	vec3 texColor = mix(sharpColor, blurColor, clamp(abs(focalDistance + pos.z) / focalRange, 0.0, 1.0));
+	//vec3 sharpColor = texture(tex, interpTc).rgb;
+	//vec3 blurColor = texture(blurTex, interpTc).rgb;
+	//vec3 texColor = mix(sharpColor, blurColor, clamp(abs(focalDistance + pos.z) / focalRange, 0.0, 1.0));
 	
-	//vec3 texColor = texture(tex, interpTc).rgb;
+	vec3 texColor = texture(tex, interpTc).rgb;
 
 	vec3 bloomColor = texture(bloomTex, interpTc).rgb;
 

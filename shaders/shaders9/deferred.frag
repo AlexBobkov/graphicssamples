@@ -3,7 +3,8 @@
 uniform sampler2D normalsTex;
 uniform sampler2D diffuseTex;
 uniform sampler2D depthTex;
-uniform sampler2DShadow shadowTex;
+//uniform sampler2DShadow shadowTex;
+uniform sampler2D shadowTex;
 uniform sampler2D ssaoTex;
 
 uniform mat4 projMatrixInverse;
@@ -64,9 +65,17 @@ void main()
 	float visibility = 1.0;
 	if (addShadow)
 	{
-		for (int i = 0; i < 4; i++)
-		{		
-			visibility -= 0.2 * (1.0 - texture(shadowTex, vec3(shadowTc.xy + poissonDisk[i] / 700.0, shadowTc.z - bias)));
+		//for (int i = 0; i < 4; i++)
+		//{		
+			//visibility -= 0.25 * (1.0 - texture(shadowTex, vec3(shadowTc.xy + poissonDisk[i] / 700.0, shadowTc.z - bias)));
+		//}
+
+		float fragDepth = shadowTc.z; //глубина фрагмента в пространстве источника света
+		float shadowDepth = texture(shadowTex, shadowTc.xy).z; //глубина ближайшего фрагмента в пространстве источника света
+
+		if (fragDepth > shadowDepth)
+		{
+			visibility = 0.0;
 		}
 	}
 
@@ -97,11 +106,12 @@ void main()
 
 	fragColor = vec4(color, 1.0);
 
+	//fragColor = vec4(visibility, visibility, visibility, 1.0);
 	//fragColor = vec4(diffuseMaterial * ambient, 1.0);
 	//fragColor = vec4(diffuseMaterial, 1.0);
 	//fragColor = vec4(normalColor, 1.0);
 	//fragColor = vec4(depthColor, 1.0);
-	//fragColor = vec4(texture(shadowTex, shadowTc.xy).rgb, 1.0);
+	//fragColor = vec4(texture(shadowTex, shadowTc.xyz), 1.0);
 	//fragColor = vec4(interpTc, 0.0, 1.0);
 	//fragColor = vec4(shadowTc.xy, 0.0, 1.0);
 	//fragColor = vec4(1.0, 0.0, 0.0, 1.0);

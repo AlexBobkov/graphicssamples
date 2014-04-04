@@ -8,10 +8,11 @@
 
 int demoNum = 1;
 
-bool hdr = true;
+bool hdr = false;
 bool grayscale = false;
-bool gamma = true;
-bool secondLight = true;
+bool gamma = false;
+bool secondLight = false;
+bool ssao = false;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -591,23 +592,24 @@ void Application::draw()
 {
 	renderToShadowMap(_lightCamera, _shadowFramebufferId);
 	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
-	renderSSAO(_mainCamera, _ssaoFramebufferId);
+	//renderSSAO(_mainCamera, _ssaoFramebufferId);
 	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
-	renderBloom();
-	renderDofBlur();
-	renderToneMapping(_mainCamera, _toneMappingFramebufferId);
+	//renderBloom();
+	//renderDofBlur();
+	//renderToneMapping(_mainCamera, _toneMappingFramebufferId);
 
-	//renderFinal(0, _originImageTexId);
-	renderFinal(0, _toneMappedImageTexId);
+	renderFinal(0, _originImageTexId);
+	//renderFinal(0, _toneMappedImageTexId);
 	//renderFinal(0, _brightImageTexId);
 	//renderFinal(0, _horizBlurImageTexId);
 	//renderFinal(0, _vertBlurImageTexId);
 	//renderFinal(0, _ssaoImageTexId);
 	//renderFinal(0, _dofVertBlurImageTexId);
 
-	//renderDebug(0, 0, 400, 400, _originImageTexId);
+	renderDebug(0, 0, 400, 400, _originImageTexId);
 	//renderDebug(0, 0, 400, 400, _ssaoImageTexId);
-	renderDebug(0, 0, 400, 400, _dofVertBlurImageTexId);
+	//renderDebug(0, 0, 400, 400, _dofVertBlurImageTexId);
+	//renderDebug(0, 0, 400, 400, _shadowMapTexId);
 
 	TwDraw();
 
@@ -761,7 +763,7 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	_deferredRenderingMaterial.setDiffuseColor(_light.getDiffuseColor());
 	_deferredRenderingMaterial.setSpecularColor(_light.getSpecularColor());
 	_deferredRenderingMaterial.setAddShadow(true);
-	_deferredRenderingMaterial.setAddSSAO(true);
+	_deferredRenderingMaterial.setAddSSAO(ssao);
 
 	_deferredRenderingMaterial.applyCommonUniforms();
 	_deferredRenderingMaterial.applyModelSpecificUniforms();
@@ -781,7 +783,8 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 
 	glActiveTexture(GL_TEXTURE0 + 3);  //текстурный юнит 3
 	glBindTexture(GL_TEXTURE_2D, _shadowMapTexId);
-	glBindSampler(3, _depthSampler);
+	//glBindSampler(3, _depthSampler);
+	glBindSampler(3, _sampler);
 
 	glActiveTexture(GL_TEXTURE0 + 4);  //текстурный юнит 4
 	glBindTexture(GL_TEXTURE_2D, _ssaoImageTexId);
