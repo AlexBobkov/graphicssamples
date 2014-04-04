@@ -31,6 +31,7 @@ void DeferredRenderingMaterial::initialize()
 	_diffuseTexUniform = glGetUniformLocation(_programId, "diffuseTex");
 	_depthTexUniform = glGetUniformLocation(_programId, "depthTex");
 	_shadowTexUniform = glGetUniformLocation(_programId, "shadowTex");
+	_ssaoTexUniform = glGetUniformLocation(_programId, "ssaoTex");
 	
 	//=========================================================
 	//Инициализация uniform-переменных для освещения		
@@ -42,6 +43,7 @@ void DeferredRenderingMaterial::initialize()
 	_lightScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
 
 	_addShadowUniform = glGetUniformLocation(_programId, "addShadow");
+	_addSSAOUniform = glGetUniformLocation(_programId, "addSSAO");
 }
 
 void DeferredRenderingMaterial::applyCommonUniforms() 
@@ -59,6 +61,7 @@ void DeferredRenderingMaterial::applyCommonUniforms()
 	glUniform1i(_diffuseTexUniform, _diffuseTexUnit);
 	glUniform1i(_depthTexUniform, _depthTexUnit);
 	glUniform1i(_shadowTexUniform, _shadowTexUnit);
+	glUniform1i(_ssaoTexUniform, _ssaoTexUnit);
 }
 
 void DeferredRenderingMaterial::applyModelSpecificUniforms()
@@ -69,4 +72,5 @@ void DeferredRenderingMaterial::applyModelSpecificUniforms()
 	glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
 
 	glUniform1f(_addShadowUniform, _addShadow);
+	glUniform1f(_addSSAOUniform, _addSSAO);
 }

@@ -22,8 +22,8 @@ vec4 rndTable[8] = vec4[8]
 	vec4 (  0.5,  0.5,  0.5, 0.0 )
 	);
 
-const float attBias = 0.5;
-const float attScale = 1.0;
+const float attBias = 0.0;
+const float attScale = 2.0;
 
 void main()
 {

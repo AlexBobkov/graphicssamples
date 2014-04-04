@@ -47,8 +47,10 @@ public:
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
 	void setDepthTexUnit(int unit) { _depthTexUnit = unit; }
 	void setShadowTexUnit(int unit) { _shadowTexUnit = unit; }
+	void setSSAOTexUnit(int unit) { _ssaoTexUnit = unit; }
 
 	void setAddShadow(bool addShadow) { _addShadow = addShadow; }
+	void setAddSSAO(bool addSSAO) { _addSSAO = addSSAO; }
 
 protected:	
 	//====== идентификаторы uniform-переменных ======
@@ -65,6 +67,7 @@ protected:
 	GLuint _diffuseTexUniform;
 	GLuint _depthTexUniform;
 	GLuint _shadowTexUniform;
+	GLuint _ssaoTexUniform;
 
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
@@ -72,6 +75,7 @@ protected:
 	GLuint _specularColorUniform;
 
 	GLuint _addShadowUniform;
+	GLuint _addSSAOUniform;
 
 	glm::mat4 _viewMatrix;
 
@@ -87,6 +91,7 @@ protected:
 	int _diffuseTexUnit;
 	int _depthTexUnit;
 	int _shadowTexUnit;
+	int _ssaoTexUnit;
 
 	//параметры освещения
 	glm::vec4 _lightPos; //in world space
@@ -95,4 +100,5 @@ protected:
 	glm::vec3 _specularColor;
 
 	bool _addShadow;
+	bool _addSSAO;
 };

@@ -532,15 +532,15 @@ void Application::draw()
 	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
 	renderSSAO(_mainCamera, _ssaoFramebufferId);
 	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
-	renderBloom();
+	//renderBloom();
 	renderToneMapping(_toneMappingFramebufferId);
 
 	//renderFinal(0, _originImageTexId);
-	//renderFinal(0, _toneMappedImageTexId);
+	renderFinal(0, _toneMappedImageTexId);
 	//renderFinal(0, _brightImageTexId);
 	//renderFinal(0, _horizBlurImageTexId);
 	//renderFinal(0, _vertBlurImageTexId);
-	renderFinal(0, _ssaoImageTexId);
+	//renderFinal(0, _ssaoImageTexId);
 
 	//renderDebug(0, 0, 400, 400, _originImageTexId);
 	renderDebug(0, 0, 400, 400, _ssaoImageTexId);
@@ -690,12 +690,14 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	_deferredRenderingMaterial.setDiffuseTexUnit(1);
 	_deferredRenderingMaterial.setDepthTexUnit(2);
 	_deferredRenderingMaterial.setShadowTexUnit(3);
+	_deferredRenderingMaterial.setSSAOTexUnit(4);
 
 	_deferredRenderingMaterial.setLightPos(_light.getLightPos4());
 	_deferredRenderingMaterial.setAmbientColor(_light.getAmbientColor());
 	_deferredRenderingMaterial.setDiffuseColor(_light.getDiffuseColor());
 	_deferredRenderingMaterial.setSpecularColor(_light.getSpecularColor());
 	_deferredRenderingMaterial.setAddShadow(true);
+	_deferredRenderingMaterial.setAddSSAO(true);
 
 	_deferredRenderingMaterial.applyCommonUniforms();
 	_deferredRenderingMaterial.applyModelSpecificUniforms();
@@ -716,6 +718,10 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	glActiveTexture(GL_TEXTURE0 + 3);  //текстурный юнит 3
 	glBindTexture(GL_TEXTURE_2D, _shadowMapTexId);
 	glBindSampler(3, _depthSampler);
+
+	glActiveTexture(GL_TEXTURE0 + 4);  //текстурный юнит 4
+	glBindTexture(GL_TEXTURE_2D, _ssaoImageTexId);
+	glBindSampler(4, _sampler);
 	
 
 	glDisable(GL_DEPTH_TEST);

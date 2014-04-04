@@ -4,6 +4,7 @@ uniform sampler2D normalsTex;
 uniform sampler2D diffuseTex;
 uniform sampler2D depthTex;
 uniform sampler2DShadow shadowTex;
+uniform sampler2D ssaoTex;
 
 uniform mat4 projMatrixInverse;
 uniform mat4 viewMatrixInverse;
@@ -18,6 +19,7 @@ uniform vec3 diffuseColor; //цвет источника света
 uniform vec3 specularColor; //бликовый цвет источника света
 
 uniform bool addShadow;
+uniform bool addSSAO;
 
 vec2 poissonDisk[4] = vec2[]( 
 	vec2( -0.94201624, -0.39906216 ), 
@@ -84,11 +86,18 @@ void main()
 	blinnTerm = cosAngIncidence != 0.0 ? blinnTerm : 0.0;
 	blinnTerm = pow(blinnTerm, shininessFactor);  //регулируем размер блика
 
+	vec3 ambient = ambientColor;
+	if (addSSAO)
+	{
+		ambient *= texture(ssaoTex, interpTc).rgb;
+	}
+
 	//результирующий цвет
-	vec3 color = diffuseMaterial * ambientColor + (visibility * diffuseMaterial * diffuseColor * cosAngIncidence + visibility * specularColor * blinnTerm) / (1.0 + attenuation * lightDistance * lightDistance);
+	vec3 color = diffuseMaterial * ambient + (visibility * diffuseMaterial * diffuseColor * cosAngIncidence + visibility * specularColor * blinnTerm) / (1.0 + attenuation * lightDistance * lightDistance);
 
 	fragColor = vec4(color, 1.0);
 
+	//fragColor = vec4(diffuseMaterial * ambient, 1.0);
 	//fragColor = vec4(diffuseMaterial, 1.0);
 	//fragColor = vec4(normalColor, 1.0);
 	//fragColor = vec4(depthColor, 1.0);
