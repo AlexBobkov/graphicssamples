@@ -107,6 +107,8 @@ protected:
 	GLuint _horizBlurImageTexId;
 	GLuint _vertBlurImageTexId;
 	GLuint _ssaoImageTexId;
+	GLuint _dofHorizBlurImageTexId;
+	GLuint _dofVertBlurImageTexId;
 	//================================================================
 
 	//параметры чтения из текстуры
@@ -135,7 +137,9 @@ protected:
 	GLuint _brightFramebufferId;
 	GLuint _horizBlurFramebufferId;
 	GLuint _vertBlurFramebufferId;
-	GLuint _ssaoFramebufferId;
+	GLuint _ssaoFramebufferId;	
+	GLuint _dofHorizBlurFramebufferId;
+	GLuint _dofVertBlurFramebufferId;
 
 	float _exposure;
 
@@ -157,12 +161,14 @@ protected:
 	void initToneMappingFramebuffer();
 	void initBloomFramebuffer();
 	void initSSAOFramebuffer();
+	void initDOFFramebuffer();
 
 	void renderToShadowMap(Camera& lightCamera, GLuint fbId);
 	void renderToGBuffer(Camera& mainCamera, GLuint fbId);	
 	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);
 	void renderSSAO(Camera& mainCamera, GLuint fbId);
 	void renderBloom();
+	void renderDofBlur();
 	void renderToneMapping(GLuint fbId);
 	void renderFinal(GLuint fbId, GLuint texId);
 	void renderDebug(int x, int y, int width, int height, GLuint texId);
