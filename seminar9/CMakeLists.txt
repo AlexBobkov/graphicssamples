@@ -28,6 +28,7 @@ SET(MATERIAL_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/DeferredRenderingMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ToneMappingEffect.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/BloomEffect.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SSAOEffect.h
 	
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.cpp
@@ -37,6 +38,7 @@ SET(MATERIAL_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/DeferredRenderingMaterial.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ToneMappingEffect.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/BloomEffect.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/SSAOEffect.cpp
 )
 
 SOURCE_GROUP("Materials" FILES

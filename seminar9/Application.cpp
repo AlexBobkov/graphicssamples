@@ -168,6 +168,9 @@ void Application::setWindowSize(int width, int height)
 	glBindTexture(GL_TEXTURE_2D, _vertBlurImageTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width / 2, _height / 2, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
+	glBindTexture(GL_TEXTURE_2D, _ssaoImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
 	
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -203,11 +206,14 @@ void Application::makeSceneImplementation()
 	_vertBlurPass.setPassNumber(3);
 	_vertBlurPass.initialize();
 
+	_ssaoEffect.initialize();
+
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
 	_grassTexId = Texture::loadTexture("images/grass.jpg");
+	_rotateTexId = Texture::loadTexture("images/rotate.png");
 	_colorTexId = Texture::makeCustomTexture();
 
 	//Загружаем 3д-модели
@@ -268,6 +274,7 @@ void Application::makeSceneImplementation()
 	initOriginImageFramebuffer();
 	initToneMappingFramebuffer();
 	initBloomFramebuffer();
+	initSSAOFramebuffer();
 
 	//инициализируем положения центров сфер
 	float size = 10.0f;
@@ -469,6 +476,31 @@ void Application::initBloomFramebuffer()
 	}
 }
 
+void Application::initSSAOFramebuffer()
+{
+	//Создаем фреймбуфер
+	glGenFramebuffers(1, &_ssaoFramebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, _ssaoFramebufferId);
+
+	//Создаем текстуру, куда будет осуществляться рендеринг
+	glGenTextures(1, &_ssaoImageTexId);	
+	glBindTexture(GL_TEXTURE_2D, _ssaoImageTexId);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _ssaoImageTexId, 0);
+
+	//Указываем куда именно мы будем рендерить		
+	GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, buffers);
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cerr << "Failed to setup framebuffer\n";
+		exit(1);
+	}
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void Application::run()
 {
 	while (!glfwWindowShouldClose(_window))
@@ -498,17 +530,20 @@ void Application::draw()
 {
 	renderToShadowMap(_lightCamera, _shadowFramebufferId);
 	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
+	renderSSAO(_mainCamera, _ssaoFramebufferId);
 	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
 	renderBloom();
 	renderToneMapping(_toneMappingFramebufferId);
 
 	//renderFinal(0, _originImageTexId);
-	renderFinal(0, _toneMappedImageTexId);
+	//renderFinal(0, _toneMappedImageTexId);
 	//renderFinal(0, _brightImageTexId);
 	//renderFinal(0, _horizBlurImageTexId);
 	//renderFinal(0, _vertBlurImageTexId);
+	renderFinal(0, _ssaoImageTexId);
 
-	renderDebug(0, 0, 400, 400, _originImageTexId);
+	//renderDebug(0, 0, 400, 400, _originImageTexId);
+	renderDebug(0, 0, 400, 400, _ssaoImageTexId);
 
 	TwDraw();
 
@@ -712,6 +747,43 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 	glBindSampler(3, 0);
 	glBindSampler(2, 0);
 	glBindSampler(1, 0);
+	glBindSampler(0, 0);
+	glUseProgram(0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Application::renderSSAO(Camera& mainCamera, GLuint fbId)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
+
+	glViewport(0, 0, _width, _height);
+
+
+	glUseProgram(_ssaoEffect.getProgramId());	
+	_ssaoEffect.setProjMatrix(mainCamera.getProjMatrix());
+	_ssaoEffect.setProjMatrixInverse(glm::inverse(mainCamera.getProjMatrix()));
+	_ssaoEffect.setDepthTexUnit(0); //текстурный юнит 0	
+	_ssaoEffect.setRotateTexUnit(1);
+	_ssaoEffect.applyCommonUniforms();
+	_ssaoEffect.applyModelSpecificUniforms();
+
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _depthTexId);
+	glBindSampler(0, _sampler);
+
+	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _rotateTexId);
+	glBindSampler(1, _repeatSampler);
+
+
+	glDisable(GL_DEPTH_TEST);
+
+	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
+	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+
+	glEnable(GL_DEPTH_TEST);
+
 	glBindSampler(0, 0);
 	glUseProgram(0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);

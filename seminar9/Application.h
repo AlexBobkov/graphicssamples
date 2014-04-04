@@ -20,6 +20,7 @@
 #include "DeferredRenderingMaterial.h"
 #include "ToneMappingEffect.h"
 #include "BloomEffect.h"
+#include "SSAOEffect.h"
 #include "Camera.h"
 #include "Mesh.h"
 #include "Light.h"
@@ -68,6 +69,7 @@ protected:
 	BloomEffect _brightPass;
 	BloomEffect _horizBlurPass;
 	BloomEffect _vertBlurPass;
+	SSAOEffect _ssaoEffect;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -88,6 +90,7 @@ protected:
 	GLuint _brickTexId;
 	GLuint _grassTexId;
 	GLuint _colorTexId;
+	GLuint _rotateTexId;
 		
 	//текстуры для карты теней
 	GLuint _shadowMapTexId;
@@ -103,6 +106,7 @@ protected:
 	GLuint _brightImageTexId;
 	GLuint _horizBlurImageTexId;
 	GLuint _vertBlurImageTexId;
+	GLuint _ssaoImageTexId;
 	//================================================================
 
 	//параметры чтения из текстуры
@@ -131,6 +135,7 @@ protected:
 	GLuint _brightFramebufferId;
 	GLuint _horizBlurFramebufferId;
 	GLuint _vertBlurFramebufferId;
+	GLuint _ssaoFramebufferId;
 
 	float _exposure;
 
@@ -151,10 +156,12 @@ protected:
 	void initOriginImageFramebuffer();
 	void initToneMappingFramebuffer();
 	void initBloomFramebuffer();
+	void initSSAOFramebuffer();
 
 	void renderToShadowMap(Camera& lightCamera, GLuint fbId);
 	void renderToGBuffer(Camera& mainCamera, GLuint fbId);	
 	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);
+	void renderSSAO(Camera& mainCamera, GLuint fbId);
 	void renderBloom();
 	void renderToneMapping(GLuint fbId);
 	void renderFinal(GLuint fbId, GLuint texId);
