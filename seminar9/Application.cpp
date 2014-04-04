@@ -64,7 +64,9 @@ _oldTime(0.0f),
 	_ambientIntensity(0.2f),
 	_diffuseIntensity(0.8f),
 	_specularIntensity(0.5f),
-	_exposure(1.0f)
+	_exposure(1.0f),
+	_focalDistance(5.0f),
+	_focalRange(1.0f)
 {
 }
 
@@ -126,7 +128,9 @@ void Application::initOthers()
 	TwAddVarRW(_bar, "Ambient intensity", TW_TYPE_FLOAT, &_ambientIntensity, "min=0.0 max=100.0 step=0.1");
 	TwAddVarRW(_bar, "Diffuse intensity", TW_TYPE_FLOAT, &_diffuseIntensity, "min=0.0 max=100.0 step=0.1");
 	TwAddVarRW(_bar, "Specular intensity", TW_TYPE_FLOAT, &_specularIntensity, "min=0.0 max=100.0 step=0.1");
-	TwAddVarRW(_bar, "Exposure", TW_TYPE_FLOAT, &_exposure, "min=0.01 max=100.0 step=0.01");	
+	TwAddVarRW(_bar, "Exposure", TW_TYPE_FLOAT, &_exposure, "min=0.01 max=100.0 step=0.01");
+	TwAddVarRW(_bar, "Focal distance", TW_TYPE_FLOAT, &_focalDistance, "min=1.0 max=100.0 step=0.1");
+	TwAddVarRW(_bar, "Focal range", TW_TYPE_FLOAT, &_focalRange, "min=0.1 max=100.0 step=0.1");
 
 
 	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
@@ -591,19 +595,19 @@ void Application::draw()
 	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
 	renderBloom();
 	renderDofBlur();
-	renderToneMapping(_toneMappingFramebufferId);
+	renderToneMapping(_mainCamera, _toneMappingFramebufferId);
 
 	//renderFinal(0, _originImageTexId);
-	//renderFinal(0, _toneMappedImageTexId);
+	renderFinal(0, _toneMappedImageTexId);
 	//renderFinal(0, _brightImageTexId);
 	//renderFinal(0, _horizBlurImageTexId);
 	//renderFinal(0, _vertBlurImageTexId);
 	//renderFinal(0, _ssaoImageTexId);
-	renderFinal(0, _dofVertBlurImageTexId);
+	//renderFinal(0, _dofVertBlurImageTexId);
 
-	renderDebug(0, 0, 400, 400, _originImageTexId);
+	//renderDebug(0, 0, 400, 400, _originImageTexId);
 	//renderDebug(0, 0, 400, 400, _ssaoImageTexId);
-	//renderDebug(0, 0, 400, 400, _dofHorizBlurImageTexId);
+	renderDebug(0, 0, 400, 400, _dofVertBlurImageTexId);
 
 	TwDraw();
 
@@ -996,7 +1000,7 @@ void Application::renderBloom()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Application::renderToneMapping(GLuint fbId)
+void Application::renderToneMapping(Camera& mainCamera, GLuint fbId)
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbId);
 
@@ -1007,6 +1011,11 @@ void Application::renderToneMapping(GLuint fbId)
 	_toneMappingEffect.setExposure(_exposure);
 	_toneMappingEffect.setTexUnit(0); //текстурный юнит 0		
 	_toneMappingEffect.setBloomTexUnit(1); //текстурный юнит 1
+	_toneMappingEffect.setBlurTexUnit(2); //текстурный юнит 2
+	_toneMappingEffect.setFocalDistance(_focalDistance);
+	_toneMappingEffect.setFocalRange(_focalRange);
+	_toneMappingEffect.setProjMatrixInverse(glm::inverse(mainCamera.getProjMatrix()));
+	_toneMappingEffect.setDepthTexUnit(3); //текстурный юнит 3	
 	_toneMappingEffect.applyModelSpecificUniforms();
 
 
@@ -1017,6 +1026,14 @@ void Application::renderToneMapping(GLuint fbId)
 	glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _vertBlurImageTexId);
 	glBindSampler(1, _sampler);
+
+	glActiveTexture(GL_TEXTURE0 + 2);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _dofVertBlurImageTexId);
+	glBindSampler(2, _sampler);
+
+	glActiveTexture(GL_TEXTURE0 + 3);  //текстурный юнит 3
+	glBindTexture(GL_TEXTURE_2D, _depthTexId);
+	glBindSampler(3, _sampler);
 
 
 	glDisable(GL_DEPTH_TEST);

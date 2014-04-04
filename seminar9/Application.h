@@ -143,6 +143,9 @@ protected:
 
 	float _exposure;
 
+	float _focalDistance;
+	float _focalRange;
+
 	int _shadowMapWidth;
 	int _shadowMapHeight;
 
@@ -169,7 +172,7 @@ protected:
 	void renderSSAO(Camera& mainCamera, GLuint fbId);
 	void renderBloom();
 	void renderDofBlur();
-	void renderToneMapping(GLuint fbId);
+	void renderToneMapping(Camera& mainCamera, GLuint fbId);
 	void renderFinal(GLuint fbId, GLuint texId);
 	void renderDebug(int x, int y, int width, int height, GLuint texId);
 };
