@@ -9,10 +9,11 @@ out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-    vec2 dx = vec2(1.0 / texSize.x, 0.000000);
+    vec2 dx = vec2(1.0 / texSize.x, 0.000000); //шаг по горизонтали
     vec2 sdx = dx;
     vec4 sum = texture(tex, interpTc) * 0.134598;
 
+	//Размытие по горизонтали по Гауссу
     sum += (texture(tex, interpTc + sdx) + texture(tex, interpTc - sdx)) * 0.127325;
     sdx += dx;
     sum += (texture(tex, interpTc + sdx) + texture(tex, interpTc - sdx)) * 0.107778;

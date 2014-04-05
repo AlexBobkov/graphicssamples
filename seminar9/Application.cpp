@@ -8,11 +8,11 @@
 
 int demoNum = 1;
 
-bool hdr = false;
+bool hdr = true;
 bool grayscale = false;
-bool gamma = false;
+bool gamma = true;
 bool secondLight = false;
-bool ssao = false;
+bool ssao = true;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -148,6 +148,8 @@ void Application::setWindowSize(int width, int height)
 	_height = height;
 
 	_mainCamera.setWindowSize(_width, _height);
+
+	//Изменяем размеры текстур для рендеринга в текстуру
 
 	glBindTexture(GL_TEXTURE_2D, _normalsTexId);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
@@ -592,14 +594,14 @@ void Application::draw()
 {
 	renderToShadowMap(_lightCamera, _shadowFramebufferId);
 	renderToGBuffer(_mainCamera, _GBufferFramebufferId);
-	//renderSSAO(_mainCamera, _ssaoFramebufferId);
+	renderSSAO(_mainCamera, _ssaoFramebufferId);
 	renderDeferred(_mainCamera, _lightCamera, _originImageFramebufferId);
-	//renderBloom();
+	renderBloom();
 	//renderDofBlur();
-	//renderToneMapping(_mainCamera, _toneMappingFramebufferId);
+	renderToneMapping(_mainCamera, _toneMappingFramebufferId);
 
-	renderFinal(0, _originImageTexId);
-	//renderFinal(0, _toneMappedImageTexId);
+	//renderFinal(0, _originImageTexId);
+	renderFinal(0, _toneMappedImageTexId);
 	//renderFinal(0, _brightImageTexId);
 	//renderFinal(0, _horizBlurImageTexId);
 	//renderFinal(0, _vertBlurImageTexId);
@@ -685,6 +687,7 @@ void Application::renderToGBuffer(Camera& mainCamera, GLuint fbId)
 		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
 	}
 
+	//====== Чайник ======
 	glBindTexture(GL_TEXTURE_2D, _colorTexId);
 	_renderToGBufferMaterial.setModelMatrix(glm::translate(glm::scale(glm::mat4(1.0f), glm::vec3(0.1f, 0.1f, 0.1f)), glm::vec3(0.0, -20.0, 0.0)));	
 	_renderToGBufferMaterial.applyModelSpecificUniforms();
@@ -817,6 +820,7 @@ void Application::renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint
 
 	glEnable(GL_DEPTH_TEST);
 
+	glBindSampler(4, 0);
 	glBindSampler(3, 0);
 	glBindSampler(2, 0);
 	glBindSampler(1, 0);
@@ -921,6 +925,8 @@ void Application::renderSSAO(Camera& mainCamera, GLuint fbId)
 
 void Application::renderBloom()
 {
+	//=======================================================
+	//======= Зануление неярких фрагментов
 	glBindFramebuffer(GL_FRAMEBUFFER, _brightFramebufferId);
 
 	glViewport(0, 0, _width / 2, _height / 2);
@@ -947,7 +953,7 @@ void Application::renderBloom()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//=======================================================
-
+	//======= Размытие по горизонтали
 	glBindFramebuffer(GL_FRAMEBUFFER, _horizBlurFramebufferId);
 
 	glViewport(0, 0, _width / 2, _height / 2);
@@ -975,7 +981,7 @@ void Application::renderBloom()
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	//=======================================================
-
+	//======= Размытие по вертикали
 	glBindFramebuffer(GL_FRAMEBUFFER, _vertBlurFramebufferId);
 
 	glViewport(0, 0, _width / 2, _height / 2);

@@ -58,6 +58,7 @@ public:
 protected:
 	GLFWwindow* _window;
 	
+	//Классы для загрузи шейдеров для разных материалов и эффектов
 	ColorMaterial _colorMaterial;	
 	RenderToShadowMaterial _renderToShadowMaterial;	
 	RenderToGBufferMaterial _renderToGBufferMaterial;	
@@ -83,6 +84,7 @@ protected:
 	float _specularIntensity;
 	Light _light;
 
+	//второй источник света
 	Light _light2;
 
 	//идентификаторы текстурных объектов
@@ -101,6 +103,7 @@ protected:
 	GLuint _normalsTexId;
 	GLuint _diffuseTexId;
 
+	//прочие текстуры для рендеринга в текстуру
 	GLuint _originImageTexId;
 	GLuint _toneMappedImageTexId;
 	GLuint _brightImageTexId;
@@ -112,8 +115,8 @@ protected:
 	//================================================================
 
 	//параметры чтения из текстуры
-	GLuint _sampler;
-	GLuint _pixelPreciseSampler;
+	GLuint _sampler; //линейная фильтрация
+	GLuint _pixelPreciseSampler; //фильтрация NEAREST
 	GLuint _depthSampler;
 	GLuint _repeatSampler;
 
@@ -130,6 +133,7 @@ protected:
 
 	std::vector<glm::vec3> _positions;
 
+	//Идентификаторы фреймбуферов
 	GLuint _shadowFramebufferId;
 	GLuint _GBufferFramebufferId;
 	GLuint _originImageFramebufferId;
@@ -158,6 +162,7 @@ protected:
 					
 	void makeSceneImplementation();
 
+	//Инициализация фреймбуферов
 	void initShadowFramebuffer();
 	void initGBufferFramebuffer();
 	void initOriginImageFramebuffer();
@@ -166,13 +171,30 @@ protected:
 	void initSSAOFramebuffer();
 	void initDOFFramebuffer();
 
+	//Рендеринг в теневую карту
 	void renderToShadowMap(Camera& lightCamera, GLuint fbId);
+
+	//Рендеринг в G-буфер
 	void renderToGBuffer(Camera& mainCamera, GLuint fbId);	
-	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);
+
+	//Рендеринг в текстуру эффекта SSAO (интенсивность ambient-освещения)
 	void renderSSAO(Camera& mainCamera, GLuint fbId);
+
+	//Рендеринг отложенного освещения (может использовать SSAO)
+	void renderDeferred(Camera& mainCamera, Camera& lightCamera, GLuint fbId);
+	
+	//Рендеринг текстур для Bloom-эффекта (обрезание яркости, размытие по горизонтали и потом по вертикали)
 	void renderBloom();
+
+	//Рендеринг размытой текстуры для эффекта Depth of Field (по умолчанию в коде закомментарено)
 	void renderDofBlur();
+
+	//Рендеринг в текстуру эффекта Tone Mapping: отображение HDR в LDR. При этом используется Bloom-текстура. Также шейдер включает код для эффекта Depth of Field, но по умолчанию он закомментарен
 	void renderToneMapping(Camera& mainCamera, GLuint fbId);
+
+	//Финальный рендеринг на экран. Могут применяться эффекты grayscale или gamma correction
 	void renderFinal(GLuint fbId, GLuint texId);
+
+	//Рендеринг текстуры в левый нижний угол для отладки
 	void renderDebug(int x, int y, int width, int height, GLuint texId);
 };

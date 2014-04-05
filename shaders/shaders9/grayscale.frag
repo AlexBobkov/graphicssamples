@@ -12,6 +12,7 @@ void main()
 {
 	vec3 texColor = texture(tex, interpTc).rgb;	
 
+	//Яркость
 	float lum = dot(weights, texColor);
 	fragColor = vec4(lum, lum, lum, 1.0);
 }
