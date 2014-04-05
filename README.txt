@@ -6,6 +6,8 @@
 * GLEW (http://sourceforge.net/projects/glew/)
 * GLM (http://glm.g-truc.net/0.9.5/index.html)
 * GL Image (http://glsdk.sourceforge.net/docs/html/index.html)
+* Assimp (http://assimp.sourceforge.net/)
+* AntTweakBar (http://anttweakbar.sourceforge.net/doc/)
 
 Сборка осуществляется с помощью CMake (http://cmake.org/)
 
