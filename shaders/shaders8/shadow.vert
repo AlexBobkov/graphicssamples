@@ -38,4 +38,4 @@ void main()
 
 	//вычисляем текстурные координаты для проективной текстуры
 	interShadowTc = lightScaleBiasMatrix * lightProjectionMatrix * lightViewMatrix * modelMatrix * vec4(vp, 1.0);	
-};
+}

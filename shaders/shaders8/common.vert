@@ -29,4 +29,4 @@ void main()
 	lightPosCamSpace = viewMatrix * lightPos; //преобразование положения источника света в систему координат камеры
 
 	interpTc = tc; //просто копируем
-};
+}

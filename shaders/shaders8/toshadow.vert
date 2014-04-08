@@ -10,4 +10,4 @@ layout(location = 0) in vec3 vp; //координаты вершины в лок
 void main()
 {
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vp, 1.0);
-};
+}

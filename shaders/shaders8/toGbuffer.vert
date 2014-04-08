@@ -22,4 +22,4 @@ void main()
 	normalCamSpace = normalize(normalToCameraMatrix * normal); //преобразование нормали в систему координат камеры
 
 	interpTc = tc; //просто копируем
-};
+}

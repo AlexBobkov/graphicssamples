@@ -318,7 +318,7 @@ void Application::initShadowFramebuffer()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		std::cerr << "Failed to setup framebuffer\n";
+		std::cerr << "initShadowFramebuffer: Failed to setup framebuffer\n";
 		exit(1);
 	}
 
@@ -355,7 +355,7 @@ void Application::initGBufferFramebuffer()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		std::cerr << "Failed to setup framebuffer\n";
+		std::cerr << "initGBufferFramebuffer: Failed to setup framebuffer\n";
 		exit(1);
 	}
 
@@ -382,7 +382,7 @@ void Application::initOriginImageFramebuffer()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		std::cerr << "Failed to setup framebuffer\n";
+		std::cerr << "initOriginImageFramebuffer: Failed to setup framebuffer\n";
 		exit(1);
 	}
 
@@ -407,7 +407,7 @@ void Application::initToneMappingFramebuffer()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		std::cerr << "Failed to setup framebuffer\n";
+		std::cerr << "initToneMappingFramebuffer: Failed to setup framebuffer\n";
 		exit(1);
 	}
 
@@ -433,7 +433,7 @@ void Application::initBloomFramebuffer()
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			std::cerr << "Failed to setup framebuffer\n";
+			std::cerr << "initBloomFramebuffer: Failed to setup framebuffer\n";
 			exit(1);
 		}
 
@@ -457,7 +457,7 @@ void Application::initBloomFramebuffer()
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			std::cerr << "Failed to setup framebuffer\n";
+			std::cerr << "initBloomFramebuffer: Failed to setup framebuffer\n";
 			exit(1);
 		}
 
@@ -481,7 +481,7 @@ void Application::initBloomFramebuffer()
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			std::cerr << "Failed to setup framebuffer\n";
+			std::cerr << "initBloomFramebuffer: Failed to setup framebuffer\n";
 			exit(1);
 		}
 
@@ -507,7 +507,7 @@ void Application::initSSAOFramebuffer()
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
-		std::cerr << "Failed to setup framebuffer\n";
+		std::cerr << "initSSAOFramebuffer: Failed to setup framebuffer\n";
 		exit(1);
 	}
 
@@ -533,7 +533,7 @@ void Application::initDOFFramebuffer()
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			std::cerr << "Failed to setup framebuffer\n";
+			std::cerr << "initSSAOFramebuffer: Failed to setup framebuffer\n";
 			exit(1);
 		}
 
@@ -557,7 +557,7 @@ void Application::initDOFFramebuffer()
 
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			std::cerr << "Failed to setup framebuffer\n";
+			std::cerr << "initSSAOFramebuffer: Failed to setup framebuffer\n";
 			exit(1);
 		}
 

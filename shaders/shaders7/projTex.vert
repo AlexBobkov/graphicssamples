@@ -38,4 +38,4 @@ void main()
 
 	//вычисляем текстурные координаты для проективное текстуры
 	interProjTc = projScaleBiasMatrix * projProjectionMatrix * projViewMatrix * modelMatrix * vec4(vp, 1.0);	
-};
+}
