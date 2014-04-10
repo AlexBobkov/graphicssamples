@@ -42,6 +42,22 @@ void CommonMaterial::initialize()
 	//=========================================================
 	//Инициализация прочих uniform-переменных
 	_timeUniform = glGetUniformLocation(_programId, "time");
+
+	_positionsUniform = glGetUniformLocation(_programId, "positions");
+}
+
+void CommonMaterial::setPositions(std::vector<glm::vec3>& positions)
+{
+	for (unsigned int i = 0; i < positions.size(); i++)
+	{
+		_positions.push_back(positions[i].x);
+		_positions.push_back(positions[i].y);
+		_positions.push_back(positions[i].z);
+	}
+
+	glUseProgram(_programId);
+	glUniform3fv(_positionsUniform, _positions.size() / 3, _positions.data());
+	glUseProgram(0);
 }
 
 void CommonMaterial::applyCommonUniforms() 
@@ -65,5 +81,5 @@ void CommonMaterial::applyModelSpecificUniforms()
 
 	glUniform1f(_shininessUniform, _shininess);	
 
-	glUniform1i(_diffuseTexUniform, _diffuseTexUnit);
+	glUniform1i(_diffuseTexUniform, _diffuseTexUnit);	
 }

@@ -47,6 +47,8 @@ public:
 
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
 
+	void setPositions(std::vector<glm::vec3>& positions);
+
 protected:
 	std::string _vertFilename;
 
@@ -56,6 +58,8 @@ protected:
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;	
 	GLuint _normalToCameraMatrixUniform;
+
+	GLuint _positionsUniform;
 
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
@@ -85,4 +89,6 @@ protected:
 
 	//текстурные юниты
 	int _diffuseTexUnit;
+
+	std::vector<float> _positions;
 };
