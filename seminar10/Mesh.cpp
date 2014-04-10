@@ -83,8 +83,10 @@ _vao(vao),
 
 Mesh Mesh::makeSphere(float radius)
 {
-	int N = 100;
-	int M = 50;
+	//int N = 100;
+	//int M = 50;
+	int N = 20;
+	int M = 10;
 	int numVertices = 0;
 
 	std::vector<float> vertices;	
@@ -132,6 +134,8 @@ Mesh Mesh::makeSphere(float radius)
 		}
 	}
 
+	std::cout << "Num vertices = " << numVertices << std::endl;
+
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
@@ -160,8 +164,8 @@ Mesh Mesh::makeStaticSphereArray(float radius, int K, std::vector<glm::vec3>& po
 {
 	//int N = 100;
 	//int M = 50;
-	int N = 50;
-	int M = 20;
+	int N = 20;
+	int M = 10;
 	int numVertices = 0;
 
 	std::vector<float> vertices;	

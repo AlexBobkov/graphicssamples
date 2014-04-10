@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 6;
+int demoNum = 1;
 //1 - for cycle for spheres
 //2 - static instancing
 //3 - hardware instancing
@@ -14,7 +14,7 @@ int demoNum = 6;
 //5 - hardware instancing with texture
 //6 - hardware instancing with divisor
 
-int K = 5000;
+int K = 500;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);

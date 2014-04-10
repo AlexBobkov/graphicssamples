@@ -13,7 +13,7 @@ Material(),
 
 void CommonMaterial::initialize()
 {
-	std::string fragFilename = "shaders8/common.frag";
+	std::string fragFilename = "shaders10/common.frag";
 
 	_programId = makeShaderProgram(_vertFilename, fragFilename);
 
