@@ -6,11 +6,12 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 4;
+int demoNum = 5;
 //1 - for cycle for spheres
 //2 - static instancing
 //3 - hardware instancing
 //4 - hardware instancing with uniform
+//5 - hardware instancing with texture
 
 int K = 500;
 
@@ -164,6 +165,10 @@ void Application::makeSceneImplementation()
 	{
 		_commonMaterial.setVertFilename("shaders10/common_inst2.vert");
 	}
+	else if (demoNum == 5)
+	{
+		_commonMaterial.setVertFilename("shaders10/common_inst3.vert");
+	}
 
 	_commonMaterial.initialize();
 
@@ -172,7 +177,7 @@ void Application::makeSceneImplementation()
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
 	_grassTexId = Texture::loadTexture("images/grass.jpg");
 	_rotateTexId = Texture::loadTexture("images/rotate.png");
-	_colorTexId = Texture::makeCustomTexture();
+	_colorTexId = Texture::makeCustomTexture();	
 
 	//инициализируем положения центров сфер
 	float size = 100.0f;
@@ -181,7 +186,15 @@ void Application::makeSceneImplementation()
 		_positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
 	}
 
-	_commonMaterial.setPositions(_positions);
+	if (demoNum == 4)
+	{
+		_commonMaterial.setPositions(_positions);
+	}
+
+	if (demoNum == 5)
+	{
+		_texBufferId = Texture::makeTextureBuffer(_positions);
+	}
 
 	//Загружаем 3д-модели
 	_sphere = Mesh::makeSphere(0.8f);
@@ -193,7 +206,11 @@ void Application::makeSceneImplementation()
 	_teapot = Mesh::loadFromFile("models/teapot.obj");
 	_screenQuad = Mesh::makeScreenAlignedQuad();
 	_sphereMarker = Mesh::makeSphere(0.1f);
-	_sphereArray = Mesh::makeStaticSphereArray(0.8f, K, _positions);
+
+	if (demoNum == 2)
+	{
+		_sphereArray = Mesh::makeStaticSphereArray(0.8f, K, _positions);
+	}
 
 	//Инициализацируем значения переменных освщения	
 	_light.setAmbientColor(glm::vec3(_ambientIntensity, _ambientIntensity, _ambientIntensity));	
@@ -314,6 +331,18 @@ void Application::drawScene(Camera& camera)
 	}
 	else if (demoNum == 3 || demoNum == 4)
 	{		
+		_commonMaterial.setModelMatrix(glm::mat4(1.0f)); //считаем матрицу модели, используя координаты центра сферы
+		_commonMaterial.applyModelSpecificUniforms();
+
+		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
+		glDrawArraysInstanced(GL_TRIANGLES, 0, _sphere.getNumVertices(), K); //Рисуем
+	}
+	else if (demoNum == 5)
+	{
+		glActiveTexture(GL_TEXTURE0 + 1);  //текстурный юнит 1
+		glBindTexture(GL_TEXTURE_BUFFER, _texBufferId);
+
+		_commonMaterial.setTexBufUnit(1);
 		_commonMaterial.setModelMatrix(glm::mat4(1.0f)); //считаем матрицу модели, используя координаты центра сферы
 		_commonMaterial.applyModelSpecificUniforms();
 

@@ -44,6 +44,7 @@ void CommonMaterial::initialize()
 	_timeUniform = glGetUniformLocation(_programId, "time");
 
 	_positionsUniform = glGetUniformLocation(_programId, "positions");
+	_texBufUniform = glGetUniformLocation(_programId, "texBuf");
 }
 
 void CommonMaterial::setPositions(std::vector<glm::vec3>& positions)
@@ -82,4 +83,5 @@ void CommonMaterial::applyModelSpecificUniforms()
 	glUniform1f(_shininessUniform, _shininess);	
 
 	glUniform1i(_diffuseTexUniform, _diffuseTexUnit);	
+	glUniform1i(_texBufUniform, _texBufUnit);	
 }

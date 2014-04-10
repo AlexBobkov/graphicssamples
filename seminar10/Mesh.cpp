@@ -150,7 +150,7 @@ Mesh Mesh::makeSphere(float radius)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4 * 2));
-	
+
 	glBindVertexArray(0);
 
 	return Mesh(sphereVao, numVertices);
@@ -251,7 +251,7 @@ Mesh Mesh::makeStaticSphereArray(float radius, int K, std::vector<glm::vec3>& po
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * K * 3 * 4));
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * K * 3 * 4 * 2));
-	
+
 	glBindVertexArray(0);
 
 	return Mesh(sphereVao, numVertices * K);
@@ -280,7 +280,7 @@ Mesh Mesh::makeCube(float size)
 	addVec3(vertices, size, -size, size);
 	addVec3(vertices, size, size, -size);
 	addVec3(vertices, size, -size, -size);
-	
+
 	addVec3(normals, 1.0, 0.0, 0.0);
 	addVec3(normals, 1.0, 0.0, 0.0);
 	addVec3(normals, 1.0, 0.0, 0.0);
@@ -441,7 +441,7 @@ Mesh Mesh::makeCube(float size)
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * 3 * 4 * 2));
 
 	glBindVertexArray(0);
-	
+
 	return Mesh(cubeVao, numVertices);
 }
 
@@ -468,7 +468,7 @@ Mesh Mesh::makeYZPlane(float size)
 	addVec3(vertices, 0.0, -size, size);
 	addVec3(vertices, 0.0, size, -size);
 	addVec3(vertices, 0.0, -size, -size);
-	
+
 	addVec3(normals, 1.0, 0.0, 0.0);
 	addVec3(normals, 1.0, 0.0, 0.0);
 	addVec3(normals, 1.0, 0.0, 0.0);
@@ -516,7 +516,7 @@ Mesh Mesh::makeScreenAlignedQuad()
 	addVec3(vertices, -1.0, 1.0, 0.0);
 	addVec3(vertices, 1.0, -1.0, 0.0);
 	addVec3(vertices, -1.0, -1.0, 0.0);
-	
+
 	int numVertices = 6;
 
 	GLuint vbo = 0;
@@ -625,7 +625,7 @@ Mesh Mesh::loadFromFile(std::string filename)
 		std::cerr << "This demo does not support meshes without normals\n";
 		return Mesh();
 	}
-		
+
 	if (!mesh->HasTextureCoords(0))
 	{
 		std::cerr << "This demo does not support meshes without texcoords for texture unit 0\n";
@@ -637,7 +637,7 @@ Mesh Mesh::loadFromFile(std::string filename)
 	std::vector<float> vertices(numVertices * 3);	
 	std::vector<float> normals(numVertices * 3);
 	std::vector<float> texcoords(numVertices * 2);
-	
+
 	for (int i = 0; i < numVertices; i++)
 	{
 		const aiVector3D* vp = &(mesh->mVertices[i]);

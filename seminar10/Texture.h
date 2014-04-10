@@ -11,6 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
+#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+
 /**
 Содержит cтатические методы для создания текстур
 */
@@ -21,6 +26,7 @@ public:
 	static GLuint loadTextureWithMipmaps(std::string filename);
 	static GLuint loadCubeTexture(std::string basefilename);
 	static GLuint makeCustomTexture();
+	static GLuint makeTextureBuffer(std::vector<glm::vec3>& positions);
 
 protected:
 	Texture() {}

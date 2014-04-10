@@ -75,7 +75,8 @@ protected:
 	GLuint _brickTexId;
 	GLuint _grassTexId;
 	GLuint _colorTexId;
-	GLuint _rotateTexId;		
+	GLuint _rotateTexId;
+	GLuint _texBufferId;
 
 	//================================================================
 

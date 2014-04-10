@@ -46,6 +46,7 @@ public:
 	void setShininess(float s) { _shininess = s; }
 
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
+	void setTexBufUnit(int unit) { _texBufUnit = unit; }
 
 	void setPositions(std::vector<glm::vec3>& positions);
 
@@ -60,6 +61,7 @@ protected:
 	GLuint _normalToCameraMatrixUniform;
 
 	GLuint _positionsUniform;
+	GLuint _texBufUniform;
 
 	GLuint _lightPosUniform;
 	GLuint _ambientColorUniform;
@@ -89,6 +91,7 @@ protected:
 
 	//текстурные юниты
 	int _diffuseTexUnit;
+	int _texBufUnit;
 
 	std::vector<float> _positions;
 };
