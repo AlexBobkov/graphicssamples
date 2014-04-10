@@ -26,6 +26,8 @@ class CommonMaterial: public Material
 public:
 	CommonMaterial();
 
+	void setVertFilename(std::string filename) { _vertFilename = filename; }
+
 	void initialize() override;
 	void applyCommonUniforms() override;
 	void applyModelSpecificUniforms() override;
@@ -45,7 +47,9 @@ public:
 
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }
 
-protected:	
+protected:
+	std::string _vertFilename;
+
 	//====== идентификаторы uniform-переменных ======
 	GLuint _timeUniform;
 	GLuint _modelMatrixUniform;

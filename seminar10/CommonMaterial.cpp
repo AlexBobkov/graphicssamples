@@ -5,17 +5,18 @@
 
 #include "CommonMaterial.h"
 
-CommonMaterial::CommonMaterial()
+CommonMaterial::CommonMaterial():
+Material(),
+	_vertFilename("shaders8/common.vert")
 {
 }
 
 void CommonMaterial::initialize()
 {
-	std::string vertFilename = "shaders8/common.vert";
 	std::string fragFilename = "shaders8/common.frag";
 
-	_programId = makeShaderProgram(vertFilename, fragFilename);
-		
+	_programId = makeShaderProgram(_vertFilename, fragFilename);
+
 	//=========================================================
 	//Инициализация uniform-переменных для преобразования координат	
 	_modelMatrixUniform = glGetUniformLocation(_programId, "modelMatrix");
@@ -48,7 +49,7 @@ void CommonMaterial::applyCommonUniforms()
 	glUniform1f(_timeUniform, _time);
 	glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 	glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
-		
+
 	glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
 	glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
 	glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
@@ -61,7 +62,7 @@ void CommonMaterial::applyModelSpecificUniforms()
 
 	glm::mat3 normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * _modelMatrix)));
 	glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(normalToCameraMatrix));
-		
+
 	glUniform1f(_shininessUniform, _shininess);	
 
 	glUniform1i(_diffuseTexUniform, _diffuseTexUnit);

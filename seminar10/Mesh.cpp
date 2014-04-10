@@ -158,10 +158,10 @@ Mesh Mesh::makeSphere(float radius)
 
 Mesh Mesh::makeStaticSphereArray(float radius, int K, std::vector<glm::vec3>& positions)
 {
-	int N = 100;
-	int M = 50;
-	//int N = 50;
-	//int M = 20;
+	//int N = 100;
+	//int M = 50;
+	int N = 50;
+	int M = 20;
 	int numVertices = 0;
 
 	std::vector<float> vertices;	

@@ -6,9 +6,12 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 1;
+int demoNum = 3;
 //1 - for cycle for spheres
-//2 - static sphere array
+//2 - static instancing
+//3 - hardware instancing
+
+int K = 2500;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -149,9 +152,15 @@ void Application::makeScene()
 void Application::makeSceneImplementation()
 {
 	//Инициализируем шейдеры
-	_screenAlignedMaterial.initialize();
-	_commonMaterial.initialize();
+	_screenAlignedMaterial.initialize();	
 	_colorMaterial.initialize();	
+
+	if (demoNum == 3)
+	{
+		_commonMaterial.setVertFilename("shaders10/common_inst1.vert");
+	}
+
+	_commonMaterial.initialize();
 
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
@@ -162,7 +171,7 @@ void Application::makeSceneImplementation()
 
 	//инициализируем положения центров сфер
 	float size = 100.0f;
-	for (int i = 0; i < 500; i++)
+	for (int i = 0; i < K; i++)
 	{
 		_positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
 	}
@@ -177,7 +186,7 @@ void Application::makeSceneImplementation()
 	_teapot = Mesh::loadFromFile("models/teapot.obj");
 	_screenQuad = Mesh::makeScreenAlignedQuad();
 	_sphereMarker = Mesh::makeSphere(0.1f);
-	_sphereArray = Mesh::makeStaticSphereArray(0.8f, 500, _positions);
+	_sphereArray = Mesh::makeStaticSphereArray(0.8f, K, _positions);
 
 	//Инициализацируем значения переменных освщения	
 	_light.setAmbientColor(glm::vec3(_ambientIntensity, _ambientIntensity, _ambientIntensity));	
@@ -295,6 +304,14 @@ void Application::drawScene(Camera& camera)
 
 		glBindVertexArray(_sphereArray.getVao()); //Подключаем VertexArray
 		glDrawArrays(GL_TRIANGLES, 0, _sphereArray.getNumVertices()); //Рисуем
+	}
+	else if (demoNum == 3)
+	{
+		_commonMaterial.setModelMatrix(glm::mat4(1.0f)); //считаем матрицу модели, используя координаты центра сферы
+		_commonMaterial.applyModelSpecificUniforms();
+
+		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
+		glDrawArraysInstanced(GL_TRIANGLES, 0, _sphere.getNumVertices(), K); //Рисуем
 	}
 
 	//====== Плоскость земли ======
