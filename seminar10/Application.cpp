@@ -6,14 +6,15 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 5;
+int demoNum = 6;
 //1 - for cycle for spheres
 //2 - static instancing
 //3 - hardware instancing
 //4 - hardware instancing with uniform
 //5 - hardware instancing with texture
+//6 - hardware instancing with divisor
 
-int K = 500;
+int K = 5000;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -169,6 +170,10 @@ void Application::makeSceneImplementation()
 	{
 		_commonMaterial.setVertFilename("shaders10/common_inst3.vert");
 	}
+	else if (demoNum == 6)
+	{
+		_commonMaterial.setVertFilename("shaders10/common_inst4.vert");
+	}
 
 	_commonMaterial.initialize();
 
@@ -210,6 +215,11 @@ void Application::makeSceneImplementation()
 	if (demoNum == 2)
 	{
 		_sphereArray = Mesh::makeStaticSphereArray(0.8f, K, _positions);
+	}
+
+	if (demoNum == 6)
+	{
+		_sphere.addInstancedData(3, _positions);
 	}
 
 	//Инициализацируем значения переменных освщения	
@@ -329,7 +339,7 @@ void Application::drawScene(Camera& camera)
 		glBindVertexArray(_sphereArray.getVao()); //Подключаем VertexArray
 		glDrawArrays(GL_TRIANGLES, 0, _sphereArray.getNumVertices()); //Рисуем
 	}
-	else if (demoNum == 3 || demoNum == 4)
+	else if (demoNum == 3 || demoNum == 4 || demoNum == 6)
 	{		
 		_commonMaterial.setModelMatrix(glm::mat4(1.0f)); //считаем матрицу модели, используя координаты центра сферы
 		_commonMaterial.applyModelSpecificUniforms();

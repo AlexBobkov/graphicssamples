@@ -36,6 +36,8 @@ public:
 	static Mesh makeScreenAlignedQuad();
 	static Mesh makeGroundPlane(float size, float numTiles);
 	static Mesh loadFromFile(std::string filename);
+	
+	void addInstancedData(int attrNum, std::vector<glm::vec3>& positions);
 
 protected:
 	GLuint _vao;
