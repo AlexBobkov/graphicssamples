@@ -94,6 +94,7 @@ protected:
 	Mesh _teapot;
 	Mesh _screenQuad;
 	Mesh _sphereMarker;
+	Mesh _sphereArray;
 
 	std::vector<glm::vec3> _positions;
 

@@ -7,6 +7,8 @@
 #include "Texture.h"
 
 int demoNum = 1;
+//1 - for cycle for spheres
+//2 - static sphere array
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -158,6 +160,13 @@ void Application::makeSceneImplementation()
 	_rotateTexId = Texture::loadTexture("images/rotate.png");
 	_colorTexId = Texture::makeCustomTexture();
 
+	//инициализируем положения центров сфер
+	float size = 100.0f;
+	for (int i = 0; i < 500; i++)
+	{
+		_positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
+	}
+
 	//Загружаем 3д-модели
 	_sphere = Mesh::makeSphere(0.8f);
 	_plane = Mesh::makeYZPlane(0.8f);
@@ -168,6 +177,7 @@ void Application::makeSceneImplementation()
 	_teapot = Mesh::loadFromFile("models/teapot.obj");
 	_screenQuad = Mesh::makeScreenAlignedQuad();
 	_sphereMarker = Mesh::makeSphere(0.1f);
+	_sphereArray = Mesh::makeStaticSphereArray(0.8f, 500, _positions);
 
 	//Инициализацируем значения переменных освщения	
 	_light.setAmbientColor(glm::vec3(_ambientIntensity, _ambientIntensity, _ambientIntensity));	
@@ -197,12 +207,7 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	//инициализируем положения центров сфер
-	float size = 100.0f;
-	for (int i = 0; i < 1000; i++)
-	{
-		_positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
-	}
+	
 }
 
 void Application::run()
@@ -272,13 +277,24 @@ void Application::drawScene(Camera& camera)
 	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
 	_commonMaterial.setShininess(100.0f);
 	
-	for (unsigned int i = 0; i < _positions.size(); i++)
+	if (demoNum == 1)
 	{
-		_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i])); //считаем матрицу модели, используя координаты центра сферы
+		for (unsigned int i = 0; i < _positions.size(); i++)
+		{
+			_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), _positions[i])); //считаем матрицу модели, используя координаты центра сферы
+			_commonMaterial.applyModelSpecificUniforms();
+
+			glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
+			glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
+		}
+	}
+	else if (demoNum == 2)
+	{
+		_commonMaterial.setModelMatrix(glm::mat4(1.0f)); //считаем матрицу модели, используя координаты центра сферы
 		_commonMaterial.applyModelSpecificUniforms();
 
-		glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray
-		glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем
+		glBindVertexArray(_sphereArray.getVao()); //Подключаем VertexArray
+		glDrawArrays(GL_TRIANGLES, 0, _sphereArray.getNumVertices()); //Рисуем
 	}
 
 	//====== Плоскость земли ======

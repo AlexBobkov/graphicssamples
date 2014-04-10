@@ -156,6 +156,107 @@ Mesh Mesh::makeSphere(float radius)
 	return Mesh(sphereVao, numVertices);
 }
 
+Mesh Mesh::makeStaticSphereArray(float radius, int K, std::vector<glm::vec3>& positions)
+{
+	int N = 100;
+	int M = 50;
+	//int N = 50;
+	//int M = 20;
+	int numVertices = 0;
+
+	std::vector<float> vertices;	
+	std::vector<float> normals;
+	std::vector<float> texcoords;
+	for (int i = 0; i < M; i++)
+	{
+		float theta = (float)M_PI * i / M;
+		float theta1 = (float)M_PI * (i + 1) / M;
+
+		for (int j = 0; j < N; j++)
+		{
+			float phi = 2.0f * (float)M_PI * j / N + (float)M_PI;
+			float phi1 = 2.0f * (float)M_PI * (j + 1) / N + (float)M_PI;
+
+			//Первый треугольник, образующий квад
+			addVec3(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
+			addVec3(vertices, cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius);
+			addVec3(vertices, cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
+
+			addVec3(normals, cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
+			addVec3(normals, cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta));
+			addVec3(normals, cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
+
+			addVec2(texcoords, (float)j / N, 1.0f - (float)i / M);
+			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)i / M);
+			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)(i + 1) / M);						
+
+			numVertices += 3;
+
+			//Второй треугольник, образующий квад
+			addVec3(vertices, cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
+			addVec3(vertices, cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
+			addVec3(vertices, cos(phi) * sin(theta1) * radius, sin(phi) * sin(theta1) * radius, cos(theta1) * radius);			
+
+			addVec3(normals, cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
+			addVec3(normals, cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
+			addVec3(normals, cos(phi) * sin(theta1), sin(phi) * sin(theta1), cos(theta1));			
+
+			addVec2(texcoords, (float)j / N, 1.0f - (float)i / M);
+			addVec2(texcoords, (float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
+			addVec2(texcoords, (float)j / N, 1.0f - (float)(i + 1) / M);			
+
+			numVertices += 3;
+		}
+	}
+
+	std::cout << "Num vertices = " << numVertices << std::endl;
+
+	std::vector<float> totalVertices;
+	totalVertices.reserve((vertices.size() + normals.size() + texcoords.size()) * K);
+
+	std::vector<float> totalNormals;
+	totalNormals.reserve(normals.size() * K);
+
+	std::vector<float> totalTexcoords;
+	totalTexcoords.reserve(texcoords.size() * K);
+
+	for (unsigned int i = 0; i < K; i++)
+	{
+		for (unsigned int j = 0; j < numVertices; j++)
+		{
+			glm::vec3 pos = glm::vec3(vertices[j * 3], vertices[j * 3 + 1], vertices[j * 3 + 2]) + positions[i];
+
+			addVec3(totalVertices, pos.x, pos.y, pos.z);
+		}
+
+		totalNormals.insert(totalNormals.end(), normals.begin(), normals.end());
+		totalTexcoords.insert(totalTexcoords.end(), texcoords.begin(), texcoords.end());
+	}
+
+	totalVertices.insert(totalVertices.end(), totalNormals.begin(), totalNormals.end());
+	totalVertices.insert(totalVertices.end(), totalTexcoords.begin(), totalTexcoords.end());
+
+	GLuint vbo = 0;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, totalVertices.size() * sizeof(float), totalVertices.data(), GL_STATIC_DRAW);
+
+	GLuint sphereVao = 0;
+	glGenVertexArrays(1, &sphereVao);
+	glBindVertexArray(sphereVao);
+	glEnableVertexAttribArray(0);	
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * K * 3 * 4));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(numVertices * K * 3 * 4 * 2));
+	
+	glBindVertexArray(0);
+
+	return Mesh(sphereVao, numVertices * K);
+}
+
 Mesh Mesh::makeCube(float size)
 {
 	std::vector<float> vertices;	
