@@ -109,8 +109,10 @@ protected:
 	Mesh _sphereArray;
 
 	GLuint _particlePosVbo;
+	GLuint _particleTimeVbo;
 	GLuint _particleVao;
 	std::vector<float> _particlePositions;
+	std::vector<float> _particleTimes;
 	std::vector<Particle> _particles;
 
 	std::vector<glm::vec3> _positions;

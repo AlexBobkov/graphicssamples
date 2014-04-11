@@ -274,6 +274,8 @@ void Application::makeSceneImplementation()
 		for (unsigned int i = 0; i < numParticles; i++)	
 		{
 			addVec3(_particlePositions, _particles[i].position.x, _particles[i].position.y, _particles[i].position.z);
+
+			_particleTimes.push_back(_particles[i].startTime);
 		}	
 
 		_particlePosVbo = 0;
@@ -281,12 +283,22 @@ void Application::makeSceneImplementation()
 		glBindBuffer(GL_ARRAY_BUFFER, _particlePosVbo);
 		glBufferData(GL_ARRAY_BUFFER, _particlePositions.size() * sizeof(float), _particlePositions.data(), GL_STREAM_DRAW);
 
+		_particleTimeVbo = 0;
+		glGenBuffers(1, &_particleTimeVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, _particleTimeVbo);
+		glBufferData(GL_ARRAY_BUFFER, _particleTimes.size() * sizeof(float), _particleTimes.data(), GL_STREAM_DRAW);
+
 		_particleVao = 0;
 		glGenVertexArrays(1, &_particleVao);
 		glBindVertexArray(_particleVao);
+
 		glEnableVertexAttribArray(0);
 		glBindBuffer(GL_ARRAY_BUFFER, _particlePosVbo);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+		glEnableVertexAttribArray(1);
+		glBindBuffer(GL_ARRAY_BUFFER, _particleTimeVbo);
+		glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
 
 		glBindVertexArray(0);
 	}	
@@ -334,16 +346,21 @@ void Application::update()
 				_particles[i].startTime += lifeTime;
 
 				_particles[i].position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, -2.0);
-				_particles[i].velocity = glm::vec3(_particles[i].position.x * 0.7, _particles[i].position.y * 0.7, 10.0);
+				_particles[i].velocity = glm::vec3(_particles[i].position.x * 0.7, 5.0 + _particles[i].position.y * 0.7, 10.0);
 			}
 
 			_particlePositions[i * 3 + 0] = _particles[i].position.x;
 			_particlePositions[i * 3 + 1] = _particles[i].position.y;
 			_particlePositions[i * 3 + 2] = _particles[i].position.z;
+
+			_particleTimes[i] = _particles[i].startTime;
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, _particlePosVbo);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, _particlePositions.size() * sizeof(float), _particlePositions.data());
+
+		glBindBuffer(GL_ARRAY_BUFFER, _particleTimeVbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, _particleTimes.size() * sizeof(float), _particleTimes.data());
 	}
 }
 
