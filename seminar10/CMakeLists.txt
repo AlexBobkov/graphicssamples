@@ -23,11 +23,13 @@ SET(MATERIAL_FILES
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.h
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.h	
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ParticleMaterial.h
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.h
 	
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp	
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp
+	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ParticleMaterial.cpp	
 	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.cpp	
 )
 

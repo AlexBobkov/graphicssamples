@@ -6,13 +6,14 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 1;
+int demoNum = 7;
 //1 - for cycle for spheres
 //2 - static instancing
 //3 - hardware instancing
 //4 - hardware instancing with uniform
 //5 - hardware instancing with texture
 //6 - hardware instancing with divisor
+//7 - particle system on CPU
 
 int K = 500;
 
@@ -20,6 +21,8 @@ int K = 500;
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
+
+void addVec3(std::vector<float>& vec, float x, float y, float z);
 
 float frand()
 {
@@ -177,6 +180,8 @@ void Application::makeSceneImplementation()
 
 	_commonMaterial.initialize();
 
+	_particleMaterial.initialize();
+
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
@@ -250,7 +255,39 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	
+	if (demoNum == 7)
+	{
+		int numParticles = 1000;
+		double emitterSize = 10.0;
+
+		for (unsigned int i = 0; i < numParticles; i++)
+		{
+			Particle p;
+			p.position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, 0.0);
+			p.velocity = glm::vec3(0.0, 0.0, 0.0);
+			p.startTime = 0.0;
+			_particles.push_back(p);
+		}
+
+		for (unsigned int i = 0; i < numParticles; i++)	
+		{
+			addVec3(_particlePositions, _particles[i].position.x, _particles[i].position.y, _particles[i].position.z);
+		}	
+
+		_particlePosVbo = 0;
+		glGenBuffers(1, &_particlePosVbo);
+		glBindBuffer(GL_ARRAY_BUFFER, _particlePosVbo);
+		glBufferData(GL_ARRAY_BUFFER, _particlePositions.size() * sizeof(float), _particlePositions.data(), GL_STREAM_DRAW);
+
+		_particleVao = 0;
+		glGenVertexArrays(1, &_particleVao);
+		glBindVertexArray(_particleVao);
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, _particlePosVbo);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+		glBindVertexArray(0);
+	}	
 }
 
 void Application::run()
@@ -286,11 +323,14 @@ void Application::update()
 
 void Application::draw()
 {
-	glViewport(0, 0, _width, _height);
-	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
-
-	drawScene(_mainCamera);
+	if (demoNum <= 6)
+	{
+		drawScene(_mainCamera);
+	}
+	else
+	{
+		drawParticles(_mainCamera);
+	}
 
 	TwDraw();
 
@@ -299,6 +339,10 @@ void Application::draw()
 
 void Application::drawScene(Camera& camera)
 {
+	glViewport(0, 0, _width, _height);
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
 	glUseProgram(_commonMaterial.getProgramId()); //Подключаем шейдер, который рендерит в 3 текстуры: текстуру с нормалями, с глубинами, с диффузным цветом
 
 	_commonMaterial.setTime((float)glfwGetTime());
@@ -371,6 +415,38 @@ void Application::drawScene(Camera& camera)
 
 	//glBindVertexArray(_ground.getVao()); //Подключаем VertexArray
 	//glDrawArrays(GL_TRIANGLES, 0, _ground.getNumVertices()); //Рисуем
+
+	glUseProgram(0);
+}
+
+void Application::drawParticles(Camera& camera)
+{
+	glViewport(0, 0, _width, _height);
+	glClearColor(0, 0, 0, 1); //black color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+	glUseProgram(_particleMaterial.getProgramId()); //Подключаем шейдер, который рендерит в 3 текстуры: текстуру с нормалями, с глубинами, с диффузным цветом
+
+	_particleMaterial.setTime((float)glfwGetTime());
+
+	_particleMaterial.setModelMatrix(glm::mat4(1.0f));	
+	_particleMaterial.setViewMatrix(camera.getViewMatrix());
+	_particleMaterial.setProjectionMatrix(camera.getProjMatrix());
+
+	_particleMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
+
+	_particleMaterial.applyCommonUniforms();
+	_particleMaterial.applyModelSpecificUniforms();
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindSampler(0, _sampler);
+
+	glEnable(GL_PROGRAM_POINT_SIZE);
+	glEnable(GL_POINT_SPRITE);
+
+	glBindVertexArray(_particleVao); //Подключаем VertexArray
+	glDrawArrays(GL_POINTS, 0, _particles.size()); //Рисуем		
 
 	glUseProgram(0);
 }

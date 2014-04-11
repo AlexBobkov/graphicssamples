@@ -19,6 +19,15 @@
 #include "Camera.h"
 #include "Mesh.h"
 #include "Light.h"
+#include "ParticleMaterial.h"
+
+class Particle
+{
+public:
+	glm::vec3 position;
+	glm::vec3 velocity;
+	float startTime;
+};
 
 class Application
 {
@@ -56,7 +65,8 @@ protected:
 	//Классы для загрузи шейдеров для разных материалов и эффектов
 	ColorMaterial _colorMaterial;	
 	CommonMaterial _commonMaterial;
-	ScreenAlignedQuadMaterial _screenAlignedMaterial;	
+	ScreenAlignedQuadMaterial _screenAlignedMaterial;
+	ParticleMaterial _particleMaterial;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -97,6 +107,11 @@ protected:
 	Mesh _sphereMarker;
 	Mesh _sphereArray;
 
+	GLuint _particlePosVbo;
+	GLuint _particleVao;
+	std::vector<float> _particlePositions;
+	std::vector<Particle> _particles;
+
 	std::vector<glm::vec3> _positions;
 
 	float _oldTime;
@@ -110,4 +125,5 @@ protected:
 	void makeSceneImplementation();
 
 	void drawScene(Camera& camera);
+	void drawParticles(Camera& camera);
 };
