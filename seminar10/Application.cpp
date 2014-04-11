@@ -15,7 +15,11 @@ int demoNum = 7;
 //6 - hardware instancing with divisor
 //7 - particle system on CPU
 
-int K = 500;
+int K = 500; //number of instances
+
+int numParticles = 1000;
+double emitterSize = 1.0;
+int lifeTime = 3.0;
 
 //Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
@@ -258,15 +262,12 @@ void Application::makeSceneImplementation()
 
 	if (demoNum == 7)
 	{
-		int numParticles = 1000;
-		double emitterSize = 10.0;
-
 		for (unsigned int i = 0; i < numParticles; i++)
 		{
 			Particle p;
-			p.position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, 0.0);
-			p.velocity = glm::vec3(0.0, 0.0, 0.0);
-			p.startTime = 0.0;
+			p.position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, frand() * 5.0);
+			p.velocity = glm::vec3(frand() * 0.01, frand() * 0.01, 0.0);
+			p.startTime = frand() * lifeTime;
 			_particles.push_back(p);
 		}
 
@@ -315,11 +316,35 @@ void Application::update()
 	_light.setDiffuseColor(glm::vec3(_diffuseIntensity, _diffuseIntensity, _diffuseIntensity));
 	_light.setSpecularColor(glm::vec3(_specularIntensity, _specularIntensity, _specularIntensity));
 
-	double dt = glfwGetTime() - _oldTime;
+	float dt = glfwGetTime() - _oldTime;
 	_oldTime = glfwGetTime();
 	_fps = 1 / dt;
 
-	//std::cout << "dt = " << dt << " " << _fps << std::endl;
+	if (demoNum == 7)
+	{
+		dt = glm::min(dt, 0.03f);
+
+		for (unsigned int i = 0; i < _particles.size(); i++)
+		{
+			_particles[i].velocity += glm::vec3(0.0, 0.0, -9.8) * dt;
+			_particles[i].position += _particles[i].velocity * dt;
+
+			if (_oldTime - _particles[i].startTime > lifeTime)
+			{
+				_particles[i].startTime += lifeTime;
+
+				_particles[i].position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, -2.0);
+				_particles[i].velocity = glm::vec3(_particles[i].position.x * 0.7, _particles[i].position.y * 0.7, 10.0);
+			}
+
+			_particlePositions[i * 3 + 0] = _particles[i].position.x;
+			_particlePositions[i * 3 + 1] = _particles[i].position.y;
+			_particlePositions[i * 3 + 2] = _particles[i].position.z;
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, _particlePosVbo);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, _particlePositions.size() * sizeof(float), _particlePositions.data());
+	}
 }
 
 void Application::draw()
