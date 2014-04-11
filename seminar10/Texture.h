@@ -22,7 +22,7 @@
 class Texture
 {
 public:
-	static GLuint loadTexture(std::string filename);
+	static GLuint loadTexture(std::string filename, bool withAlpha = false);
 	static GLuint loadTextureWithMipmaps(std::string filename);
 	static GLuint loadCubeTexture(std::string basefilename);
 	static GLuint makeCustomTexture();

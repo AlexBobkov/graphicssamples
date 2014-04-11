@@ -187,6 +187,7 @@ void Application::makeSceneImplementation()
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
 	_grassTexId = Texture::loadTexture("images/grass.jpg");
 	_rotateTexId = Texture::loadTexture("images/rotate.png");
+	_particleTexId = Texture::loadTexture("images/particle.png", true);
 	_colorTexId = Texture::makeCustomTexture();	
 
 	//инициализируем положения центров сфер
@@ -439,14 +440,23 @@ void Application::drawParticles(Camera& camera)
 	_particleMaterial.applyModelSpecificUniforms();
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
+	glBindTexture(GL_TEXTURE_2D, _particleTexId);
 	glBindSampler(0, _sampler);
 
 	glEnable(GL_PROGRAM_POINT_SIZE);
 	glEnable(GL_POINT_SPRITE);
+	
+	glDisable(GL_DEPTH_TEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 
 	glBindVertexArray(_particleVao); //Подключаем VertexArray
 	glDrawArrays(GL_POINTS, 0, _particles.size()); //Рисуем		
+
+	glDisable(GL_BLEND);
+
+	glEnable(GL_DEPTH_TEST);
 
 	glUseProgram(0);
 }

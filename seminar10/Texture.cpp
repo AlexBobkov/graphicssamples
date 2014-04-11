@@ -9,7 +9,7 @@ bool gamma = false;
 
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
-GLuint Texture::loadTexture(std::string filename)
+GLuint Texture::loadTexture(std::string filename, bool withAlpha)
 {
 	GLuint texId;
 
@@ -29,11 +29,12 @@ GLuint Texture::loadTexture(std::string filename)
 		glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
 		glimg::Dimensions dims = pImage.GetDimensions();
 
-		GLint internalFormat = gamma ? GL_SRGB8 : GL_RGB8;
+		GLint internalFormat = gamma ? GL_SRGB8 : (withAlpha ? GL_RGBA8 : GL_RGB8);
+		GLint format = withAlpha ? GL_RGBA : GL_RGB;
 
 		glGenTextures(1, &texId);
 		glBindTexture(GL_TEXTURE_2D, texId);
-		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, dims.width, dims.height, 0, format, GL_UNSIGNED_BYTE, pImage.GetImageData());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);

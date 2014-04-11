@@ -87,6 +87,7 @@ protected:
 	GLuint _colorTexId;
 	GLuint _rotateTexId;
 	GLuint _texBufferId;
+	GLuint _particleTexId;
 
 	//================================================================
 
