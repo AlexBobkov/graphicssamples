@@ -20,6 +20,7 @@
 #include "Mesh.h"
 #include "Light.h"
 #include "ParticleMaterial.h"
+#include "TransformFeedbackShader.h"
 
 class Particle
 {
@@ -67,6 +68,8 @@ protected:
 	CommonMaterial _commonMaterial;
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
 	ParticleMaterial _particleMaterial;
+	ParticleMaterial _particleTFMaterial;
+	TransformFeedbackShader _tfShader;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -112,13 +115,24 @@ protected:
 	GLuint _particleTimeVbo;
 	GLuint _particleVao;
 	std::vector<float> _particlePositions;
+	std::vector<float> _particleVelocities;
 	std::vector<float> _particleTimes;
 	std::vector<Particle> _particles;
+
+	GLuint _particleVaoTF[2];
+	GLuint _particlePosVboTF[2];
+	GLuint _particleVelVboTF[2];
+	GLuint _particleTimeVboTF[2];
+	GLuint _TF[2];
+
+	int _tfIndex;
+	bool _firstTime;
 
 	std::vector<glm::vec3> _positions;
 
 	float _oldTime;
 	float _fps;
+	float _deltaTime;
 
 	int _width;
 	int _height;
@@ -129,4 +143,5 @@ protected:
 
 	void drawScene(Camera& camera);
 	void drawParticles(Camera& camera);
+	void drawParticlesWithTransformFeedback(Camera& camera);
 };

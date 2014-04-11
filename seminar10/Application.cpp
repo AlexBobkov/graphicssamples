@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 7;
+int demoNum = 8;
 //1 - for cycle for spheres
 //2 - static instancing
 //3 - hardware instancing
@@ -14,6 +14,7 @@ int demoNum = 7;
 //5 - hardware instancing with texture
 //6 - hardware instancing with divisor
 //7 - particle system on CPU
+//8 - particle system with transform feedback
 
 int K = 500; //number of instances
 
@@ -186,6 +187,11 @@ void Application::makeSceneImplementation()
 
 	_particleMaterial.initialize();
 
+	_particleTFMaterial.setVertFilename("shaders10/particleTF.vert");
+	_particleTFMaterial.initialize();	
+
+	_tfShader.initialize();
+
 	//Загружаем текстуры
 	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
 	_brickTexId = Texture::loadTexture("images/brick.jpg");
@@ -301,7 +307,63 @@ void Application::makeSceneImplementation()
 		glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, NULL);
 
 		glBindVertexArray(0);
-	}	
+	}
+
+	if (demoNum == 8)
+	{
+		for (unsigned int i = 0; i < numParticles; i++)
+		{
+			Particle p;
+			p.position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, frand() * 5.0);
+			p.velocity = glm::vec3(frand() * 0.01, frand() * 0.01, 0.0);
+			p.startTime = frand() * lifeTime;
+			_particles.push_back(p);
+		}
+
+		for (unsigned int i = 0; i < numParticles; i++)	
+		{
+			addVec3(_particlePositions, _particles[i].position.x, _particles[i].position.y, _particles[i].position.z);
+			addVec3(_particleVelocities, _particles[i].velocity.x, _particles[i].velocity.y, _particles[i].velocity.z);
+			_particleTimes.push_back(_particles[i].startTime);
+		}
+
+		glGenTransformFeedbacks(2, _TF);
+		glGenVertexArrays(2, _particleVaoTF);
+		glGenBuffers(2, _particlePosVboTF);
+		glGenBuffers(2, _particleVelVboTF);
+		glGenBuffers(2, _particleTimeVboTF);
+
+		for (unsigned int i = 0; i < 2; i++)
+		{
+			glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF[i]);
+
+			glBindVertexArray(_particleVaoTF[i]);
+
+			glEnableVertexAttribArray(0);
+			glBindBuffer(GL_ARRAY_BUFFER, _particlePosVboTF[i]);
+			glBufferData(GL_ARRAY_BUFFER, _particlePositions.size() * sizeof(float), _particlePositions.data(), GL_DYNAMIC_DRAW);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _particlePosVboTF[i]);
+
+			glEnableVertexAttribArray(1);
+			glBindBuffer(GL_ARRAY_BUFFER, _particleVelVboTF[i]);
+			glBufferData(GL_ARRAY_BUFFER, _particleVelocities.size() * sizeof(float), _particleVelocities.data(), GL_DYNAMIC_DRAW);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, _particleVelVboTF[i]);
+
+			glEnableVertexAttribArray(2);
+			glBindBuffer(GL_ARRAY_BUFFER, _particleTimeVboTF[i]);
+			glBufferData(GL_ARRAY_BUFFER, _particleTimes.size() * sizeof(float), _particleTimes.data(), GL_DYNAMIC_DRAW);
+			glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+			glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, _particleTimeVboTF[i]);
+		}
+
+		glBindVertexArray(0);
+		glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+
+		_tfIndex = 0;
+		_firstTime = true;
+	}
 }
 
 void Application::run()
@@ -328,18 +390,18 @@ void Application::update()
 	_light.setDiffuseColor(glm::vec3(_diffuseIntensity, _diffuseIntensity, _diffuseIntensity));
 	_light.setSpecularColor(glm::vec3(_specularIntensity, _specularIntensity, _specularIntensity));
 
-	float dt = glfwGetTime() - _oldTime;
+	_deltaTime = glfwGetTime() - _oldTime;
 	_oldTime = glfwGetTime();
-	_fps = 1 / dt;
+	_fps = 1 / _deltaTime;
 
 	if (demoNum == 7)
 	{
-		dt = glm::min(dt, 0.03f);
+		_deltaTime = glm::min(_deltaTime, 0.03f);
 
 		for (unsigned int i = 0; i < _particles.size(); i++)
 		{
-			_particles[i].velocity += glm::vec3(0.0, 0.0, -9.8) * dt;
-			_particles[i].position += _particles[i].velocity * dt;
+			_particles[i].velocity += glm::vec3(0.0, 0.0, -9.8) * _deltaTime;
+			_particles[i].position += _particles[i].velocity * _deltaTime;
 
 			if (_oldTime - _particles[i].startTime > lifeTime)
 			{
@@ -370,9 +432,13 @@ void Application::draw()
 	{
 		drawScene(_mainCamera);
 	}
-	else
+	else if (demoNum == 7)
 	{
 		drawParticles(_mainCamera);
+	}
+	else if (demoNum == 8)
+	{
+		drawParticlesWithTransformFeedback(_mainCamera);
 	}
 
 	TwDraw();
@@ -386,7 +452,7 @@ void Application::drawScene(Camera& camera)
 	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
-	glUseProgram(_commonMaterial.getProgramId()); //Подключаем шейдер, который рендерит в 3 текстуры: текстуру с нормалями, с глубинами, с диффузным цветом
+	glUseProgram(_commonMaterial.getProgramId());
 
 	_commonMaterial.setTime((float)glfwGetTime());
 	_commonMaterial.setViewMatrix(camera.getViewMatrix());
@@ -468,7 +534,7 @@ void Application::drawParticles(Camera& camera)
 	glClearColor(0, 0, 0, 1); //black color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
-	glUseProgram(_particleMaterial.getProgramId()); //Подключаем шейдер, который рендерит в 3 текстуры: текстуру с нормалями, с глубинами, с диффузным цветом
+	glUseProgram(_particleMaterial.getProgramId());
 
 	_particleMaterial.setTime((float)glfwGetTime());
 
@@ -501,4 +567,82 @@ void Application::drawParticles(Camera& camera)
 	glEnable(GL_DEPTH_TEST);
 
 	glUseProgram(0);
+}
+
+void Application::drawParticlesWithTransformFeedback(Camera& camera)
+{
+	glViewport(0, 0, _width, _height);
+	glClearColor(0, 0, 0, 1); //black color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+	//=========================================================
+
+	int curVB = 1 - _tfIndex;
+
+	glUseProgram(_tfShader.getProgramId());	
+	_tfShader.setDeltaTime(_deltaTime);
+	_tfShader.applyCommonUniforms();
+	_tfShader.applyModelSpecificUniforms();
+
+	glEnable(GL_RASTERIZER_DISCARD); 
+
+	glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF[_tfIndex]);
+	glBindVertexArray(_particleVaoTF[curVB]);
+
+	glBeginTransformFeedback(GL_POINTS);
+
+	if (_firstTime)
+	{
+		glDrawArrays(GL_POINTS, 0, _particlePositions.size());
+		_firstTime = false;
+	}
+	else
+	{
+		glDrawTransformFeedback(GL_POINTS, _TF[curVB]);
+	}
+
+	glEndTransformFeedback();
+
+	glDisable(GL_RASTERIZER_DISCARD); 
+
+	//=========================================================
+
+	glUseProgram(_particleTFMaterial.getProgramId());
+
+	_particleTFMaterial.setTime((float)glfwGetTime());
+
+	_particleTFMaterial.setModelMatrix(glm::mat4(1.0f));	
+	_particleTFMaterial.setViewMatrix(camera.getViewMatrix());
+	_particleTFMaterial.setProjectionMatrix(camera.getProjMatrix());
+
+	_particleTFMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
+
+	_particleTFMaterial.applyCommonUniforms();
+	_particleTFMaterial.applyModelSpecificUniforms();
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _particleTexId);
+	glBindSampler(0, _sampler);
+
+
+	glEnable(GL_PROGRAM_POINT_SIZE);
+	glEnable(GL_POINT_SPRITE);
+
+	glDisable(GL_DEPTH_TEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	glBindVertexArray(_particleVaoTF[_tfIndex]);
+	glDrawTransformFeedback(GL_POINTS, _TF[_tfIndex]); //Рисуем здесь!
+
+
+	glDisable(GL_BLEND);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(0);
+
+	_tfIndex = 1 - _tfIndex;
 }

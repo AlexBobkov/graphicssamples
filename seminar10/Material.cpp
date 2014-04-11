@@ -34,7 +34,7 @@ GLuint Material::makeShader(GLenum shaderType, std::string filename)
 	if (status != GL_TRUE)
 	{
 		std::cerr << "Failed to compile the shader:\n";		
-		
+
 		GLint errorLength;
 		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
 
@@ -52,12 +52,19 @@ GLuint Material::makeShader(GLenum shaderType, std::string filename)
 
 GLuint Material::makeShaderProgram(std::string vertFilename, std::string fragFilename)
 {
-	GLuint vs = makeShader(GL_VERTEX_SHADER, vertFilename);
-	GLuint fs = makeShader(GL_FRAGMENT_SHADER, fragFilename);
+	GLuint vs = makeShader(GL_VERTEX_SHADER, vertFilename);	
+	GLuint fs;
+	if (fragFilename.size() > 0)
+	{
+		fs = makeShader(GL_FRAGMENT_SHADER, fragFilename);
+	}
 
 	GLuint programId = glCreateProgram();
 	glAttachShader(programId, fs);
-	glAttachShader(programId, vs);
+	if (fragFilename.size() > 0)
+	{
+		glAttachShader(programId, vs);
+	}
 	glLinkProgram(programId);
 
 	//Проверяем ошибки линковки
@@ -66,7 +73,7 @@ GLuint Material::makeShaderProgram(std::string vertFilename, std::string fragFil
 	if (status != GL_TRUE)
 	{
 		std::cerr << "Failed to link the program:\n";		
-		
+
 		GLint errorLength;
 		glGetProgramiv(programId, GL_INFO_LOG_LENGTH, &errorLength);
 

@@ -15,6 +15,8 @@ void ParticleMaterial::initialize()
 {
 	std::string fragFilename = "shaders10/particle.frag";
 
+	std::cout << "DDDD " << _vertFilename << std::endl;
+	
 	_programId = makeShaderProgram(_vertFilename, fragFilename);
 
 	//=========================================================
