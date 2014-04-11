@@ -26,7 +26,9 @@ class ParticleMaterial: public Material
 public:
 	ParticleMaterial();
 
+	void addGeometryShader(bool b) { _addGeometryShader = b; }
 	void setVertFilename(std::string filename) { _vertFilename = filename; }
+	void setFragFilename(std::string filename) { _fragFilename = filename; }
 
 	void initialize() override;
 	void applyCommonUniforms() override;
@@ -41,7 +43,10 @@ public:
 	void setDiffuseTexUnit(int unit) { _diffuseTexUnit = unit; }	
 
 protected:
+	bool _addGeometryShader;
+
 	std::string _vertFilename;
+	std::string _fragFilename;
 
 	//====== идентификаторы uniform-переменных ======
 	GLuint _timeUniform;

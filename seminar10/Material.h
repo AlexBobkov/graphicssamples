@@ -32,7 +32,7 @@ public:
 
 protected:
 	GLuint makeShader(GLenum shaderType, std::string filename); //Читает текст шейдера из файла и создает объект
-	GLuint makeShaderProgram(std::string vertFilename, std::string fragFilename);
+	GLuint makeShaderProgram(std::string vertFilename, std::string fragFilename, std::string geomFilename = "");
 
 	GLuint _programId;
 };

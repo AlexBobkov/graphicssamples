@@ -7,17 +7,24 @@
 
 ParticleMaterial::ParticleMaterial():
 Material(),
-	_vertFilename("shaders10/particle.vert")
+	_vertFilename("shaders10/particle.vert"),
+	_fragFilename("shaders10/particle.frag"),
+	_addGeometryShader(false)
 {
 }
 
 void ParticleMaterial::initialize()
 {
-	std::string fragFilename = "shaders10/particle.frag";
-
-	std::cout << "DDDD " << _vertFilename << std::endl;
-	
-	_programId = makeShaderProgram(_vertFilename, fragFilename);
+	std::string geomFilename = "shaders10/particle.geom";
+			
+	if (_addGeometryShader)
+	{
+		_programId = makeShaderProgram(_vertFilename, _fragFilename, geomFilename);
+	}
+	else
+	{
+		_programId = makeShaderProgram(_vertFilename, _fragFilename);
+	}
 
 	//=========================================================
 	//Инициализация uniform-переменных для преобразования координат	

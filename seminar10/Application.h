@@ -69,6 +69,7 @@ protected:
 	ScreenAlignedQuadMaterial _screenAlignedMaterial;
 	ParticleMaterial _particleMaterial;
 	ParticleMaterial _particleTFMaterial;
+	ParticleMaterial _particleGeometryMaterial;
 	TransformFeedbackShader _tfShader;
 
 	Camera _mainCamera;
@@ -144,4 +145,5 @@ protected:
 	void drawScene(Camera& camera);
 	void drawParticles(Camera& camera);
 	void drawParticlesWithTransformFeedback(Camera& camera);
+	void drawGeometryShader(Camera& camera);
 };

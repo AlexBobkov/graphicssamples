@@ -50,7 +50,7 @@ GLuint Material::makeShader(GLenum shaderType, std::string filename)
 	return vs;
 }
 
-GLuint Material::makeShaderProgram(std::string vertFilename, std::string fragFilename)
+GLuint Material::makeShaderProgram(std::string vertFilename, std::string fragFilename, std::string geomFilename)
 {
 	GLuint vs = makeShader(GL_VERTEX_SHADER, vertFilename);	
 	GLuint fs;
@@ -59,11 +59,21 @@ GLuint Material::makeShaderProgram(std::string vertFilename, std::string fragFil
 		fs = makeShader(GL_FRAGMENT_SHADER, fragFilename);
 	}
 
+	GLuint gs;
+	if (geomFilename.size() > 0)
+	{
+		gs = makeShader(GL_GEOMETRY_SHADER, geomFilename);
+	}
+
 	GLuint programId = glCreateProgram();
 	glAttachShader(programId, fs);
 	if (fragFilename.size() > 0)
 	{
 		glAttachShader(programId, vs);
+	}
+	if (geomFilename.size() > 0)
+	{
+		glAttachShader(programId, gs);
 	}
 	glLinkProgram(programId);
 

@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 8;
+int demoNum = 9;
 //1 - for cycle for spheres
 //2 - static instancing
 //3 - hardware instancing
@@ -15,6 +15,7 @@ int demoNum = 8;
 //6 - hardware instancing with divisor
 //7 - particle system on CPU
 //8 - particle system with transform feedback
+//9 - geometry shader
 
 int K = 500; //number of instances
 
@@ -188,7 +189,12 @@ void Application::makeSceneImplementation()
 	_particleMaterial.initialize();
 
 	_particleTFMaterial.setVertFilename("shaders10/particleTF.vert");
-	_particleTFMaterial.initialize();	
+	_particleTFMaterial.initialize();
+
+	_particleGeometryMaterial.addGeometryShader(true);
+	_particleGeometryMaterial.setVertFilename("shaders10/particle2.vert");
+	_particleGeometryMaterial.setFragFilename("shaders10/particle2.frag");
+	_particleGeometryMaterial.initialize();
 
 	_tfShader.initialize();
 
@@ -266,7 +272,7 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	if (demoNum == 7)
+	if (demoNum == 7 || demoNum == 9)
 	{
 		for (unsigned int i = 0; i < numParticles; i++)
 		{
@@ -394,7 +400,7 @@ void Application::update()
 	_oldTime = glfwGetTime();
 	_fps = 1 / _deltaTime;
 
-	if (demoNum == 7)
+	if (demoNum == 7 || demoNum == 9)
 	{
 		_deltaTime = glm::min(_deltaTime, 0.03f);
 
@@ -439,6 +445,10 @@ void Application::draw()
 	else if (demoNum == 8)
 	{
 		drawParticlesWithTransformFeedback(_mainCamera);
+	}
+	else if (demoNum == 9)
+	{
+		drawGeometryShader(_mainCamera);
 	}
 
 	TwDraw();
@@ -534,6 +544,7 @@ void Application::drawParticles(Camera& camera)
 	glClearColor(0, 0, 0, 1); //black color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 
+
 	glUseProgram(_particleMaterial.getProgramId());
 
 	_particleMaterial.setTime((float)glfwGetTime());
@@ -546,6 +557,7 @@ void Application::drawParticles(Camera& camera)
 
 	_particleMaterial.applyCommonUniforms();
 	_particleMaterial.applyModelSpecificUniforms();
+
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 	glBindTexture(GL_TEXTURE_2D, _particleTexId);
@@ -645,4 +657,47 @@ void Application::drawParticlesWithTransformFeedback(Camera& camera)
 	glUseProgram(0);
 
 	_tfIndex = 1 - _tfIndex;
+}
+
+void Application::drawGeometryShader(Camera& camera)
+{
+	glViewport(0, 0, _width, _height);
+	glClearColor(0, 0, 0, 1); //black color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+
+	glUseProgram(_particleGeometryMaterial.getProgramId());
+
+	_particleGeometryMaterial.setTime((float)glfwGetTime());
+
+	_particleGeometryMaterial.setModelMatrix(glm::mat4(1.0f));	
+	_particleGeometryMaterial.setViewMatrix(camera.getViewMatrix());
+	_particleGeometryMaterial.setProjectionMatrix(camera.getProjMatrix());
+
+	_particleGeometryMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
+
+	_particleGeometryMaterial.applyCommonUniforms();
+	_particleGeometryMaterial.applyModelSpecificUniforms();	
+
+
+	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+	glBindTexture(GL_TEXTURE_2D, _particleTexId);
+	glBindSampler(0, _sampler);
+
+	glEnable(GL_PROGRAM_POINT_SIZE);
+	glEnable(GL_POINT_SPRITE);
+	
+	glDisable(GL_DEPTH_TEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+
+	glBindVertexArray(_particleVao); //Подключаем VertexArray
+	glDrawArrays(GL_POINTS, 0, _particles.size()); //Рисуем		
+
+	glDisable(GL_BLEND);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glUseProgram(0);
 }
