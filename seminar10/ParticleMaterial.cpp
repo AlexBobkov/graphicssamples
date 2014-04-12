@@ -15,7 +15,7 @@ Material(),
 
 void ParticleMaterial::initialize()
 {
-	std::string geomFilename = "shaders10/particle.geom";
+	std::string geomFilename = "shaders10/particleWithGeomShader.geom";
 			
 	if (_addGeometryShader)
 	{

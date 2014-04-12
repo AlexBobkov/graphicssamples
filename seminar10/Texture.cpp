@@ -172,17 +172,16 @@ GLuint Texture::makeTextureBuffer(std::vector<glm::vec3>& positions)
 		data.push_back(positions[i].y);
 		data.push_back(positions[i].z);
 	}
-
-	GLuint texId;
+	
 	GLuint texBufferId;
 	glGenBuffers(1, &texBufferId);
 	glBindBuffer(GL_TEXTURE_BUFFER, texBufferId);	
 	glBufferData(GL_TEXTURE_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
 
+	GLuint texId;
 	glGenTextures(1, &texId);
 	glBindTexture(GL_TEXTURE_BUFFER, texId);
-	//glPixelStorei(GL_UNPACK_ALIGNMENT, 1 );                         // set 1-byte alignment
-
+	
 	glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, texBufferId);
 
 	glBindBuffer(GL_TEXTURE_BUFFER, 0);

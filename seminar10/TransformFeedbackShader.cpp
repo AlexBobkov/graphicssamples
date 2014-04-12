@@ -12,7 +12,7 @@ Material()
 
 void TransformFeedbackShader::initialize()
 {
-	std::string vertFilename = "shaders10/tf.vert";	
+	std::string vertFilename = "shaders10/transformFeedbackPass1.vert";	
 	std::string fragFilename = "shaders10/particle.frag";	
 
 	_programId = makeShaderProgram(vertFilename, fragFilename);

@@ -6,7 +6,7 @@
 #include "Application.h"
 #include "Texture.h"
 
-int demoNum = 9;
+int demoNum = 8;
 //1 - for cycle for spheres
 //2 - static instancing
 //3 - hardware instancing
@@ -188,12 +188,12 @@ void Application::makeSceneImplementation()
 
 	_particleMaterial.initialize();
 
-	_particleTFMaterial.setVertFilename("shaders10/particleTF.vert");
+	_particleTFMaterial.setVertFilename("shaders10/transformFeedbackPass2.vert");
 	_particleTFMaterial.initialize();
 
 	_particleGeometryMaterial.addGeometryShader(true);
-	_particleGeometryMaterial.setVertFilename("shaders10/particle2.vert");
-	_particleGeometryMaterial.setFragFilename("shaders10/particle2.frag");
+	_particleGeometryMaterial.setVertFilename("shaders10/particleWithGeomShader.vert");
+	_particleGeometryMaterial.setFragFilename("shaders10/particleWithGeomShader.frag");
 	_particleGeometryMaterial.initialize();
 
 	_tfShader.initialize();

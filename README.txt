@@ -27,3 +27,4 @@
 7) Проективные текстуры. Рендеринг в текстуру
 8) Тени. Отложенного освещение
 9) Постобработка: Gamma correction, Tone mapping, Bloom, SSAO, Depth of Field
+10) Instancing. Системы частиц. Transform Feedback. Geometry shader.
