@@ -76,7 +76,7 @@ void Application::initContext()
 		exit(1);
 	} 
 
-	_window = glfwCreateWindow(_width, _height, "Seminar 7", NULL, NULL);
+	_window = glfwCreateWindow(_width, _height, "Seminar 8", NULL, NULL);
 	if (!_window)
 	{
 		std::cerr << "ERROR: could not open window with GLFW3\n";		
