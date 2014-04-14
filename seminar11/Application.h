@@ -13,6 +13,8 @@
 
 #include <AntTweakBar.h>
 
+#include <OVR.h>
+
 #include "ScreenAlignedQuadMaterial.h"
 #include "ColorMaterial.h"
 #include "CommonMaterial.h"
@@ -108,6 +110,13 @@ protected:
 	int _height;
 
 	TwBar* _bar;
+
+	OVR::Ptr<OVR::DeviceManager>	pManager;
+	OVR::Ptr<OVR::HMDDevice>		pHMD;
+	OVR::Ptr<OVR::SensorDevice>	pSensor;
+	OVR::SensorFusion*		pFusionResult;
+	OVR::HMDInfo			Info;
+	bool			InfoLoaded;
 					
 	void makeSceneImplementation();
 

@@ -6,6 +6,8 @@
 #include "Application.h"
 #include "Texture.h"
 
+using namespace OVR;
+
 int demoNum = 1;
 
 int K = 10;
@@ -65,10 +67,84 @@ _oldTime(0.0f),
 	_specularIntensity(0.5f),
 	_fps(0.0)
 {
+	System::Init();
+
+	pFusionResult = new SensorFusion();
+	pManager = *DeviceManager::Create();
+
+	pHMD = *pManager->EnumerateDevices<HMDDevice>().CreateDevice();
+
+	if (pHMD)
+	{
+		InfoLoaded = pHMD->GetDeviceInfo(&Info);
+
+		pSensor = *pHMD->GetSensor();
+	}
+	else
+	{
+		pSensor = *pManager->EnumerateDevices<SensorDevice>().CreateDevice();
+	}
+
+	if (pSensor)
+	{
+		pFusionResult->AttachToSensor(pSensor);
+	}
+
+	std::cout << "----- Oculus Console -----" << std::endl;
+
+	if (pHMD)
+	{
+		std::cout << " [x] HMD Found" << std::endl;
+	}
+	else
+	{
+		std::cout << " [ ] HMD Not Found" << std::endl;
+	}
+
+	if (pSensor)
+	{
+		std::cout << " [x] Sensor Found" << std::endl;
+	}
+	else
+	{
+		std::cout << " [ ] Sensor Not Found" << std::endl;
+	}
+
+	std::cout << "--------------------------" << std::endl;
+
+	if (InfoLoaded)
+	{
+		std::cout << " DisplayDeviceName: " << Info.DisplayDeviceName << std::endl;
+		std::cout << " ProductName: " << Info.ProductName << std::endl;
+		std::cout << " Manufacturer: " << Info.Manufacturer << std::endl;
+		std::cout << " Version: " << Info.Version << std::endl;
+		std::cout << " HResolution: " << Info.HResolution<< std::endl;
+		std::cout << " VResolution: " << Info.VResolution<< std::endl;
+		std::cout << " HScreenSize: " << Info.HScreenSize<< std::endl;
+		std::cout << " VScreenSize: " << Info.VScreenSize<< std::endl;
+		std::cout << " VScreenCenter: " << Info.VScreenCenter<< std::endl;
+		std::cout << " EyeToScreenDistance: " << Info.EyeToScreenDistance << std::endl;
+		std::cout << " LensSeparationDistance: " << Info.LensSeparationDistance << std::endl;
+		std::cout << " InterpupillaryDistance: " << Info.InterpupillaryDistance << std::endl;
+		std::cout << " DistortionK[0]: " << Info.DistortionK[0] << std::endl;
+		std::cout << " DistortionK[1]: " << Info.DistortionK[1] << std::endl;
+		std::cout << " DistortionK[2]: " << Info.DistortionK[2] << std::endl;
+		std::cout << "--------------------------" << std::endl;
+	}
+
+	std::cout << std::endl << " Press ENTER to continue" << std::endl;
 }
 
 Application::~Application()
 {
+	pSensor.Clear();
+	pHMD.Clear();
+	pManager.Clear();
+
+	delete pFusionResult;
+
+	System::Destroy();
+
 	TwTerminate();
 	glfwTerminate();
 }
@@ -117,7 +193,7 @@ void Application::initOthers()
 
 	_bar = TwNewBar("TweakBar");
 	TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
-		
+
 	TwAddVarRO(_bar, "FPS", TW_TYPE_FLOAT, &_fps, "");
 	TwAddVarRW(_bar, "Light phi", TW_TYPE_FLOAT, &_lightPhi, "step=0.01");
 	TwAddVarRW(_bar, "Light theta", TW_TYPE_FLOAT, &_lightTheta, "min=0.01 max=1.56 step=0.01");
@@ -195,7 +271,7 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	
+
 	glGenSamplers(1, &_repeatSampler);	
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -225,7 +301,7 @@ void Application::run()
 void Application::update()
 {
 	_mainCamera.update();
-	
+
 	_light.setLightPos(glm::vec3(glm::cos(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightPhi) * glm::cos(_lightTheta) * _lightR, glm::sin(_lightTheta) * _lightR));
 	_lightCamera.setCameraPos(_light.getLightPos());
 	_lightCamera.setViewMatrix(glm::lookAt(_light.getLightPos(), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
@@ -274,7 +350,7 @@ void Application::drawScene(Camera& camera)
 
 	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0	
 	_commonMaterial.setShininess(100.0f);
-	
+
 
 	for (unsigned int i = 0; i < _positions.size(); i++)
 	{
