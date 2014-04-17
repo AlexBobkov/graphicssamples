@@ -138,6 +138,9 @@ protected:
 
 	void initFramebuffer();
 
-	void drawScene(glm::mat4& viewMat, glm::mat4& projMat);
+	void drawSceneSimple();
+	void drawSceneOculus();
+
+	void drawScene(glm::mat4& viewMat, glm::mat4& projMat);	
 	void drawPostprocess(bool left, GLuint texId);
 };

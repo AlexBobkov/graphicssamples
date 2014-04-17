@@ -8,7 +8,9 @@
 
 using namespace OVR;
 
-int demoNum = 1;
+int demoNum = 2;
+//1 - simple stereo
+//2 - oculus distortion
 
 int K = 10;
 
@@ -385,9 +387,48 @@ void Application::initFramebuffer()
 
 void Application::draw()
 {	
+	if (demoNum == 1)
+	{
+		drawSceneSimple();
+	}
+	else if (demoNum == 2)
+	{
+		drawSceneOculus();
+	}
+
+
+	//TwDraw();
+
+	glfwSwapBuffers(_window);
+}
+
+void Application::drawSceneSimple()
+{
 	glm::mat4 projLeft = glm::translate(glm::mat4(1.0), glm::vec3(_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
 	glm::mat4 projRight = glm::translate(glm::mat4(1.0), glm::vec3(-_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
-		
+
+	float halfIPD = _info.InterpupillaryDistance * 0.5f;
+
+	glm::mat4 viewLeft = glm::translate(glm::mat4(1.0), glm::vec3(halfIPD, 0, 0)) * _mainCamera.getViewMatrix();
+	glm::mat4 viewRight = glm::translate(glm::mat4(1.0), glm::vec3(-halfIPD, 0, 0)) * _mainCamera.getViewMatrix();
+
+
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+	glViewport(0, 0, _width / 2, _height);
+	drawScene(viewLeft, projLeft); //left
+
+	
+	glViewport(_width / 2, 0, _width / 2, _height);
+	drawScene(viewRight, projRight); //right
+}
+
+void Application::drawSceneOculus()
+{
+	glm::mat4 projLeft = glm::translate(glm::mat4(1.0), glm::vec3(_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
+	glm::mat4 projRight = glm::translate(glm::mat4(1.0), glm::vec3(-_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
+
 	float halfIPD = _info.InterpupillaryDistance * 0.5f;
 
 	glm::mat4 viewLeft = glm::translate(glm::mat4(1.0), glm::vec3(halfIPD, 0, 0)) * _mainCamera.getViewMatrix();
@@ -396,7 +437,7 @@ void Application::draw()
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId[0]);
-	
+
 	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
 	glViewport(0, 0, _fbWidth, _fbHeight);
@@ -421,10 +462,6 @@ void Application::draw()
 
 	glViewport(_width / 2, 0, _width / 2, _height);	
 	drawPostprocess(false, _renderTexId[1]);
-
-	//TwDraw();
-
-	glfwSwapBuffers(_window);
 }
 
 void Application::drawScene(glm::mat4& viewMat, glm::mat4& projMat)
