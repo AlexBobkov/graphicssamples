@@ -15,7 +15,8 @@ _rotateLeft(false),
 	_distance(5.0f),
 	_oldTime(0.0)
 {
-	_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_mainViewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));	
+	_viewMatrix = _mainViewMatrix;
 	_projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
 }
 
@@ -60,7 +61,8 @@ void Camera::update()
 	_distance = glm::clamp(_distance, 0.5f, 500.0f);
 	
 	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
-	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_mainViewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_viewMatrix = _mainViewMatrix;
 }
 
 void Camera::homePos()
@@ -70,5 +72,6 @@ void Camera::homePos()
 	_distance = 20.0f;
 
 	_cameraPos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * _distance;
-	_viewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_mainViewMatrix = glm::lookAt(_cameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_viewMatrix = _mainViewMatrix;
 }

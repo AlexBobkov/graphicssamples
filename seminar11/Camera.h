@@ -24,6 +24,9 @@ class Camera
 public:
 	Camera();	
 
+	glm::mat4 getMainViewMatrix() { return _mainViewMatrix; }  
+	void setMainViewMatrix(glm::mat4 mat) { _mainViewMatrix = mat; }
+
 	glm::mat4 getViewMatrix() { return _viewMatrix; }  
 	void setViewMatrix(glm::mat4 mat) { _viewMatrix = mat; }
 
@@ -50,6 +53,7 @@ public:
 	void homePos();
 
 protected:
+	glm::mat4 _mainViewMatrix;
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;
 	glm::vec3 _cameraPos;
