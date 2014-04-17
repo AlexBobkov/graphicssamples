@@ -120,6 +120,7 @@ protected:
 
 	float _aspectRatio;
 	float _projectionCenterOffset;
+	float _scaleFactor;
 
 	GLuint _framebufferId[2];
 	GLuint _renderTexId[2];

@@ -286,8 +286,20 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	_scaleFactor = 1.25;
+	{
+		float lensShift = _info.HScreenSize * 0.25f - _info.LensSeparationDistance * 0.5f;
+		float lensViewportShift = 4.0f * lensShift / _info.HScreenSize;
+		float fitRadius = fabs(-1 - lensViewportShift);
+		float rsq = fitRadius * fitRadius;
+		
+		_scaleFactor = (_info.DistortionK[0] + _info.DistortionK[1] * rsq + _info.DistortionK[2] * rsq * rsq + _info.DistortionK[3] * rsq * rsq * rsq);
+
+		std::cout << "Scale factor " << _scaleFactor << std::endl;
+	}
+
 	_aspectRatio = _width / 2.0f / _height;
-	float fov = 2.0 * atan(_info.VScreenSize / (2.0 * _info.EyeToScreenDistance));
+	float fov = 2.0 * atan(_info.VScreenSize * _scaleFactor / (2.0 * _info.EyeToScreenDistance));
 	_mainCamera.setProjMatrix(glm::perspective(fov, _aspectRatio, 1.0f, 500.f));
 
 	std::cout << "aspect = " << _aspectRatio << " fov = " << fov << std::endl;
@@ -330,8 +342,8 @@ void Application::update()
 
 void Application::initFramebuffer()
 {
-	_fbWidth = _width / 2;
-	_fbHeight = _height;
+	_fbWidth = _width;
+	_fbHeight = _height * 2;
 
 
 	glGenFramebuffers(2, _framebufferId);
@@ -484,7 +496,7 @@ void Application::drawPostprocess(bool left, GLuint texId)
 
 	_oculusDistortionShader.setLensCenter(lensCenter);
 	_oculusDistortionShader.setScreenCenter(glm::vec2(0.5f, 0.5f));
-	_oculusDistortionShader.setScale(glm::vec2(0.5f, 0.5f * _aspectRatio));
+	_oculusDistortionShader.setScale(glm::vec2(0.5f / _scaleFactor, 0.5f * _aspectRatio / _scaleFactor));
 	_oculusDistortionShader.setScaleIn(glm::vec2(2.0f, 2.0f / _aspectRatio));
 	_oculusDistortionShader.setWarpParams(glm::vec4(_info.DistortionK[0], _info.DistortionK[1], _info.DistortionK[2], _info.DistortionK[3]));
 
