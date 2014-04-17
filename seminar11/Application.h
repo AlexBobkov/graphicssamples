@@ -15,7 +15,7 @@
 
 #include <OVR.h>
 
-#include "ScreenAlignedQuadMaterial.h"
+#include "OculusDistortionShader.h"
 #include "ColorMaterial.h"
 #include "CommonMaterial.h"
 #include "Camera.h"
@@ -61,7 +61,7 @@ protected:
 	//Классы для загрузи шейдеров для разных материалов и эффектов
 	ColorMaterial _colorMaterial;	
 	CommonMaterial _commonMaterial;
-	ScreenAlignedQuadMaterial _screenAlignedMaterial;
+	OculusDistortionShader _oculusDistortionShader;
 
 	Camera _mainCamera;
 	Camera _lightCamera;
@@ -80,9 +80,7 @@ protected:
 	GLuint _brickTexId;
 	GLuint _grassTexId;
 	GLuint _colorTexId;
-	GLuint _rotateTexId;
-	GLuint _texBufferId;
-	GLuint _particleTexId;
+	GLuint _renderTexId;
 
 	//================================================================
 
@@ -121,8 +119,15 @@ protected:
 	OVR::HMDInfo _info;
 	bool _infoLoaded;
 	float _projectionCenterOffset;
+
+	GLuint _framebufferId;
+	int _fbWidth;
+	int _fbHeight;
 					
 	void makeSceneImplementation();
 
+	void initFramebuffer();
+
 	void drawScene(glm::mat4& viewMat, glm::mat4& projMat);
+	void drawPostprocess();
 };

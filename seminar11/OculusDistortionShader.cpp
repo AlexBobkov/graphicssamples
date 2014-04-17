@@ -3,17 +3,17 @@
 
 #include <glimg/glimg.h>
 
-#include "ScreenAlignedQuadMaterial.h"
+#include "OculusDistortionShader.h"
 
-ScreenAlignedQuadMaterial::ScreenAlignedQuadMaterial():
+OculusDistortionShader::OculusDistortionShader():
 Material()
 {
 }
 
-void ScreenAlignedQuadMaterial::initialize()
+void OculusDistortionShader::initialize()
 {
-	std::string vertFilename = "shaders8/quad.vert";
-	std::string fragFilename = "shaders8/quad.frag";
+	std::string vertFilename = "shaders11/distortion.vert";
+	std::string fragFilename = "shaders11/distortion.frag";
 
 	_programId = makeShaderProgram(vertFilename, fragFilename);		
 
@@ -22,11 +22,11 @@ void ScreenAlignedQuadMaterial::initialize()
 	_texUniform = glGetUniformLocation(_programId, "tex");
 }
 
-void ScreenAlignedQuadMaterial::applyCommonUniforms() 
+void OculusDistortionShader::applyCommonUniforms() 
 {
 }
 
-void ScreenAlignedQuadMaterial::applyModelSpecificUniforms()
+void OculusDistortionShader::applyModelSpecificUniforms()
 {
 	glUniform1i(_texUniform, _texUnit);
 }

@@ -19,12 +19,12 @@
 #include "Material.h"
 
 /**
-Шейдер для прямоугольника с текстурой, который всегда смотрит в камеру
+Шейдер для корректировки искажений, вносимых линзой Oculus
 */
-class ScreenAlignedQuadMaterial: public Material
+class OculusDistortionShader: public Material
 {
 public:
-	ScreenAlignedQuadMaterial();
+	OculusDistortionShader();
 
 	void initialize() override;
 	void applyCommonUniforms() override;
