@@ -80,7 +80,6 @@ protected:
 	GLuint _brickTexId;
 	GLuint _grassTexId;
 	GLuint _colorTexId;
-	GLuint _renderTexId;
 
 	//================================================================
 
@@ -118,9 +117,12 @@ protected:
 	OVR::SensorFusion* _pFusionResult;
 	OVR::HMDInfo _info;
 	bool _infoLoaded;
+
+	float _aspectRatio;
 	float _projectionCenterOffset;
 
-	GLuint _framebufferId;
+	GLuint _framebufferId[2];
+	GLuint _renderTexId[2];
 	int _fbWidth;
 	int _fbHeight;
 					
@@ -129,5 +131,5 @@ protected:
 	void initFramebuffer();
 
 	void drawScene(glm::mat4& viewMat, glm::mat4& projMat);
-	void drawPostprocess();
+	void drawPostprocess(bool left, GLuint texId);
 };

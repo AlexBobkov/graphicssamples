@@ -286,11 +286,11 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	float aspect = _width / 2.0f / _height;
+	_aspectRatio = _width / 2.0f / _height;
 	float fov = 2.0 * atan(_info.VScreenSize / (2.0 * _info.EyeToScreenDistance));
-	_mainCamera.setProjMatrix(glm::perspective(fov, aspect, 1.0f, 500.f));
+	_mainCamera.setProjMatrix(glm::perspective(fov, _aspectRatio, 1.0f, 500.f));
 
-	std::cout << "aspect = " << aspect << " fov = " << fov << std::endl;
+	std::cout << "aspect = " << _aspectRatio << " fov = " << fov << std::endl;
 
 	float viewCenter = _info.HScreenSize * 0.25f;
 	float eyeProjectionShift = viewCenter - _info.LensSeparationDistance * 0.5f;
@@ -330,40 +330,42 @@ void Application::update()
 
 void Application::initFramebuffer()
 {
-	_fbWidth = _width;
+	_fbWidth = _width / 2;
 	_fbHeight = _height;
 
 
-	//Создаем фреймбуфер
-	glGenFramebuffers(1, &_framebufferId);
-	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
+	glGenFramebuffers(2, _framebufferId);
+	glGenTextures(2, _renderTexId);
 
-
-	//Создаем текстуру, куда будет осуществляться рендеринг	
-	glGenTextures(1, &_renderTexId);	
-	glBindTexture(GL_TEXTURE_2D, _renderTexId);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _renderTexId, 0);
-
-
-	//Создаем буфер глубины для фреймбуфера
-	GLuint depthRenderBuffer;
-	glGenRenderbuffers(1, &depthRenderBuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _fbWidth, _fbHeight);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
-
-
-	//Указываем куда именно мы будем рендерить		
-	GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, buffers);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	for (int i = 0; i < 2; i++)
 	{
-		std::cerr << "Failed to setup framebuffer\n";
-		exit(1);
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId[i]);
+
+
+		//Создаем текстуру, куда будет осуществляться рендеринг	
+
+		glBindTexture(GL_TEXTURE_2D, _renderTexId[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _renderTexId[i], 0);
+
+
+		//Создаем буфер глубины для фреймбуфера
+		GLuint depthRenderBuffer;
+		glGenRenderbuffers(1, &depthRenderBuffer);
+		glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _fbWidth, _fbHeight);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
+
+
+		//Указываем куда именно мы будем рендерить		
+		GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+		glDrawBuffers(1, buffers);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cerr << "Failed to setup framebuffer\n";
+			exit(1);
+		}
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -381,26 +383,32 @@ void Application::draw()
 
 
 
-	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
+	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId[0]);
+	
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+	glViewport(0, 0, _fbWidth, _fbHeight);
+
+	drawScene(viewLeft, projLeft); //left
+
+	glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId[1]);
 
 	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+	glViewport(0, 0, _fbWidth, _fbHeight);
 
-	glViewport(0, 0, _width / 2, _height);
-	drawScene(viewLeft, projLeft); //left
-
-	glViewport(_width / 2, 0, _width / 2, _height);
 	drawScene(viewRight, projRight); //right
+
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-
-	glViewport(0, 0, _width, _height);
 	glClear(GL_DEPTH_BUFFER_BIT);	
-	drawPostprocess();
 
+	glViewport(0, 0, _width / 2, _height);	
+	drawPostprocess(true, _renderTexId[0]);
 
+	glViewport(_width / 2, 0, _width / 2, _height);	
+	drawPostprocess(false, _renderTexId[1]);
 
 	//TwDraw();
 
@@ -456,15 +464,31 @@ void Application::drawScene(glm::mat4& viewMat, glm::mat4& projMat)
 	glUseProgram(0);
 }
 
-void Application::drawPostprocess()
+void Application::drawPostprocess(bool left, GLuint texId)
 {
 	glUseProgram(_oculusDistortionShader.getProgramId());
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _renderTexId);
+	glBindTexture(GL_TEXTURE_2D, texId);
 	glBindSampler(0, _sampler);
 
-	_oculusDistortionShader.setTexUnit(0); //текстурный юнит 0		
+	glm::vec2 lensCenter;
+	if (left)
+	{
+		lensCenter = glm::vec2(1.0f - _info.LensSeparationDistance / _info.HScreenSize, 0.5f);
+	}
+	else
+	{
+		lensCenter = glm::vec2(_info.LensSeparationDistance / _info.HScreenSize, 0.5f);
+	}
+
+	_oculusDistortionShader.setLensCenter(lensCenter);
+	_oculusDistortionShader.setScreenCenter(glm::vec2(0.5f, 0.5f));
+	_oculusDistortionShader.setScale(glm::vec2(0.5f, 0.5f * _aspectRatio));
+	_oculusDistortionShader.setScaleIn(glm::vec2(2.0f, 2.0f / _aspectRatio));
+	_oculusDistortionShader.setWarpParams(glm::vec4(_info.DistortionK[0], _info.DistortionK[1], _info.DistortionK[2], _info.DistortionK[3]));
+
+	_oculusDistortionShader.setTexUnit(0); //текстурный юнит 0
 	_oculusDistortionShader.applyModelSpecificUniforms();
 
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray

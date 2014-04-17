@@ -32,10 +32,27 @@ public:
 
 	void setTexUnit(int unit) { _texUnit = unit; }
 
+	void setLensCenter(glm::vec2 v) { _lensCenter = v; }
+	void setScreenCenter(glm::vec2 v) { _screenCenter = v; }
+	void setScale(glm::vec2 v) { _scale = v; }
+	void setScaleIn(glm::vec2 v) { _scaleIn = v; }
+	void setWarpParams(glm::vec4 v) { _warpParams = v; }
+
 protected:	
 	//====== идентификаторы uniform-переменных ======
 	GLuint _texUniform;
+	GLuint _lensCenterUniform;
+	GLuint _screenCenterUniform;
+	GLuint _scaleUniform;
+	GLuint _scaleInUniform;
+	GLuint _warpParamsUniform;
 
 	//текстурные юниты
 	int _texUnit;
+
+	glm::vec2 _lensCenter;
+	glm::vec2 _screenCenter;
+	glm::vec2 _scale;
+	glm::vec2 _scaleIn;
+	glm::vec4 _warpParams;
 };
