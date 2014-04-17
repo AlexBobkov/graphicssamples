@@ -7,6 +7,7 @@ int main()
 	app.initContext();
 	app.initGL();
 	app.initOthers();
+	app.initOVR();
 	app.makeScene();
 	app.run();		
 

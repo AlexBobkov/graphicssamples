@@ -34,6 +34,9 @@ public:
 	//Настройка некоторых параметров OpenGL
 	void initGL();
 
+	void initOVR();
+	void destroyOVR();
+
 	void initOthers();
 
 	//Создание трехмерной сцены
@@ -111,14 +114,15 @@ protected:
 
 	TwBar* _bar;
 
-	OVR::Ptr<OVR::DeviceManager>	pManager;
-	OVR::Ptr<OVR::HMDDevice>		pHMD;
-	OVR::Ptr<OVR::SensorDevice>	pSensor;
-	OVR::SensorFusion*		pFusionResult;
-	OVR::HMDInfo			Info;
-	bool			InfoLoaded;
+	OVR::Ptr<OVR::DeviceManager> _pManager;
+	OVR::Ptr<OVR::HMDDevice> _pHMD;
+	OVR::Ptr<OVR::SensorDevice>	_pSensor;
+	OVR::SensorFusion* _pFusionResult;
+	OVR::HMDInfo _info;
+	bool _infoLoaded;
+	float _projectionCenterOffset;
 					
 	void makeSceneImplementation();
 
-	void drawScene(Camera& camera);
+	void drawScene(glm::mat4& viewMat, glm::mat4& projMat);
 };
