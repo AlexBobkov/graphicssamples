@@ -298,27 +298,30 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 #ifdef OCULUS_FOUND
-	_scaleFactor = 1.25;
+	if (demoNum == 2 || demoNum == 3)
 	{
-		float lensShift = _info.HScreenSize * 0.25f - _info.LensSeparationDistance * 0.5f;
-		float lensViewportShift = 4.0f * lensShift / _info.HScreenSize;
-		float fitRadius = fabs(-1 - lensViewportShift);
-		float rsq = fitRadius * fitRadius;
-		
-		_scaleFactor = (_info.DistortionK[0] + _info.DistortionK[1] * rsq + _info.DistortionK[2] * rsq * rsq + _info.DistortionK[3] * rsq * rsq * rsq);
+		_scaleFactor = 1.25;
+		{
+			float lensShift = _info.HScreenSize * 0.25f - _info.LensSeparationDistance * 0.5f;
+			float lensViewportShift = 4.0f * lensShift / _info.HScreenSize;
+			float fitRadius = fabs(-1 - lensViewportShift);
+			float rsq = fitRadius * fitRadius;
 
-		std::cout << "Scale factor " << _scaleFactor << std::endl;
+			_scaleFactor = (_info.DistortionK[0] + _info.DistortionK[1] * rsq + _info.DistortionK[2] * rsq * rsq + _info.DistortionK[3] * rsq * rsq * rsq);
+
+			std::cout << "Scale factor " << _scaleFactor << std::endl;
+		}
+
+		_aspectRatio = _width / 2.0f / _height;
+		float fov = 2.0 * atan(_info.VScreenSize * _scaleFactor / (2.0 * _info.EyeToScreenDistance));
+		_mainCamera.setProjMatrix(glm::perspective(fov, _aspectRatio, 1.0f, 500.f));
+
+		std::cout << "aspect = " << _aspectRatio << " fov = " << fov << std::endl;
+
+		float viewCenter = _info.HScreenSize * 0.25f;
+		float eyeProjectionShift = viewCenter - _info.LensSeparationDistance * 0.5f;
+		_projectionCenterOffset = 4.0f * eyeProjectionShift / _info.HScreenSize;
 	}
-
-	_aspectRatio = _width / 2.0f / _height;
-	float fov = 2.0 * atan(_info.VScreenSize * _scaleFactor / (2.0 * _info.EyeToScreenDistance));
-	_mainCamera.setProjMatrix(glm::perspective(fov, _aspectRatio, 1.0f, 500.f));
-
-	std::cout << "aspect = " << _aspectRatio << " fov = " << fov << std::endl;
-
-	float viewCenter = _info.HScreenSize * 0.25f;
-	float eyeProjectionShift = viewCenter - _info.LensSeparationDistance * 0.5f;
-	_projectionCenterOffset = 4.0f * eyeProjectionShift / _info.HScreenSize;
 #endif
 
 	initFramebuffer();
