@@ -20,7 +20,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+#ifdef OCULUS_FOUND
 #include <OVR.h>
+#endif
 
 #include "OculusDistortionShader.h"
 #include "ColorMaterial.h"
@@ -118,6 +120,7 @@ protected:
 
 	TwBar* _bar;
 
+#ifdef OCULUS_FOUND
 	OVR::Ptr<OVR::DeviceManager> _pManager;
 	OVR::Ptr<OVR::HMDDevice> _pHMD;
 	OVR::Ptr<OVR::SensorDevice>	_pSensor;
@@ -128,6 +131,10 @@ protected:
 	float _aspectRatio;
 	float _projectionCenterOffset;
 	float _scaleFactor;
+#endif
+
+	float _iod; //for non-oculus variant
+	float _sd; //for non-oculus variant
 
 	GLuint _framebufferId[2];
 	GLuint _renderTexId[2];
@@ -139,6 +146,7 @@ protected:
 	void initFramebuffer();
 
 	void drawSceneSimple();
+	void drawSceneSimpleOculus();
 	void drawSceneOculus();
 
 	void drawScene(glm::mat4& viewMat, glm::mat4& projMat);	

@@ -28,3 +28,4 @@
 8) Тени. Отложенного освещение
 9) Постобработка: Gamma correction, Tone mapping, Bloom, SSAO, Depth of Field
 10) Instancing. Системы частиц. Transform Feedback. Geometry shader.
+11) Стерео-визуализация. Пример с Oculus Rift

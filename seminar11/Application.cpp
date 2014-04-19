@@ -6,11 +6,14 @@
 #include "Application.h"
 #include "Texture.h"
 
+#ifdef OCULUS_FOUND
 using namespace OVR;
+#endif
 
-int demoNum = 2;
-//1 - simple stereo
-//2 - oculus distortion
+int demoNum = 1;
+//1 - simple stereo without Oculus params
+//2 - oculus simple stereo without distortion
+//3 - oculus distortion
 
 int K = 10;
 
@@ -67,7 +70,9 @@ _oldTime(0.0f),
 	_ambientIntensity(0.2f),
 	_diffuseIntensity(0.8f),
 	_specularIntensity(0.5f),
-	_fps(0.0)
+	_fps(0.0),
+	_iod(0.06),
+	_sd(0.4)
 {
 
 }
@@ -144,6 +149,7 @@ void Application::initOthers()
 
 void Application::initOVR()
 {
+#ifdef OCULUS_FOUND
 	System::Init();
 
 	_pFusionResult = new SensorFusion();
@@ -204,10 +210,12 @@ void Application::initOVR()
 		std::cout << " DistortionK[2]: " << _info.DistortionK[2] << std::endl;
 		std::cout << "--------------------------" << std::endl;
 	}
+#endif
 }
 
 void Application::destroyOVR()
 {
+#ifdef OCULUS_FOUND
 	_pSensor.Clear();
 	_pHMD.Clear();
 	_pManager.Clear();
@@ -215,6 +223,7 @@ void Application::destroyOVR()
 	delete _pFusionResult;
 
 	System::Destroy();
+#endif
 }
 
 void Application::setWindowSize(int width, int height)
@@ -288,6 +297,7 @@ void Application::makeSceneImplementation()
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(_pixelPreciseSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+#ifdef OCULUS_FOUND
 	_scaleFactor = 1.25;
 	{
 		float lensShift = _info.HScreenSize * 0.25f - _info.LensSeparationDistance * 0.5f;
@@ -309,6 +319,7 @@ void Application::makeSceneImplementation()
 	float viewCenter = _info.HScreenSize * 0.25f;
 	float eyeProjectionShift = viewCenter - _info.LensSeparationDistance * 0.5f;
 	_projectionCenterOffset = 4.0f * eyeProjectionShift / _info.HScreenSize;
+#endif
 
 	initFramebuffer();
 }
@@ -393,9 +404,12 @@ void Application::draw()
 	}
 	else if (demoNum == 2)
 	{
+		drawSceneSimpleOculus();
+	}
+	else if (demoNum == 3)
+	{
 		drawSceneOculus();
 	}
-
 
 	//TwDraw();
 
@@ -404,6 +418,38 @@ void Application::draw()
 
 void Application::drawSceneSimple()
 {
+	glm::mat4 projLeft = _mainCamera.getProjMatrix() *
+		glm::mat4(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0, 0.0f,
+		_iod * 0.5 / _sd, 0.0f, 1.0, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+
+	glm::mat4 projRight = _mainCamera.getProjMatrix() *
+		glm::mat4(
+		1.0f, 0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0, 0.0f,
+		-_iod * 0.5 / _sd, 0.0f, 1.0, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f);
+
+	glm::mat4 viewLeft = glm::translate(glm::mat4(1.0), glm::vec3(_iod * 0.5, 0, 0)) * _mainCamera.getViewMatrix();
+	glm::mat4 viewRight = glm::translate(glm::mat4(1.0), glm::vec3(-_iod * 0.5, 0, 0)) * _mainCamera.getViewMatrix();
+
+
+	glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+
+	
+	glViewport(0, 0, _width / 2, _height);
+	drawScene(viewLeft, projLeft); //left
+	
+	glViewport(_width / 2, 0, _width / 2, _height);
+	drawScene(viewRight, projRight); //right
+}
+
+void Application::drawSceneSimpleOculus()
+{
+#ifdef OCULUS_FOUND
 	glm::mat4 projLeft = glm::translate(glm::mat4(1.0), glm::vec3(_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
 	glm::mat4 projRight = glm::translate(glm::mat4(1.0), glm::vec3(-_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
 
@@ -422,10 +468,12 @@ void Application::drawSceneSimple()
 	
 	glViewport(_width / 2, 0, _width / 2, _height);
 	drawScene(viewRight, projRight); //right
+#endif
 }
 
 void Application::drawSceneOculus()
 {
+#ifdef OCULUS_FOUND
 	glm::mat4 projLeft = glm::translate(glm::mat4(1.0), glm::vec3(_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
 	glm::mat4 projRight = glm::translate(glm::mat4(1.0), glm::vec3(-_projectionCenterOffset, 0, 0)) * _mainCamera.getProjMatrix();
 
@@ -462,6 +510,7 @@ void Application::drawSceneOculus()
 
 	glViewport(_width / 2, 0, _width / 2, _height);	
 	drawPostprocess(false, _renderTexId[1]);
+#endif
 }
 
 void Application::drawScene(glm::mat4& viewMat, glm::mat4& projMat)
@@ -515,6 +564,7 @@ void Application::drawScene(glm::mat4& viewMat, glm::mat4& projMat)
 
 void Application::drawPostprocess(bool left, GLuint texId)
 {
+#ifdef OCULUS_FOUND
 	glUseProgram(_oculusDistortionShader.getProgramId());
 
 	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
@@ -542,4 +592,5 @@ void Application::drawPostprocess(bool left, GLuint texId)
 
 	glBindVertexArray(_screenQuad.getVao()); //Подключаем VertexArray
 	glDrawArrays(GL_TRIANGLES, 0, _screenQuad.getNumVertices()); //Рисуем
+#endif
 }
