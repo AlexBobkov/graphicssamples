@@ -1,10 +1,17 @@
 #include "Application.h"
 
-const int demoNumber = 2; //1,2,3,4 demos for seminar 1
+#include <iostream>
+#include <fstream>
+#include <functional>
+#include <vector>
+
+using namespace std::placeholders;
+
+const int demoNumber = 4; //1,2,3,4 demos for seminar 1
 
 //======================================
 
-//Функция обратного вызова для обработки нажатий на клавиатуре
+//Функция обратного вызова для обработки событий клавиатуры
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	Application* app = (Application*)glfwGetWindowUserPointer(window);
@@ -53,8 +60,9 @@ void Application::initContext()
 		exit(1);
 	}
 	glfwMakeContextCurrent(_window);
-
-	glfwSetWindowUserPointer(_window, this); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
+		
+	glfwSetKeyCallback(_window, keyCallback); //Регистрирует функцию обратного вызова для обработки событий клавиатуры
+	glfwSetWindowUserPointer(_window, this); //Регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
 }
 
 void Application::initGL()
@@ -62,8 +70,8 @@ void Application::initGL()
 	glewExperimental = GL_TRUE;
 	glewInit ();
 
-	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-	const GLubyte* version = glGetString(GL_VERSION); // version as a string
+	const GLubyte* renderer = glGetString(GL_RENDERER); //Получаем имя рендерера
+	const GLubyte* version = glGetString(GL_VERSION); //Получаем номер версии
 	std::cout << "Renderer: " << renderer << std::endl;
 	std::cout << "OpenGL version supported: " << version << std::endl;
 
@@ -93,13 +101,11 @@ void Application::makeScene()
 
 void Application::run()
 {
-	glfwSetKeyCallback(_window, keyCallback);
-
-	while (!glfwWindowShouldClose(_window))
+	while (!glfwWindowShouldClose(_window)) //Пока окно не закрыто
 	{
-		glfwPollEvents();
+		glfwPollEvents(); //Проверяем события ввода
 
-		draw();
+		draw(); //Рисуем один кадр
 	}
 }
 
@@ -125,7 +131,7 @@ void Application::draw()
 		drawImplementation4();
 	}
 
-	glfwSwapBuffers(_window);	
+	glfwSwapBuffers(_window);
 }
 
 GLuint Application::createShader(GLenum shaderType, std::string filename)
@@ -378,8 +384,8 @@ void Application::makeSceneImplementation3()
 
 	//=========================================================
 
-	GLuint vs = createShader(GL_VERTEX_SHADER, "simple_color.vert");
-	GLuint fs = createShader(GL_FRAGMENT_SHADER, "simple_color.frag");
+	GLuint vs = createShader(GL_VERTEX_SHADER, "shaders1/simple_color.vert");
+	GLuint fs = createShader(GL_FRAGMENT_SHADER, "shaders1/simple_color.frag");
 
 	_shaderProgram = glCreateProgram();
 	glAttachShader(_shaderProgram, fs);
@@ -455,8 +461,8 @@ void Application::makeSceneImplementation4()
 
 	//=========================================================
 
-	GLuint vs = createShader(GL_VERTEX_SHADER, "simple_color.vert");
-	GLuint fs = createShader(GL_FRAGMENT_SHADER, "simple_color.frag");
+	GLuint vs = createShader(GL_VERTEX_SHADER, "shaders1/simple_color.vert");
+	GLuint fs = createShader(GL_FRAGMENT_SHADER, "shaders1/simple_color.frag");
 
 	_shaderProgram = glCreateProgram();
 	glAttachShader(_shaderProgram, fs);

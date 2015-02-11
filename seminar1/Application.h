@@ -1,15 +1,9 @@
 #pragma once
 
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h> // GLFW helper library
-#include <iostream>
-#include <fstream>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include <string>
-#include <sstream>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 class Application
 {
@@ -17,30 +11,41 @@ public:
 	Application();
 	~Application();
 
-	//Инициализация графического контекста
+	/**
+	Инициализирует графический контекст
+	*/
 	void initContext();
 
-	//Настройка некоторых параметров OpenGL
+	/**
+	Настраивает некоторые параметры OpenGL
+	*/
 	void initGL();
 
-	//Создание трехмерной сцены
+	/**
+	Создает трехмерную сцену
+	*/
 	void makeScene();
 
-	//Цикл рендеринга
+	/**
+	Запускает цикл рендеринга
+	*/
 	void run();
 
-	//Отрисовать один кадр
+	/**
+	Отрисовывает один кадр
+	*/
 	void draw();
+		
+protected:
+	//Читает текст шейдера из файла и создает объект
+	GLuint createShader(GLenum shaderType, std::string filename);
+	
+	GLFWwindow* _window; //Графичекое окно
 
-protected:	
-	GLFWwindow* _window;
 	GLuint _vao;
 	GLuint _shaderProgram;
 	GLuint _projMatrixUniform;
-	float _projMatrix[16];
-
-	//Читает текст шейдера из файла и создает объект
-	GLuint createShader(GLenum shaderType, std::string filename);
+	float _projMatrix[16];	
 
 	//Конкретные реализация для разных примеров на семинаре (треугольник, куб)
 	void makeSceneImplementation();
