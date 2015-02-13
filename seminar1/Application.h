@@ -12,6 +12,12 @@ public:
 	~Application();
 
 	/**
+	Запускает приложение
+	*/
+	void start();	
+		
+protected:
+	/**
 	Инициализирует графический контекст
 	*/
 	void initContext();
@@ -24,7 +30,7 @@ public:
 	/**
 	Создает трехмерную сцену
 	*/
-	void makeScene();
+	virtual void makeScene() = 0;
 
 	/**
 	Запускает цикл рендеринга
@@ -34,26 +40,17 @@ public:
 	/**
 	Отрисовывает один кадр
 	*/
-	void draw();
-		
-protected:
-	//Читает текст шейдера из файла и создает объект
-	GLuint createShader(GLenum shaderType, std::string filename);
+	virtual void draw() = 0;
+
+	/**
+	Вспомогательная функция для загрузки текста шейдера из файла и создания шейдерного объекта
+	*/
+	GLuint createShader(GLenum shaderType, const std::string& filename);
+
+	/**
+	Вспомогательная функция для создания шейдерной программы из 2х шейдеров: вершинного и фрагментного
+	*/
+	GLuint createProgram(const std::string& vertFilename, const std::string& fragFilename);
 	
 	GLFWwindow* _window; //Графичекое окно
-
-	GLuint _vao;
-	GLuint _shaderProgram;
-	GLuint _projMatrixUniform;
-	float _projMatrix[16];	
-
-	//Конкретные реализация для разных примеров на семинаре (треугольник, куб)
-	void makeSceneImplementation();
-	void makeSceneImplementation2();
-	void makeSceneImplementation3();
-	void makeSceneImplementation4();
-
-	void drawImplementation();
-	void drawImplementation3();
-	void drawImplementation4();
 };
