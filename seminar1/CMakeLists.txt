@@ -11,8 +11,9 @@ SET(HEADER_FILES
 SET(SHADER_FILES
 	shaders1/simple.vert
 	shaders1/simple.frag
-	shaders1/simple_color.vert
-	shaders1/simple_color.frag
+	shaders1/cube.vert
+	shaders1/triangle.vert
+	shaders1/color.frag
 )
 
 SOURCE_GROUP("Shaders" FILES	

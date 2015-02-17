@@ -83,7 +83,7 @@ public:
 
 		//=========================================================
 
-		_shaderProgram = createProgram("shaders1/simple_color.vert", "shaders1/simple_color.frag");
+		_shaderProgram = createProgram("shaders1/cube.vert", "shaders1/color.frag");
 
 		//=========================================================
 
