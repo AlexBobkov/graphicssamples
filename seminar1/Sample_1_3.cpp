@@ -1,10 +1,5 @@
 #include "Application.h"
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
-
 #include <iostream>
 #include <vector>
 
@@ -14,8 +9,7 @@ public:
 	GLuint _vao;
 
 	GLuint _shaderProgram;
-	GLuint _projMatrixUniform;
-	glm::mat4 _projMatrix;
+	GLuint _projMatrixUniform;	
 
 	void addPoint(std::vector<float>& vec, float x, float y, float z)
 	{
@@ -34,6 +28,8 @@ public:
 
 	void makeScene() override
 	{
+		Application::makeScene();
+
 		std::vector<float> vertices;
 
 		//front
@@ -107,13 +103,7 @@ public:
 
 		_shaderProgram = createProgram("shaders1/cube.vert", "shaders1/color.frag");
 
-		//=========================================================
-
-		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-		_projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 100.f);
-
-		glUseProgram(_shaderProgram);
-		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
+		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");		
 	}
 
 	void draw() override
@@ -124,6 +114,8 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(_shaderProgram); //Подключаем шейдер
+
+		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
 		glBindVertexArray(_vao);
 		glDrawArrays(GL_TRIANGLES, 0, 18); //Рисуем 3 грани куба (6 треугольников)

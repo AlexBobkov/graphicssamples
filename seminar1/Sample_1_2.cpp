@@ -1,10 +1,5 @@
 #include "Application.h"
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
-
 #include <iostream>
 
 class SampleApplication : public Application
@@ -13,11 +8,12 @@ public:
 	GLuint _vao;
 
 	GLuint _shaderProgram;
-	GLuint _projMatrixUniform;
-	glm::mat4 _projMatrix;
+	GLuint _projMatrixUniform;	
 
 	void makeScene() override
 	{
+		Application::makeScene();
+
 		float points[] =
 		{
 			0.0f, 0.5f, 0.0f,
@@ -46,13 +42,7 @@ public:
 
 		_shaderProgram = createProgram("shaders1/triangle.vert", "shaders1/color.frag");
 
-		//=========================================================
-
-		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-		_projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 100.f);
-
-		glUseProgram(_shaderProgram);
-		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
+		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");		
 	}
 
 	void draw() override
@@ -63,6 +53,8 @@ public:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(_shaderProgram); //Подключаем шейдер
+
+		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
 		glBindVertexArray(_vao); //Подключаем VertexArray с настойками буферов
 		glDrawArrays(GL_TRIANGLES, 0, 3); //Рисуем треугольник

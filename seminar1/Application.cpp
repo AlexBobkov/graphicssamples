@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <fstream>
-#include <functional>
 #include <vector>
 #include <cstdlib>
 
@@ -57,6 +56,11 @@ void Application::initContext()
 		exit(1);
 	} 
 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	_window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
 	if (!_window)
 	{
@@ -82,6 +86,11 @@ void Application::initGL()
 
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+}
+
+void Application::makeScene()
+{
+	_projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 100.f);
 }
 
 void Application::run()
