@@ -1,21 +1,14 @@
 #pragma once
 
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h> // GLFW helper library
-#include <iostream>
-#include <fstream>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include <string>
-#include <sstream>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <cstdlib>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Application
 {
@@ -27,8 +20,6 @@ public:
 	Запускает приложение
 	*/
 	void start();	
-
-	
 
 	void rotateLeft(bool b) { _rotateLeft = b; }
 	void rotateRight(bool b) { _rotateRight = b; }
@@ -53,7 +44,7 @@ protected:
 	/**
 	Создает трехмерную сцену
 	*/
-	virtual void makeScene() = 0;
+	virtual void makeScene();
 
 	/**
 	Запускает цикл рендеринга
@@ -66,7 +57,7 @@ protected:
 	virtual void draw() = 0;
 
 	/**
-	Выполняет обновление сцены и других сущностей
+	Выполняет обновление сцены и виртуальной камеры
 	*/
 	void update();
 
@@ -81,12 +72,9 @@ protected:
 	GLuint createProgram(const std::string& vertFilename, const std::string& fragFilename);
 
 	GLFWwindow* _window; //Графичекое окно
-
-	GLuint _viewMatrixUniform;
-	GLuint _projMatrixUniform;
 	
 	glm::mat4 _viewMatrix;
-	glm::mat4 _projMatrix;
+	glm::mat4 _projMatrix;	
 
 	double _oldTime;
 

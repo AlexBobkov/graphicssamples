@@ -1,10 +1,5 @@
 #include "Application.h"
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
-
 #include <iostream>
 #include <vector>
 
@@ -13,14 +8,12 @@ class SampleApplication : public Application
 public:
 	GLuint _vao;
 
-	GLuint _shaderProgram;
-
-	GLuint _modelMatrixUniform;
 	glm::mat4 _modelMatrix;
 
-
+	GLuint _shaderProgram;
+	GLuint _modelMatrixUniform;	
+	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;
-	glm::mat4 _projMatrix;
 
 	void addPoint(std::vector<float>& vec, float x, float y, float z)
 	{
@@ -39,6 +32,8 @@ public:
 
 	void makeScene() override
 	{
+		Application::makeScene();
+
 		float size = 0.5f;
 
 		std::vector<float> vertices;
@@ -162,36 +157,22 @@ public:
 
 		//=========================================================
 
-		_shaderProgram = createProgram("shaders2/shader.vert", "shaders2/shader.frag");
+		_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 
 		//=========================================================
+
+		_shaderProgram = createProgram("shaders2/shader.vert", "shaders2/shader.frag");		
 
 		_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
 		_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
 		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-
-		//float projMatrix[16];
-		//float fFrustumScale = 1.0f; float fzNear = 0.5f; float fzFar = 3.0f;
-		//memset(projMatrix, 0, sizeof(float) * 16);
-		//projMatrix[0] = fFrustumScale;
-		//projMatrix[5] = fFrustumScale;
-		//projMatrix[10] = (fzFar + fzNear) / (fzNear - fzFar);
-		//projMatrix[14] = (2 * fzFar * fzNear) / (fzNear - fzFar);
-		//projMatrix[11] = -1.0f;
-
-		//glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, projMatrix);
-
-		_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-
-		_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		_projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
 	}
 
 	void draw() override
 	{
 		int width, height;
 		glfwGetFramebufferSize(_window, &width, &height);
+
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

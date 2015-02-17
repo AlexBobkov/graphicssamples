@@ -5,6 +5,11 @@
 
 #include <string>
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 class Application
 {
 public:
@@ -30,7 +35,7 @@ protected:
 	/**
 	Создает трехмерную сцену
 	*/
-	virtual void makeScene() = 0;
+	virtual void makeScene();
 
 	/**
 	Запускает цикл рендеринга
@@ -53,4 +58,6 @@ protected:
 	GLuint createProgram(const std::string& vertFilename, const std::string& fragFilename);
 	
 	GLFWwindow* _window; //Графичекое окно
+
+	glm::mat4 _projMatrix;
 };

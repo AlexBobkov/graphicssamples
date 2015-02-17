@@ -1,5 +1,10 @@
 #include "Application.h"
 
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <cstdlib>
+
 //======================================
 
 //Функция обратного вызова для обработки нажатий на клавиатуре
@@ -105,6 +110,11 @@ void Application::initContext()
 		exit(1);
 	}
 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
 	_window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
 	if (!_window)
 	{
@@ -123,8 +133,8 @@ void Application::initGL()
 	glewExperimental = GL_TRUE;
 	glewInit();
 
-	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-	const GLubyte* version = glGetString(GL_VERSION); // version as a string
+	const GLubyte* renderer = glGetString(GL_RENDERER); //Получаем имя рендерера
+	const GLubyte* version = glGetString(GL_VERSION); //Получаем номер версии
 	std::cout << "Renderer: " << renderer << std::endl;
 	std::cout << "OpenGL version supported: " << version << std::endl;
 
@@ -132,15 +142,21 @@ void Application::initGL()
 	glDepthFunc(GL_LESS);
 }
 
+void Application::makeScene()
+{
+	_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
+}
+
 void Application::run()
 {
-	while (!glfwWindowShouldClose(_window))
+	while (!glfwWindowShouldClose(_window)) //Пока окно не закрыто
 	{
-		glfwPollEvents();
+		glfwPollEvents(); //Проверяем события ввода
 
-		update();
+		update(); //Обновляем сцену и положение виртуальной камеры
 
-		draw();
+		draw(); //Рисуем один кадр
 
 		glfwSwapBuffers(_window);
 	}
