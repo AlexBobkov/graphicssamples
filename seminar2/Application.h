@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cstdlib>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>

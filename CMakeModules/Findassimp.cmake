@@ -1,6 +1,6 @@
 FIND_PATH(
 	assimp_INCLUDE_DIRS
-	NAMES postprocess.h scene.h version.h config.h cimport.h
+	NAMES assimp/scene.h
 	PATHS /usr/local/include/
 )
 

@@ -6,7 +6,7 @@ FIND_PATH(
 
 FIND_LIBRARY(
 	GLFW_LIBRARIES
-	NAMES glfw3
+	NAMES glfw glfw3
 	PATHS /usr/local/lib/
 )
 
