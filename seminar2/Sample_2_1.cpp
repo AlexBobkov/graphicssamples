@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "Mesh.h"
 
 #include <iostream>
 #include <vector>
@@ -6,158 +7,25 @@
 class SampleApplication : public Application
 {
 public:
-	GLuint _vao;
-
-	glm::mat4 _modelMatrix;
+	MeshPtr cube;
+	MeshPtr bunny;
 
 	GLuint _shaderProgram;
 	GLuint _modelMatrixUniform;	
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;
 
-	void addPoint(std::vector<float>& vec, float x, float y, float z)
-	{
-		vec.push_back(x);
-		vec.push_back(y);
-		vec.push_back(z);
-	}
-
-	void addColor(std::vector<float>& vec, float r, float g, float b, float a)
-	{
-		vec.push_back(r);
-		vec.push_back(g);
-		vec.push_back(b);
-		vec.push_back(a);
-	}
-
 	void makeScene() override
 	{
 		Application::makeScene();
+				
+		cube = std::make_shared<Mesh>();
+		cube->makeCube(0.5);
+		cube->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
 
-		float size = 0.5f;
-
-		std::vector<float> vertices;
-		//front
-		addPoint(vertices, size, -size, size);
-		addPoint(vertices, size, size, size);
-		addPoint(vertices, size, size, -size);
-
-		addPoint(vertices, size, -size, size);
-		addPoint(vertices, size, size, -size);
-		addPoint(vertices, size, -size, -size);
-
-		//left
-		addPoint(vertices, -size, -size, size);
-		addPoint(vertices, size, -size, size);
-		addPoint(vertices, size, -size, -size);
-
-		addPoint(vertices, -size, -size, size);
-		addPoint(vertices, size, -size, -size);
-		addPoint(vertices, -size, -size, -size);
-
-		//top
-		addPoint(vertices, -size, size, size);
-		addPoint(vertices, size, size, size);
-		addPoint(vertices, size, -size, size);
-
-		addPoint(vertices, -size, size, size);
-		addPoint(vertices, -size, -size, size);
-		addPoint(vertices, size, -size, size);
-
-		//back
-		addPoint(vertices, -size, -size, size);
-		addPoint(vertices, -size, size, -size);
-		addPoint(vertices, -size, size, size);
-
-		addPoint(vertices, -size, -size, size);
-		addPoint(vertices, -size, -size, -size);
-		addPoint(vertices, -size, size, -size);
-
-		//left
-		addPoint(vertices, -size, size, size);
-		addPoint(vertices, size, size, -size);
-		addPoint(vertices, size, size, size);
-
-		addPoint(vertices, -size, size, size);
-		addPoint(vertices, -size, size, -size);
-		addPoint(vertices, +size, size, -size);
-
-		//bottom
-		addPoint(vertices, -size, size, -size);
-		addPoint(vertices, size, -size, -size);
-		addPoint(vertices, size, size, -size);
-
-		addPoint(vertices, -size, size, -size);
-		addPoint(vertices, size, -size, -size);
-		addPoint(vertices, -size, -size, -size);
-
-		addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-
-		addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 0.0, 1.0);
-
-		addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-
-		addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 1.0, 1.0, 0.0, 1.0);
-
-		addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-
-		addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 0.0, 1.0);
-
-		addColor(vertices, 0.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 0.0, 1.0, 1.0);
-
-		addColor(vertices, 0.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 0.0, 1.0, 1.0);
-
-		addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-
-		addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-		addColor(vertices, 0.0, 1.0, 1.0, 1.0);
-
-		addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-
-		addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-		addColor(vertices, 1.0, 0.0, 1.0, 1.0);
-
-		int Npoints = vertices.size() / 7;
-
-		unsigned int vbo = 0;
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-
-		_vao = 0;
-		glGenVertexArrays(1, &_vao);
-		glBindVertexArray(_vao);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(Npoints * 4 * 3));
-
-		//=========================================================
-
-		_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		bunny = std::make_shared<Mesh>();
+		bunny->loadFromFile("models/bunny.obj");
+		bunny->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		//=========================================================
 
@@ -178,12 +46,14 @@ public:
 
 		glUseProgram(_shaderProgram);
 
-		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_modelMatrix));
-		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
+		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 
-		glBindVertexArray(_vao);
-		glDrawArrays(GL_TRIANGLES, 0, 36); //Рисуем 3 грани куба (6 треугольников)
+		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
+		cube->draw();
+
+		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
+		bunny->draw();
 	}
 };
 

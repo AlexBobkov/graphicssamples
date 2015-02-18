@@ -18,14 +18,6 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		{
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
-		else if (key == GLFW_KEY_A)
-		{
-			std::cout << "aaaa\n";
-		}
-		else if (key == GLFW_KEY_D)
-		{
-			std::cout << "ddddd\n";
-		}
 	}
 }
 
