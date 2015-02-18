@@ -5,8 +5,14 @@ FIND_PATH(
 )
 
 FIND_LIBRARY(
-	assimp_LIBRARIES
+	assimp_LIBRARY
 	NAMES assimp
+	PATHS /usr/local/lib/
+)
+
+FIND_LIBRARY(
+	assimp_LIBRARY_DEBUG
+	NAMES assimpd
 	PATHS /usr/local/lib/
 )
 
@@ -23,3 +29,9 @@ ELSE (assimp_FOUND)
         MESSAGE(FATAL_ERROR "Could not find asset importer library")
     ENDIF (assimp_FIND_REQUIRED)
 ENDIF (assimp_FOUND)
+
+IF (assimp_LIBRARY_DEBUG)
+	SET(assimp_LIBRARIES optimized ${assimp_LIBRARY} debug ${assimp_LIBRARY_DEBUG})
+ELSE (assimp_LIBRARY_DEBUG)
+	SET(assimp_LIBRARIES ${assimp_LIBRARY})
+ENDIF (assimp_LIBRARY_DEBUG)

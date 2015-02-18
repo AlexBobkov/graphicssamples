@@ -61,7 +61,7 @@ void Application::initContext()
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	_window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+	_window = glfwCreateWindow(640, 480, "MIPT OpenGL demos", NULL, NULL);
 	if (!_window)
 	{
 		std::cerr << "ERROR: could not open window with GLFW3\n";		

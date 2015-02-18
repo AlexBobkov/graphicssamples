@@ -2,10 +2,12 @@ SET(APP_NAME seminar2)
 
 SET(SRC_FILES	
 	Application.cpp
+	Mesh.cpp
 )
 
 SET(HEADER_FILES
 	Application.h
+	Mesh.h
 )
 
 SET(SHADER_FILES
