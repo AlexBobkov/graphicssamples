@@ -12,64 +12,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 {
 	Application* app = (Application*)glfwGetWindowUserPointer(window);
 
-	if (action == GLFW_PRESS)
-	{
-		if (key == GLFW_KEY_ESCAPE)
-		{
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		}
-		else if (key == GLFW_KEY_A)
-		{
-			app->rotateLeft(true);
-		}
-		else if (key == GLFW_KEY_D)
-		{
-			app->rotateRight(true);
-		}
-		else if (key == GLFW_KEY_W)
-		{
-			app->rotateUp(true);
-		}
-		else if (key == GLFW_KEY_S)
-		{
-			app->rotateDown(true);
-		}
-		else if (key == GLFW_KEY_R)
-		{
-			app->fovInc(true);
-		}
-		else if (key == GLFW_KEY_F)
-		{
-			app->fovDec(true);
-		}
-	}
-	else if (action == GLFW_RELEASE)
-	{
-		if (key == GLFW_KEY_A)
-		{
-			app->rotateLeft(false);
-		}
-		else if (key == GLFW_KEY_D)
-		{
-			app->rotateRight(false);
-		}
-		else if (key == GLFW_KEY_W)
-		{
-			app->rotateUp(false);
-		}
-		else if (key == GLFW_KEY_S)
-		{
-			app->rotateDown(false);
-		}
-		else if (key == GLFW_KEY_R)
-		{
-			app->fovInc(false);
-		}
-		else if (key == GLFW_KEY_F)
-		{
-			app->fovDec(false);
-		}
-	}
+	app->handleKey(key, scancode, action, mods);
 }
 
 //======================================
@@ -162,6 +105,68 @@ void Application::run()
 	}
 }
 
+void Application::handleKey(int key, int scancode, int action, int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		if (key == GLFW_KEY_ESCAPE)
+		{
+			glfwSetWindowShouldClose(_window, GL_TRUE);
+		}
+		else if (key == GLFW_KEY_A)
+		{
+			_rotateLeft = true;
+		}
+		else if (key == GLFW_KEY_D)
+		{
+			_rotateRight = true;
+		}
+		else if (key == GLFW_KEY_W)
+		{
+			_rotateUp = true;
+		}
+		else if (key == GLFW_KEY_S)
+		{
+			_rotateDown = true;
+		}
+		else if (key == GLFW_KEY_R)
+		{
+			_fovInc = true;
+		}
+		else if (key == GLFW_KEY_F)
+		{
+			_fovDec = true;
+		}
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		if (key == GLFW_KEY_A)
+		{
+			_rotateLeft = false;
+		}
+		else if (key == GLFW_KEY_D)
+		{
+			_rotateRight = false;
+		}
+		else if (key == GLFW_KEY_W)
+		{
+			_rotateUp = false;
+		}
+		else if (key == GLFW_KEY_S)
+		{
+			_rotateDown = false;
+		}
+		else if (key == GLFW_KEY_R)
+		{
+			_fovInc = true;
+		}
+		else if (key == GLFW_KEY_F)
+		{
+			_fovDec = true;
+		}
+	}
+}
+
 void Application::update()
 {
 	double dt = glfwGetTime() - _oldTime;
@@ -213,79 +218,4 @@ void Application::update()
 	//glfwGetFramebufferSize(_window, &width, &height);
 
 	//_projMatrix = glm::perspective(glm::radians(_fov), (float)width / height, 0.1f, 100.f);	
-}
-
-//==================================================================
-
-GLuint Application::createShader(GLenum shaderType, const std::string& filename)
-{
-	//Читаем текст шейдера из файла
-	std::ifstream vertFile(filename.c_str());
-	if (vertFile.fail())
-	{
-		std::cerr << "Failed to load shader file " << filename << std::endl;
-		exit(1);
-	}
-	std::string vertFileContent((std::istreambuf_iterator<char>(vertFile)), (std::istreambuf_iterator<char>()));
-	vertFile.close();
-
-	const char* vertexShaderText = vertFileContent.c_str();
-
-	//Создаем шейдерный объект в OpenGL
-	GLuint vs = glCreateShader(shaderType);
-	glShaderSource(vs, 1, &vertexShaderText, NULL);
-	glCompileShader(vs);
-
-	//Проверяем ошибки компиляции
-	int status = -1;
-	glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
-	if (status != GL_TRUE)
-	{
-		std::cerr << "Failed to compile the shader:\n";		
-		
-		GLint errorLength;
-		glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
-
-		GLchar* log = new GLchar[errorLength];
-		glGetShaderInfoLog(vs, errorLength, 0, log);
-
-		std::cerr << log << std::endl;
-
-		delete[] log;
-		exit(1);
-	}
-
-	return vs;
-}
-
-GLuint Application::createProgram(const std::string& vertFilename, const std::string& fragFilename)
-{
-	GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
-	GLuint fs = createShader(GL_FRAGMENT_SHADER, fragFilename);
-
-	GLuint shaderProgram = glCreateProgram();
-	glAttachShader(shaderProgram, fs);
-	glAttachShader(shaderProgram, vs);
-	glLinkProgram(shaderProgram);
-
-	//Проверяем ошибки линковки
-	int status = -1;
-	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-	if (status != GL_TRUE)
-	{
-		std::cerr << "Failed to link the program:\n";
-
-		GLint errorLength;
-		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &errorLength);
-
-		GLchar* log = new GLchar[errorLength];
-		glGetProgramInfoLog(shaderProgram, errorLength, 0, log);
-
-		std::cerr << log << std::endl;
-
-		delete[] log;
-		exit(1);
-	}
-
-	return shaderProgram;
 }

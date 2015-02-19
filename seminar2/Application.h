@@ -21,14 +21,11 @@ public:
 	*/
 	void start();	
 
-	void rotateLeft(bool b) { _rotateLeft = b; }
-	void rotateRight(bool b) { _rotateRight = b; }
-
-	void rotateUp(bool b) { _rotateUp = b; }
-	void rotateDown(bool b) { _rotateDown = b; }
-
-	void fovInc(bool b) { _fovInc = b; }
-	void fovDec(bool b) { _fovDec = b; }
+	/**
+	Обрабатывает нажатия кнопок на клавитуре.
+	См. сигнатуру GLFWkeyfun библиотеки GLFW
+	*/
+	virtual void handleKey(int key, int scancode, int action, int mods);
 
 protected:
 	/**
@@ -52,24 +49,16 @@ protected:
 	void run();
 
 	/**
-	Отрисовывает один кадр
-	*/
-	virtual void draw() = 0;
-
-	/**
 	Выполняет обновление сцены и виртуальной камеры
 	*/
-	void update();
+	virtual void update();
 
 	/**
-	Вспомогательная функция для загрузки текста шейдера из файла и создания шейдерного объекта
+	Отрисовывает один кадр
 	*/
-	GLuint createShader(GLenum shaderType, const std::string& filename);
+	virtual void draw() = 0;	
 
-	/**
-	Вспомогательная функция для создания шейдерной программы из 2х шейдеров: вершинного и фрагментного
-	*/
-	GLuint createProgram(const std::string& vertFilename, const std::string& fragFilename);
+	//---------------------------------------------
 
 	GLFWwindow* _window; //Графичекое окно
 	

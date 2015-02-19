@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "Mesh.h"
+#include "ShaderProgram.h"
 
 #include <iostream>
 #include <vector>
@@ -29,7 +30,7 @@ public:
 
 		//=========================================================
 
-		_shaderProgram = createProgram("shaders2/shader.vert", "shaders2/shader.frag");		
+		_shaderProgram = ShaderProgram::createProgram("shaders2/shader.vert", "shaders2/shader.frag");		
 
 		_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
 		_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");

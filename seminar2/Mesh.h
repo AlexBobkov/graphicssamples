@@ -13,7 +13,7 @@
 /**
 Описание меша:
 - тип примитива (обычно GL_TRIANGLES)
-- идентификатор Vertex Array Object (хранит настройки буферов)
+- идентификатор Vertex Array Object (хранит настройки буферов и вершинных атрибутов)
 - количество вершин в модели
 - матрица модели (LocalToWorld)
 */
@@ -28,6 +28,13 @@ public:
 	glm::mat4& modelMatrix() { return _modelMatrix; }
 
 	/**
+	Запускает отрисовку меша
+	*/
+	void draw();
+
+	//----------------- Методы для инициализации меша
+
+	/**
 	Инициализирует меш сферы
 	*/
 	void makeSphere(float radius);	
@@ -40,18 +47,12 @@ public:
 	/**
 	Загружает меш из внешнего файла с помощью библиотеки Assimp
 	*/
-	void loadFromFile(const std::string& filename);
-
-	/**
-	Запускает отрисовку меша
-	*/
-	void draw();
+	void loadFromFile(const std::string& filename);	
 
 protected:
 	GLuint _primitiveType;
 	GLuint _vao;
 	int _numVertices;
-
 	glm::mat4 _modelMatrix;
 };
 
