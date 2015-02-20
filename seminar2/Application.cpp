@@ -18,17 +18,16 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 //======================================
 
 Application::Application():
-_oldTime(0.0f),
+_oldTime(0.0),
 	_rotateLeft(false),
 	_rotateRight(false),
-	_phiAng(0.0f),
+	_phiAng(0.0),
 	_rotateUp(false),
 	_rotateDown(false),
-	_thetaAng(0.0f),
-	_fovInc(false),
-	_fovDec(false),
-	_fov(45.0),
-	_z(0.0f)
+	_thetaAng(0.0),
+	_radiusInc(false),
+	_radiusDec(false),
+	_r(5.0)
 {
 }
 
@@ -131,11 +130,11 @@ void Application::handleKey(int key, int scancode, int action, int mods)
 		}
 		else if (key == GLFW_KEY_R)
 		{
-			_fovInc = true;
+			_radiusInc = true;
 		}
 		else if (key == GLFW_KEY_F)
 		{
-			_fovDec = true;
+			_radiusDec = true;
 		}
 	}
 	else if (action == GLFW_RELEASE)
@@ -158,11 +157,11 @@ void Application::handleKey(int key, int scancode, int action, int mods)
 		}
 		else if (key == GLFW_KEY_R)
 		{
-			_fovInc = true;
+			_radiusInc = false;
 		}
 		else if (key == GLFW_KEY_F)
 		{
-			_fovDec = true;
+			_radiusDec = false;
 		}
 	}
 }
@@ -190,32 +189,24 @@ void Application::update()
 	{
 		_thetaAng -= speed * dt;
 	}
+	if (_radiusInc)
+	{
+		_r += _r * dt;
+	}
+	if (_radiusDec)
+	{
+		_r -= _r * dt;
+	}
 
-	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * 5.0f;
+	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * (float)_r;
 
 	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	//====================================
-	//_z += dt;
-	//_modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, _z));
 
-	//====================================
+	//-----------------------------------------
 
-	//float fovSpeed = 5.0;
-	//
-	//if (_fovInc)
-	//{
-	//	_fov += fovSpeed * dt;
-	//}
-	//if (_fovDec)
-	//{
-	//	_fov -= fovSpeed * dt;
-	//}
+	int width, height;
+	glfwGetFramebufferSize(_window, &width, &height);	
 
-	//std::cout << "FOV " << _fov << std::endl;
-
-	//int width, height;
-	//glfwGetFramebufferSize(_window, &width, &height);
-
-	//_projMatrix = glm::perspective(glm::radians(_fov), (float)width / height, 0.1f, 100.f);	
+	_projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 }

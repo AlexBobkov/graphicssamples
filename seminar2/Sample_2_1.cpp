@@ -53,6 +53,9 @@ public:
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
 		cube->draw();
 
+		float angle = glfwGetTime();
+		bunny->modelMatrix() = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
+
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
 		bunny->draw();
 	}

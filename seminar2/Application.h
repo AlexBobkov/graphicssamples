@@ -65,19 +65,18 @@ protected:
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;	
 
+	double _phiAng;
+	double _thetaAng;
+	double _r;
+
 	double _oldTime;
 
 	bool _rotateLeft;
-	bool _rotateRight;
-	double _phiAng;
+	bool _rotateRight;	
 
 	bool _rotateUp;
 	bool _rotateDown;
-	double _thetaAng;
 
-	double _z;
-
-	bool _fovInc;
-	bool _fovDec;
-	float _fov;
+	bool _radiusInc;
+	bool _radiusDec;
 };
