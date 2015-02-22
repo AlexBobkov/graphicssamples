@@ -21,11 +21,13 @@ public:
 			-0.5f, -0.5f, 0.0f
 		};
 
+		//Копируем буфер с координатами на видеокарту
 		GLuint vbo = 0;
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(float), points, GL_STATIC_DRAW);
 
+		//Описываем какие буферы относятся к нашему мешу, сколько у него вершинных атрибутов и их настройки
 		_vao = 0;
 		glGenVertexArrays(1, &_vao);
 		glBindVertexArray(_vao);

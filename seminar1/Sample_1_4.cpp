@@ -57,16 +57,22 @@ public:
 			5, 6, 2,
 			5, 2, 3 };
 
+		//Копируем буфер с атрибутами на видеокарту
+		//Сначала в буфере идут координаты, потом цвета вершин
 		unsigned int vbo = 0;
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
+		//А это ещё один буфер - для хранений индексов
 		unsigned int ibo = 0;
 		glGenBuffers(1, &ibo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), indices.data(), GL_STATIC_DRAW);
 
+		//Описываем какие буферы относятся к нашему мешу, сколько у него вершинных атрибутов и их настройки
+		//Здесь 1й буфер содержит 2 атрибута
+		//2й буфер содержит индексы
 		_vao = 0;
 		glGenVertexArrays(1, &_vao);
 		glBindVertexArray(_vao);
@@ -95,7 +101,7 @@ public:
 
 		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
-		glBindVertexArray(_vao);
+		glBindVertexArray(_vao); //Подключаем VertexArray с настойками буферов
 		glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, 0); //Рисуем с помощью индексов
 	}
 };

@@ -24,11 +24,15 @@ public:
 			0.0f, 0.0f, 1.0f, 1.0f,
 		};
 
+		//Копируем буфер с атрибутами на видеокарту
+		//Сначала в буфере идут координаты, потом цвета вершин
 		unsigned int vbo = 0;
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, 21 * sizeof(float), points, GL_STATIC_DRAW);
 
+		//Описываем какие буферы относятся к нашему мешу, сколько у него вершинных атрибутов и их настройки
+		//Здесь 1 буфер содержит 2 атрибута
 		_vao = 0;
 		glGenVertexArrays(1, &_vao);
 		glBindVertexArray(_vao);

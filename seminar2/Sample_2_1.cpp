@@ -20,10 +20,12 @@ public:
 	{
 		Application::makeScene();
 				
+		//Создаем меш с помощью нового вспомогательного класса
 		cube = std::make_shared<Mesh>();
 		cube->makeCube(0.5);
 		cube->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
 
+		//Создаем ещё один меш с помощью нового вспомогательного класса
 		bunny = std::make_shared<Mesh>();
 		bunny->loadFromFile("models/bunny.obj");
 		bunny->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -45,19 +47,19 @@ public:
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(_shaderProgram);
+		glUseProgram(_shaderProgram); //Устанавливаем шейдер
 
-		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
-		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
+		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix)); //Загружаем на видеокарту матрицу проекции
+		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix)); //Загружаем на видеокарту матрицу вида
 
-		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
-		cube->draw();
+		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix())); //Загружаем на видеокарту матрицу модели первого меша
+		cube->draw(); //Рисуем первый меш
 
 		float angle = glfwGetTime();
-		bunny->modelMatrix() = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
+		bunny->modelMatrix() = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)); //Изменяем матрицу модели второго меша
 
-		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
-		bunny->draw();
+		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix())); //Загружаем на видеокарту матрицу модели второго меша
+		bunny->draw(); //Рисуем второй меш
 	}
 };
 
