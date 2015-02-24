@@ -52,10 +52,12 @@ void Application::initContext()
 		exit(1);
 	}
 
+#ifdef USE_CORE_PROFILE
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
 	_window = glfwCreateWindow(640, 480, "MIPT OpenGL demos", NULL, NULL);
 	if (!_window)
@@ -100,7 +102,7 @@ void Application::run()
 
 		draw(); //Рисуем один кадр
 
-		glfwSwapBuffers(_window);
+		glfwSwapBuffers(_window); //Переключаем передний и задний буферы
 	}
 }
 
@@ -198,8 +200,10 @@ void Application::update()
 		_r -= _r * dt;
 	}
 
+	//Вычисляем положение виртуальной камеры в мировой системе координат по формуле сферических координат
 	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng)) * (float)_r;
 
+	//Обновляем матрицу вида
 	_viewMatrix = glm::lookAt(pos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
 
@@ -208,5 +212,6 @@ void Application::update()
 	int width, height;
 	glfwGetFramebufferSize(_window, &width, &height);	
 
+	//Обновляем матрицу проекции на случай, если размеры окна изменились
 	_projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 }

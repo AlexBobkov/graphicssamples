@@ -85,11 +85,15 @@ public:
 
 		int Npoints = vertices.size() / 7;
 
+		//Копируем буфер с атрибутами на видеокарту
+		//Сначала в буфере идут координаты, потом цвета вершин
 		unsigned int vbo = 0;
 		glGenBuffers(1, &vbo);
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
+		//Описываем какие буферы относятся к нашему мешу, сколько у него вершинных атрибутов и их настройки
+		//Здесь 1 буфер содержит 2 атрибута
 		_vao = 0;
 		glGenVertexArrays(1, &_vao);
 		glBindVertexArray(_vao);
@@ -117,7 +121,7 @@ public:
 
 		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
-		glBindVertexArray(_vao);
+		glBindVertexArray(_vao); //Подключаем VertexArray с настойками буферов
 		glDrawArrays(GL_TRIANGLES, 0, 18); //Рисуем 3 грани куба (6 треугольников)
 	}
 };
