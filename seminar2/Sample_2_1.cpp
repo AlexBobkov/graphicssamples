@@ -43,6 +43,7 @@ public:
 		glfwGetFramebufferSize(_window, &width, &height);
 
 		glViewport(0, 0, width, height);
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(_shaderProgram);
@@ -53,7 +54,7 @@ public:
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
 		cube->draw();
 
-		float angle = glfwGetTime();
+		float angle = (float)glfwGetTime();
 		bunny->modelMatrix() = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
 
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
