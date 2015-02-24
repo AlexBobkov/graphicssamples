@@ -1,10 +1,14 @@
+/*
+Получает на вход интеполированный цвет фрагмента и копирует его на выход.
+*/
+
 #version 330
 
-in vec4 theColor;
+in vec4 color;
 
-out vec4 frag_colour;
+out vec4 fragColor;
 
 void main()
 {
-	frag_colour = theColor;
+	fragColor = color;
 }

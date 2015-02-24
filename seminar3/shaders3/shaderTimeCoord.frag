@@ -1,13 +1,17 @@
+/*
+Получает на вход интеполированные цвет и координаты фрагмента и использует их для вычисления цвета.
+*/
+
 #version 330
 
 uniform float time;
 
-in vec4 theColor;
-in vec4 thePosition;
+in vec4 color;
+in vec4 position;
 
-out vec4 frag_colour;
+out vec4 fragColor;
 
 void main()
 {
-	frag_colour = thePosition * 0.5 * (2.0 + sin(time));
+	fragColor = position * 0.5 * (2.0 + sin(time));
 }

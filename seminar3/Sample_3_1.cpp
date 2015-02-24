@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-const int demoNumber = 1; //1 - simple, 2 - mat, 3 - color, 4 - point, 5 - time, 6 - color time, 7 - time coords, 8 - discard, 9 - line, 10 - quad, 11 - fractal
+const int demoNumber = 8; //1 - simple, 2 - mat, 3 - color, 4 - point, 5 - time, 6 - color time, 7 - time coords, 8 - discard, 9 - line, 10 - quad, 11 - fractal
 
 class SampleApplication : public Application
 {
@@ -22,6 +22,11 @@ public:
 	void makeScene() override
 	{
 		Application::makeScene();
+
+		//Включает сглаживание точек
+		glEnable(GL_POINT_SMOOTH);
+		//Включает изменение размера точек через шейдер
+		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 				
 		cube = std::make_shared<Mesh>();
 		cube->makeCube(0.5);

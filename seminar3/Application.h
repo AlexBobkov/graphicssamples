@@ -65,18 +65,18 @@ protected:
 	glm::mat4 _viewMatrix;
 	glm::mat4 _projMatrix;	
 
+	//Положение виртуальный камеры задается в сферических координат
 	double _phiAng;
 	double _thetaAng;
 	double _r;
 
-	double _oldTime;
+	double _oldTime; //Время на предыдущем кадре
 
+	//Вспомогальные переменные для управления виртуальной камерой
 	bool _rotateLeft;
 	bool _rotateRight;	
-
 	bool _rotateUp;
 	bool _rotateDown;
-
 	bool _radiusInc;
 	bool _radiusDec;
 };
