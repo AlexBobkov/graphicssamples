@@ -1,14 +1,18 @@
+/*
+Рисует желтый круг на квадрате путЄм отбрасывания фрагментов дальше заданного радиуса
+*/
+
 #version 330
 
-in vec2 pos;
+in vec2 position;
 
-out vec4 frag_colour;
+out vec4 fragColor;
 
 void main()
 {
-	frag_colour = vec4(1.0, 1.0, 0.0, 1.0);
+	fragColor = vec4(1.0, 1.0, 0.0, 1.0);
 	
-	if (length(pos) > 0.5)
+	if (length(position) > 0.5)
 	{
 		discard;
 	}

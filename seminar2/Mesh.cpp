@@ -242,6 +242,37 @@ void Mesh::makeCube(float size)
 	glBindVertexArray(0);
 }
 
+void Mesh::makeScreenAlignedQuad()
+{
+	Buffer<float> vertices;
+
+	//front 1
+	vertices.addVec3(-1.0, 1.0, 0.0);
+	vertices.addVec3(1.0, 1.0, 0.0);
+	vertices.addVec3(1.0, -1.0, 0.0);
+
+	//front 2
+	vertices.addVec3(-1.0, 1.0, 0.0);
+	vertices.addVec3(1.0, -1.0, 0.0);
+	vertices.addVec3(-1.0, -1.0, 0.0);
+
+	_numVertices = 6;
+
+	GLuint vbo = 0;
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+	_vao = 0;
+	glGenVertexArrays(1, &_vao);
+	glBindVertexArray(_vao);
+	glEnableVertexAttribArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+	glBindVertexArray(0);
+}
+
 void Mesh::loadFromFile(const std::string& filename)
 {
 	const struct aiScene* scene = aiImportFile(filename.c_str(), aiProcess_Triangulate);
@@ -277,7 +308,7 @@ void Mesh::loadFromFile(const std::string& filename)
 	std::vector<float> vertices(_numVertices * 3);
 	std::vector<float> normals(_numVertices * 3);
 
-	for (int i = 0; i < _numVertices; i++)
+	for (unsigned int i = 0; i < _numVertices; i++)
 	{
 		const aiVector3D* vp = &(mesh->mVertices[i]);
 

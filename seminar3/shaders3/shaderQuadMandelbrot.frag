@@ -1,8 +1,12 @@
+/*
+Рисует фрактал Мандельброта
+*/
+
 #version 330
 
-in vec2 pos;
+in vec2 position;
 
-out vec4 frag_colour;
+out vec4 fragColor;
 
 void main()
 {
@@ -14,8 +18,8 @@ void main()
 	vec3 OuterColor1 = vec3(1.0, 1.0, 0.0);
 	vec3 OuterColor2 = vec3(0.0, 0.0, 1.0);
 	
-	float real  = pos.x * Zoom + Xcenter;
-	float imag  = pos.y * Zoom + Ycenter;
+	float real  = position.x * Zoom + Xcenter;
+	float imag  = position.y * Zoom + Ycenter;
 	float Creal = real;   // Change this line...
 	float Cimag = imag;   // ...and this one to get a Julia set
 
@@ -40,5 +44,5 @@ void main()
 	else
 		color = mix(OuterColor1, OuterColor2, fract(iter * 0.05));
 		
-	frag_colour = vec4(color, 1.0);
+	fragColor = vec4(color, 1.0);
 }

@@ -22,6 +22,8 @@ class Mesh
 public:
 	Mesh();
 
+	GLuint& primitiveType() { return _primitiveType; }
+
 	/**
 	Возвращает матрицу модели, которая описывает положение меша в мировой системе координат
 	*/
@@ -42,7 +44,12 @@ public:
 	/**
 	Инициализирует меш куба
 	*/
-	void makeCube(float size);	
+	void makeCube(float size);
+
+	/**
+	Создает квадрат из двух треугольников. Координаты в Clip Space
+	*/
+	void makeScreenAlignedQuad();
 
 	/**
 	Загружает меш из внешнего файла с помощью библиотеки Assimp
@@ -52,7 +59,7 @@ public:
 protected:
 	GLuint _primitiveType;
 	GLuint _vao;
-	int _numVertices;
+	unsigned int _numVertices;
 	glm::mat4 _modelMatrix;
 };
 

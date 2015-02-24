@@ -1,14 +1,16 @@
+/*
+Принимает координаты сразу в Clip Space и копирует их в выходную переменную position
+*/
+
 #version 330
 
-uniform float time;
+layout(location = 0) in vec3 vertexPosition;
 
-layout(location = 0) in vec3 vp;
-
-out vec2 pos;
+out vec2 position;
 
 void main()
 {
-	pos = vec2(vp.x, vp.y);
+	position = vertexPosition.xy;
 	
-	gl_Position = vec4(vp, 1.0);
+	gl_Position = vec4(vertexPosition, 1.0);
 }
