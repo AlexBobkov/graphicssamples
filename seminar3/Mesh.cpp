@@ -19,23 +19,23 @@ class Buffer : public std::vector < T >
 public:
 	void addVec2(T s, T t)
 	{
-		push_back(s);
-		push_back(t);
+		this->push_back(s);
+		this->push_back(t);
 	}
 
 	void addVec3(T x, T y, T z)
 	{
-		push_back(x);
-		push_back(y);
-		push_back(z);
+		this->push_back(x);
+		this->push_back(y);
+		this->push_back(z);
 	}
 
 	void addVec4(T r, T g, T b, T a)
 	{
-		push_back(r);
-		push_back(g);
-		push_back(b);
-		push_back(a);
+		this->push_back(r);
+		this->push_back(g);
+		this->push_back(b);
+		this->push_back(a);
 	}
 };
 
