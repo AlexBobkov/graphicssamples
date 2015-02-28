@@ -17,7 +17,7 @@ public:
 	GLuint _projMatrixUniform;
 	GLuint _timeUniform;
 
-	void makeScene() override
+	virtual void makeScene()
 	{
 		Application::makeScene();
 
@@ -51,7 +51,7 @@ public:
 		_timeUniform = glGetUniformLocation(_shaderProgram, "time");
 	}
 
-	void draw() override
+	virtual void draw()
 	{
 		//Получаем текущие размеры экрана и выставлям вьюпорт
 		int width, height;

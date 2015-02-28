@@ -17,7 +17,7 @@ public:
 	GLuint _projMatrixUniform;
 	GLuint _timeUniform;
 
-	void makeScene() override
+	virtual void makeScene()
 	{
 		Application::makeScene();
 				
@@ -31,7 +31,7 @@ public:
 
 		//=========================================================
 
-		const int demoNumber = 1; //1 - simple, 2 - mat, 3 - color, 5 - time, 6 - color time, 7 - time coords, 8 - discard
+		const int demoNumber = 8; //1 - simple, 2 - mat, 3 - color, 5 - time, 6 - color time, 7 - time coords, 8 - discard
 
 		std::string vertFilename = "shaders3/shader.vert";
 		std::string fragFilename = "shaders3/shader.frag";
@@ -80,7 +80,7 @@ public:
 		_timeUniform = glGetUniformLocation(_shaderProgram, "time");
 	}
 
-	void draw() override
+	virtual void draw()
 	{
 		//Получаем текущие размеры экрана и выставлям вьюпорт
 		int width, height;

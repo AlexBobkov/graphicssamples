@@ -16,7 +16,7 @@ public:
 	GLuint _projMatrixUniform;
 	GLuint _timeUniform;
 
-	void makeScene() override
+	virtual void makeScene()
 	{
 		Application::makeScene();
 
@@ -28,7 +28,7 @@ public:
 		std::string vertFilename = "shaders3/shaderQuad.vert";
 		std::string fragFilename = "shaders3/shaderQuad.frag";
 
-		bool mandelbrot = false;
+		bool mandelbrot = true;
 		if (mandelbrot)
 		{
 			fragFilename = "shaders3/shaderQuadMandelbrot.frag";
@@ -42,7 +42,7 @@ public:
 		_timeUniform = glGetUniformLocation(_shaderProgram, "time");
 	}
 
-	void draw() override
+	virtual void draw()
 	{
 		//Получаем текущие размеры экрана и выставлям вьюпорт
 		int width, height;
