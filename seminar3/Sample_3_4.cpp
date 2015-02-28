@@ -5,6 +5,9 @@
 #include <iostream>
 #include <vector>
 
+/**
+Четырехугольник в Clip Space. Рисование во фрагментном шейдере. Фрактал Мандельброта.
+*/
 class SampleApplication : public Application
 {
 public:

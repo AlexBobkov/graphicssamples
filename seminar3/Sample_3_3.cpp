@@ -5,6 +5,9 @@
 #include <iostream>
 #include <vector>
 
+/**
+Рендеринг линии (примитив GL_LINE_STRIP)
+*/
 class SampleApplication : public Application
 {
 public:

@@ -5,6 +5,9 @@
 #include <iostream>
 #include <vector>
 
+/**
+Куб и кролик. Управление виртуальной камерой. Вращение кролика.
+*/
 class SampleApplication : public Application
 {
 public:

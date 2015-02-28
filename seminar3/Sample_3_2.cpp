@@ -5,6 +5,9 @@
 #include <iostream>
 #include <vector>
 
+/**
+Рендеринг точек (примитив GL_POINTS)
+*/
 class SampleApplication : public Application
 {
 public:

@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+/**
+Треугольник с интерполированными цветами
+*/
 class SampleApplication : public Application
 {
 public:

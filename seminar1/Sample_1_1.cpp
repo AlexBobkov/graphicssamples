@@ -2,6 +2,9 @@
 
 #include <iostream>
 
+/**
+Синий треугольник
+*/
 class SampleApplication : public Application
 {
 public:

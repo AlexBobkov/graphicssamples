@@ -3,6 +3,9 @@
 #include <iostream>
 #include <vector>
 
+/**
+3 грани куба (вариант с индексами)
+*/
 class SampleApplication : public Application
 {
 public:

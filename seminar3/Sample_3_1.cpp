@@ -5,6 +5,9 @@
 #include <iostream>
 #include <vector>
 
+/**
+Несколько примеров шейдеров
+*/
 class SampleApplication : public Application
 {
 public:
