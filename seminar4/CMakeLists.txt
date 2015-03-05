@@ -13,29 +13,14 @@ SET(HEADER_FILES
 )
 
 SET(SHADER_FILES
-	shaders4/colored.vert
-	shaders4/colored.frag
+	shaders4/diffuseDirectionalLight.vert
+	shaders4/diffuseDirectionalLight.frag
 	
-	shaders4/diffusePerFramentPoint.vert
-	shaders4/diffusePerFramentPoint.frag
+	shaders4/diffusePointLight.vert
+	shaders4/diffusePointLight.frag
 	
-	shaders4/diffusePerVertex.vert
-	shaders4/diffusePerVertex.frag
-	
-	shaders4/diffusePerVertexPoint.vert
-	shaders4/diffusePerVertexPoint.frag
-	
-	shaders4/specular.vert
-	shaders4/specular.frag
-	
-	shaders4/specularBlinn.vert
-	shaders4/specularBlinn.frag
-	
-	shaders4/specularBlinnAttenuation.vert
-	shaders4/specularBlinnAttenuation.frag
-	
-	shaders4/specularBlinnMaterial.vert
-	shaders4/specularBlinnMaterial.vert
+	shaders4/marker.vert
+	shaders4/marker.frag
 )
 
 SOURCE_GROUP("Shaders" FILES	
@@ -43,5 +28,6 @@ SOURCE_GROUP("Shaders" FILES
 )
 
 MAKE_SAMPLE(Sample_4_1)
+MAKE_SAMPLE(Sample_4_2)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})

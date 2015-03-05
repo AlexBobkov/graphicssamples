@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
-Направленный источник света
+Точечный источник света
 */
 class SampleApplication : public Application
 {
@@ -15,8 +15,11 @@ public:
 	MeshPtr sphere;
 	MeshPtr bunny;
 
+	MeshPtr marker; //Меш - маркер для источника света
+
 	//Идентификатор шейдерной программы
 	GLuint _shaderProgram;
+	GLuint _markerShaderProgram;
 	
 	//Идентификаторы uniform-переменных
 	GLuint _modelMatrixUniform;
@@ -24,7 +27,9 @@ public:
 	GLuint _projMatrixUniform;
 	GLuint _normalToCameraMatrixUniform;
 
-	GLuint _lightDirUniform;	
+	GLuint _mvpMatrixUniform; //для шейдера для маркера
+
+	GLuint _lightPosUniform;	
 	GLuint _lightAmbientColorUniform;
 	GLuint _lightDiffuseColorUniform;
 
@@ -32,7 +37,7 @@ public:
 	GLuint _materialDiffuseUniform;
 
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
-	glm::vec3 _lightDir; //in world space
+	glm::vec3 _lightPos; //in world space
 	glm::vec3 _lightAmbientColor;
 	glm::vec3 _lightDiffuseColor;	
 		
@@ -58,10 +63,14 @@ public:
 		bunny->loadFromFile("models/bunny.obj");
 		bunny->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+		marker = std::make_shared<Mesh>();
+		marker->makeSphere(0.1);
+
 		//=========================================================
 		//Инициализация шейдеров
 		
-		_shaderProgram = ShaderProgram::createProgram("shaders4/diffuseDirectionalLight.vert", "shaders4/diffuseDirectionalLight.frag");
+		_shaderProgram = ShaderProgram::createProgram("shaders4/diffusePointLight.vert", "shaders4/diffusePointLight.frag");
+		_markerShaderProgram = ShaderProgram::createProgram("shaders4/marker.vert", "shaders4/marker.frag");
 
 		//=========================================================
 		//Инициализация uniform-переменных для преобразования координат
@@ -71,20 +80,22 @@ public:
 		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
 		_normalToCameraMatrixUniform = glGetUniformLocation(_shaderProgram, "normalToCameraMatrix");
 
+		_mvpMatrixUniform = glGetUniformLocation(_markerShaderProgram, "mvpMatrix");
+
 		_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		_projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
 
 		//=========================================================
 		//Инициализация uniform-переменных для освещения
 
-		_lightDirUniform = glGetUniformLocation(_shaderProgram, "light.dir");
+		_lightPosUniform = glGetUniformLocation(_shaderProgram, "light.pos");
 		_lightAmbientColorUniform = glGetUniformLocation(_shaderProgram, "light.La");
 		_lightDiffuseColorUniform = glGetUniformLocation(_shaderProgram, "light.Ld");
 		_materialAmbientUniform = glGetUniformLocation(_shaderProgram, "material.Ka");
 		_materialDiffuseUniform = glGetUniformLocation(_shaderProgram, "material.Kd");
 
 		//Инициализация значений переменных освщения
-		_lightDir = glm::vec3(0.0f, 1.0f, 0.8f);
+		_lightPos = glm::vec3(0.0f, 1.0f, 0.8f) * 3.0f;
 		_lightAmbientColor = glm::vec3(0.2, 0.2, 0.2);
 		_lightDiffuseColor = glm::vec3(0.8, 0.8, 0.8);
 
@@ -97,7 +108,7 @@ public:
 	{
 		Application::initGUI();
 
-		TwAddVarRW(_bar, "LightDir", TW_TYPE_DIR3F, &_lightDir, " group=Light ");
+		TwAddVarRW(_bar, "LightPos", TW_TYPE_DIR3F, &_lightPos, " group=Light ");
 		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_lightAmbientColor, " group=Light label='ambient' ");
 		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_lightDiffuseColor, " group=Light label='diffuse' ");
 		TwAddVarRW(_bar, "Ka", TW_TYPE_COLOR3F, &_rabbitAmbientColor, " group='Rabbit material' label='ambient' ");
@@ -122,7 +133,7 @@ public:
 		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
-		glUniform3fv(_lightDirUniform, 1, glm::value_ptr(_lightDir));
+		glUniform3fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
 		glUniform3fv(_lightAmbientColorUniform, 1, glm::value_ptr(_lightAmbientColor));
 		glUniform3fv(_lightDiffuseColorUniform, 1, glm::value_ptr(_lightDiffuseColor));
 
@@ -158,6 +169,13 @@ public:
 
 			glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
 			bunny->draw();
+		}
+
+		//Рисуем маркер для источника света		
+		{
+			glUseProgram(_markerShaderProgram);
+			glUniformMatrix4fv(_mvpMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix * _viewMatrix * glm::translate(glm::mat4(1.0f), _lightPos)));
+			marker->draw();
 		}
 	}
 };
