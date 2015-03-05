@@ -15,6 +15,26 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 	app->handleKey(key, scancode, action, mods);
 }
 
+void windowSizeChangedCallback(GLFWwindow* window, int width, int height)
+{
+	TwWindowSize(width, height);
+}
+
+void mouseButtonPressedCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	TwEventMouseButtonGLFW(button, action);
+}
+
+void mouseCursosPosCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	TwEventMousePosGLFW(xpos, ypos);
+}
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	TwEventMouseWheelGLFW(xoffset);
+}
+
 //======================================
 
 Application::Application():
@@ -40,6 +60,7 @@ void Application::start()
 {
 	initContext();
 	initGL();
+	initGUI();
 	makeScene();
 	run();
 }
@@ -68,8 +89,13 @@ void Application::initContext()
 	}
 	glfwMakeContextCurrent(_window);
 
-	glfwSetKeyCallback(_window, keyCallback); //Регистрирует функцию обратного вызова для обработки событий клавиатуры
 	glfwSetWindowUserPointer(_window, this); //Регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова}
+
+	glfwSetKeyCallback(_window, keyCallback); //Регистрирует функцию обратного вызова для обработки событий клавиатуры
+	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
+	glfwSetMouseButtonCallback(_window, mouseButtonPressedCallback);
+	glfwSetCursorPosCallback(_window, mouseCursosPosCallback);
+	glfwSetScrollCallback(_window, scrollCallback);
 }
 
 void Application::initGL()
@@ -83,7 +109,19 @@ void Application::initGL()
 	std::cout << "OpenGL version supported: " << version << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+	glDepthFunc(GL_LESS);	
+}
+
+void Application::initGUI()
+{
+	int width, height;
+	glfwGetFramebufferSize(_window, &width, &height);
+
+	TwInit(TW_OPENGL, NULL);	
+	TwWindowSize(width, height);
+
+	_bar = TwNewBar("TweakBar");
+	TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
 }
 
 void Application::makeScene()
@@ -101,6 +139,8 @@ void Application::run()
 		update(); //Обновляем сцену и положение виртуальной камеры
 
 		draw(); //Рисуем один кадр
+
+		TwDraw(); //Рисуем графический интерфейс пользователя
 
 		glfwSwapBuffers(_window); //Переключаем передний и задний буферы
 	}
@@ -213,5 +253,5 @@ void Application::update()
 	glfwGetFramebufferSize(_window, &width, &height);	
 
 	//Обновляем матрицу проекции на случай, если размеры окна изменились
-	_projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
+	_projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);	
 }

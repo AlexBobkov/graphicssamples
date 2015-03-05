@@ -5,6 +5,7 @@
 
 * GLFW (<http://www.glfw.org/>)
 * Assimp (<http://assimp.sourceforge.net/>)
+* AntTweakBar (<http://anttweakbar.sourceforge.net/doc/>)
 
 Некоторые библиотеки уже включены, и компилируются вместе с примерами:
 

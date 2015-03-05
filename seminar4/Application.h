@@ -1,9 +1,11 @@
 #pragma once
 
+#include <string>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <string>
+#include <AntTweakBar.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -37,6 +39,11 @@ protected:
 	Настраивает некоторые параметры OpenGL
 	*/
 	void initGL();
+
+	/**
+	Инициализирует графический интерфейс пользователя
+	*/
+	virtual void initGUI();
 
 	/**
 	Создает трехмерную сцену
@@ -79,4 +86,6 @@ protected:
 	bool _rotateDown;
 	bool _radiusInc;
 	bool _radiusDec;
+
+	TwBar* _bar; //GUI
 };

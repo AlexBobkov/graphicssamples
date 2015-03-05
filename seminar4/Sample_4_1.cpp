@@ -6,135 +6,69 @@
 #include <vector>
 
 /**
-TODO: ОПИСАНИЕ
+Направленный источник света
 */
 class SampleApplication : public Application
 {
 public:
 	MeshPtr cube;
+	MeshPtr sphere;
 	MeshPtr bunny;
 
+	//Идентификатор шейдерной программы
 	GLuint _shaderProgram;
-	//GLuint _modelMatrixUniform;	
-	//GLuint _viewMatrixUniform;
-	//GLuint _projMatrixUniform;
-	//GLuint _timeUniform;
-
-	//идентификаторы uniform-переменных
-	GLuint _timeUniform;
-
+	
+	//Идентификаторы uniform-переменных
 	GLuint _modelMatrixUniform;
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;
 	GLuint _normalToCameraMatrixUniform;
 
-	GLuint _lightDirUniform;
-	GLuint _lightPosUniform;
+	GLuint _lightDirUniform;	
+	GLuint _lightAmbientColorUniform;
+	GLuint _lightDiffuseColorUniform;
 
-	GLuint _ambientColorUniform;
-	GLuint _diffuseColorUniform;
-	GLuint _specularColorUniform;
-	GLuint _shininessUniform;
-	GLuint _attenuationUniform;
-
-	GLuint _materialUniform;	
+	GLuint _materialAmbientUniform;	
+	GLuint _materialDiffuseUniform;
 
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
-	glm::mat3 _normalToCameraMatrix;
-	glm::vec4 _lightDir; //in world space
-	glm::vec4 _lightPos; //in world space
-	glm::vec3 _ambientColor;
-	glm::vec3 _diffuseColor;
-	glm::vec3 _specularColor;
-	float _attenuation;
-
-	//sphere
-	//GLuint _sphereVao;
-	//glm::mat4 _sphereModelMatrix;
-	//int _sphereNumTris;
-	float _sphereShininess;
-	glm::vec3 _sphereMaterial;
-
-	//cube
-	//GLuint _cubeVao;
-	//glm::mat4 _cubeModelMatrix;
-	//int _cubeNumTris;
-	float _cubeShininess;
-	glm::vec3 _cubeMaterial;
+	glm::vec3 _lightDir; //in world space
+	glm::vec3 _lightAmbientColor;
+	glm::vec3 _lightDiffuseColor;	
+		
+	glm::vec3 _rabbitAmbientColor;
+	glm::vec3 _rabbitDiffuseColor;
 
 	virtual void makeScene()
 	{
 		Application::makeScene();
+
+		//=========================================================
+		//Создание и загрузка мешей		
 				
 		cube = std::make_shared<Mesh>();
 		cube->makeCube(0.5);
 		cube->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
+
+		sphere = std::make_shared<Mesh>();
+		sphere->makeSphere(0.5);
+		sphere->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
 
 		bunny = std::make_shared<Mesh>();
 		bunny->loadFromFile("models/bunny.obj");
 		bunny->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		//=========================================================
+		//Инициализация шейдеров
 
-		int demoNum = 7; //only with addNormalAttribute == true
-		//1 - diffuse per vertex directinal light
-		//2 - diffuse per vertex point light
-		//3 - diffuse per fragment point light
-		//4 - specular phong
-		//5 - specular blinn
-		//6 - materials
-		//7 - attenuation
-
-		std::string vertFilename = "shaders4/colored.vert";
-		std::string fragFilename = "shaders4/colored.frag";
-
-		if (demoNum == 1)
-		{
-			vertFilename = "shaders4/diffusePerVertex.vert";
-			fragFilename = "shaders4/diffusePerVertex.frag";
-		}
-		else if (demoNum == 2)
-		{
-			vertFilename = "shaders4/diffusePerVertexPoint.vert";
-			fragFilename = "shaders4/diffusePerVertexPoint.frag";
-		}
-		else if (demoNum == 3)
-		{
-			vertFilename = "shaders4/diffusePerFramentPoint.vert";
-			fragFilename = "shaders4/diffusePerFramentPoint.frag";
-		}
-		else if (demoNum == 4)
-		{
-			vertFilename = "shaders4/specular.vert";
-			fragFilename = "shaders4/specular.frag";
-		}
-		else if (demoNum == 5)
-		{
-			vertFilename = "shaders4/specularBlinn.vert";
-			fragFilename = "shaders4/specularBlinn.frag";
-		}
-		else if (demoNum == 6)
-		{
-			vertFilename = "shaders4/specularBlinnMaterial.vert";
-			fragFilename = "shaders4/specularBlinnMaterial.frag";
-		}
-		else if (demoNum == 7)
-		{
-			vertFilename = "shaders4/specularBlinnAttenuation.vert";
-			fragFilename = "shaders4/specularBlinnAttenuation.frag";
-		}
+		std::string vertFilename = "shaders4/diffuseDirectionalLight.vert";
+		std::string fragFilename = "shaders4/diffuseDirectionalLight.frag";
 
 		_shaderProgram = ShaderProgram::createProgram(vertFilename, fragFilename);
-
-		//_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
-		//_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
-		//_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-		//_timeUniform = glGetUniformLocation(_shaderProgram, "time");
 
 		//=========================================================
 		//Инициализация uniform-переменных для преобразования координат
 
-		_timeUniform = glGetUniformLocation(_shaderProgram, "time");
 		_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
 		_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
 		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
@@ -146,29 +80,31 @@ public:
 		//=========================================================
 		//Инициализация uniform-переменных для освещения
 
-		_lightDirUniform = glGetUniformLocation(_shaderProgram, "lightDir");
-		_lightPosUniform = glGetUniformLocation(_shaderProgram, "lightPos");
-		_ambientColorUniform = glGetUniformLocation(_shaderProgram, "ambientColor");
-		_diffuseColorUniform = glGetUniformLocation(_shaderProgram, "diffuseColor");
-		_specularColorUniform = glGetUniformLocation(_shaderProgram, "specularColor");
-		_shininessUniform = glGetUniformLocation(_shaderProgram, "shininessFactor");
-		_materialUniform = glGetUniformLocation(_shaderProgram, "material");
-		_attenuationUniform = glGetUniformLocation(_shaderProgram, "attenuation");
+		_lightDirUniform = glGetUniformLocation(_shaderProgram, "light.dir");
+		_lightAmbientColorUniform = glGetUniformLocation(_shaderProgram, "light.La");
+		_lightDiffuseColorUniform = glGetUniformLocation(_shaderProgram, "light.Ld");
+		_materialAmbientUniform = glGetUniformLocation(_shaderProgram, "material.Ka");
+		_materialDiffuseUniform = glGetUniformLocation(_shaderProgram, "material.Kd");
 
 		//Инициализация значений переменных освщения
-		_lightDir = glm::vec4(0.0f, 1.0f, 0.8f, 0.0f);
-		_lightPos = glm::vec4(0.0f, 1.0f, 0.8f, 1.0f);
-		_ambientColor = glm::vec3(0.2, 0.2, 0.2);
-		_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
-		_specularColor = glm::vec3(0.25, 0.25, 0.25);
+		_lightDir = glm::vec3(0.0f, 1.0f, 0.8f);
+		_lightAmbientColor = glm::vec3(0.2, 0.2, 0.2);
+		_lightDiffuseColor = glm::vec3(0.8, 0.8, 0.8);
 
-		_sphereShininess = 100.0f;
-		_cubeShininess = 100.0f;
+		//Инициализация материала кролика
+		_rabbitAmbientColor = glm::vec3(1.0, 1.0, 0.0);
+		_rabbitDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
+	}
 
-		_sphereMaterial = glm::vec3(1.0, 0.0, 0.0);
-		_cubeMaterial = glm::vec3(0.0, 1.0, 0.0);
+	virtual void initGUI()
+	{
+		Application::initGUI();
 
-		_attenuation = 1.0f;
+		TwAddVarRW(_bar, "LightDir", TW_TYPE_DIR3F, &_lightDir, " group=Light ");
+		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_lightAmbientColor, " group=Light label='ambient' ");
+		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_lightDiffuseColor, " group=Light label='diffuse' ");
+		TwAddVarRW(_bar, "Ka", TW_TYPE_COLOR3F, &_rabbitAmbientColor, " group='Rabbit material' label='ambient' ");
+		TwAddVarRW(_bar, "Kd", TW_TYPE_COLOR3F, &_rabbitDiffuseColor, " group='Rabbit material' label='diffuse' ");
 	}
 
 	virtual void draw()
@@ -186,39 +122,46 @@ public:
 		glUseProgram(_shaderProgram);
 
 		//Загружаем на видеокарту значения юниформ-переменные: время и матрицы
-		glUniform1f(_timeUniform, (float)glfwGetTime()); //передаем время в шейдер	
 		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
 
-		glUniform4fv(_lightDirUniform, 1, glm::value_ptr(_lightDir));
-		glUniform4fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
-		glUniform3fv(_ambientColorUniform, 1, glm::value_ptr(_ambientColor));
-		glUniform3fv(_diffuseColorUniform, 1, glm::value_ptr(_diffuseColor));
-		glUniform3fv(_specularColorUniform, 1, glm::value_ptr(_specularColor));
-		glUniform1f(_attenuationUniform, _attenuation);
-
+		glUniform3fv(_lightDirUniform, 1, glm::value_ptr(_lightDir));
+		glUniform3fv(_lightAmbientColorUniform, 1, glm::value_ptr(_lightAmbientColor));
+		glUniform3fv(_lightDiffuseColorUniform, 1, glm::value_ptr(_lightDiffuseColor));
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+		{
+			glm::mat3 normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube->modelMatrix())));
+			glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(normalToCameraMatrix));
 
-		_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube->modelMatrix())));
-		glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
+			glUniform3fv(_materialAmbientUniform, 1, glm::value_ptr(glm::vec3(0.0, 1.0, 0.0)));
+			glUniform3fv(_materialDiffuseUniform, 1, glm::value_ptr(glm::vec3(0.0, 1.0, 0.0)));
 
-		glUniform3fv(_materialUniform, 1, glm::value_ptr(_sphereMaterial));
-		glUniform1f(_shininessUniform, _sphereShininess);
+			glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
+			cube->draw();
+		}	
 
-		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
-		cube->draw();
+		{
+			glm::mat3 normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * sphere->modelMatrix())));
+			glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(normalToCameraMatrix));
 
-		//===================================
+			glUniform3fv(_materialAmbientUniform, 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
+			glUniform3fv(_materialDiffuseUniform, 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
 
-		_normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny->modelMatrix())));
-		glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(_normalToCameraMatrix));
+			glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(sphere->modelMatrix()));
+			sphere->draw();
+		}
 
-		glUniform3fv(_materialUniform, 1, glm::value_ptr(_cubeMaterial));
-		glUniform1f(_shininessUniform, _cubeShininess);
+		{
+			glm::mat3 normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny->modelMatrix())));
+			glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(normalToCameraMatrix));
 
-		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
-		bunny->draw();
+			glUniform3fv(_materialAmbientUniform, 1, glm::value_ptr(_rabbitAmbientColor));
+			glUniform3fv(_materialDiffuseUniform, 1, glm::value_ptr(_rabbitDiffuseColor));
+
+			glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
+			bunny->draw();
+		}
 	}
 };
 
