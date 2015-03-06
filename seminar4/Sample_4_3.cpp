@@ -18,26 +18,9 @@ public:
 	MeshPtr marker; //Меш - маркер для источника света
 
 	//Идентификатор шейдерной программы
-	GLuint _shaderProgram;
-	GLuint _markerShaderProgram;
+	ShaderProgram _shader;
+	ShaderProgram _markerShader;
 	
-	//Идентификаторы uniform-переменных
-	GLuint _modelMatrixUniform;
-	GLuint _viewMatrixUniform;
-	GLuint _projMatrixUniform;
-	GLuint _normalToCameraMatrixUniform;
-
-	GLuint _mvpMatrixUniform; //для шейдера для маркера
-
-	GLuint _lightPosUniform;	
-	GLuint _lightAmbientColorUniform;
-	GLuint _lightDiffuseColorUniform;
-	GLuint _lightSpecularColorUniform;
-
-	GLuint _materialAmbientUniform;	
-	GLuint _materialDiffuseUniform;
-	GLuint _materialSpecularUniform;
-
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
 	glm::vec3 _lightPos; //in world space
 	glm::vec3 _lightAmbientColor;
@@ -73,33 +56,10 @@ public:
 		//=========================================================
 		//Инициализация шейдеров
 		
-		_shaderProgram = ShaderProgram::createProgram("shaders4/specularPointLight.vert", "shaders4/specularPointLight.frag");
-		_markerShaderProgram = ShaderProgram::createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-
+		_shader.createProgram("shaders4/specularPointLight.vert", "shaders4/specularPointLight.frag");
+		_markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+		
 		//=========================================================
-		//Инициализация uniform-переменных для преобразования координат
-
-		_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
-		_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
-		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-		_normalToCameraMatrixUniform = glGetUniformLocation(_shaderProgram, "normalToCameraMatrix");
-
-		_mvpMatrixUniform = glGetUniformLocation(_markerShaderProgram, "mvpMatrix");
-
-		_viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		_projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
-
-		//=========================================================
-		//Инициализация uniform-переменных для освещения
-
-		_lightPosUniform = glGetUniformLocation(_shaderProgram, "light.pos");
-		_lightAmbientColorUniform = glGetUniformLocation(_shaderProgram, "light.La");
-		_lightDiffuseColorUniform = glGetUniformLocation(_shaderProgram, "light.Ld");
-		_lightSpecularColorUniform = glGetUniformLocation(_shaderProgram, "light.Ls");
-		_materialAmbientUniform = glGetUniformLocation(_shaderProgram, "material.Ka");
-		_materialDiffuseUniform = glGetUniformLocation(_shaderProgram, "material.Kd");
-		_materialSpecularUniform = glGetUniformLocation(_shaderProgram, "material.Ks");
-
 		//Инициализация значений переменных освщения
 		_lightPos = glm::vec3(0.0f, 1.0f, 0.8f) * 3.0f;
 		_lightAmbientColor = glm::vec3(0.2, 0.2, 0.2);
@@ -136,59 +96,56 @@ public:
 		//Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//Подключаем шейдер
-		glUseProgram(_shaderProgram);
+		//Подключаем шейдер		
+		_shader.use();
 
-		//Загружаем на видеокарту значения юниформ-переменные: время и матрицы
-		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
-		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
+		//Загружаем на видеокарту значения юниформ-переменных
+		_shader.setMat4Uniform("viewMatrix", _viewMatrix);
+		_shader.setMat4Uniform("projectionMatrix", _projMatrix);
 
-		glUniform3fv(_lightPosUniform, 1, glm::value_ptr(_lightPos));
-		glUniform3fv(_lightAmbientColorUniform, 1, glm::value_ptr(_lightAmbientColor));
-		glUniform3fv(_lightDiffuseColorUniform, 1, glm::value_ptr(_lightDiffuseColor));
-		glUniform3fv(_lightSpecularColorUniform, 1, glm::value_ptr(_lightSpecularColor));
+		_shader.setVec3Uniform("light.pos", _lightPos);
+		_shader.setVec3Uniform("light.La", _lightAmbientColor);
+		_shader.setVec3Uniform("light.Ld", _lightDiffuseColor);
+		_shader.setVec3Uniform("light.Ls", _lightSpecularColor);
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
-			glm::mat3 normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube->modelMatrix())));
-			glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(normalToCameraMatrix));
+			_shader.setMat4Uniform("modelMatrix", cube->modelMatrix());
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube->modelMatrix()))));
 
-			glUniform3fv(_materialAmbientUniform, 1, glm::value_ptr(glm::vec3(0.0, 1.0, 0.0)));
-			glUniform3fv(_materialDiffuseUniform, 1, glm::value_ptr(glm::vec3(0.0, 1.0, 0.0)));
-			glUniform3fv(_materialSpecularUniform, 1, glm::value_ptr(glm::vec3(0.0, 1.0, 0.0)));
+			_shader.setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
+			_shader.setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
+			_shader.setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
 
-			glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
 			cube->draw();
 		}	
 
 		{
-			glm::mat3 normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * sphere->modelMatrix())));
-			glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(normalToCameraMatrix));
+			_shader.setMat4Uniform("modelMatrix", sphere->modelMatrix());
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * sphere->modelMatrix()))));
 
-			glUniform3fv(_materialAmbientUniform, 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
-			glUniform3fv(_materialDiffuseUniform, 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
-			glUniform3fv(_materialSpecularUniform, 1, glm::value_ptr(glm::vec3(1.0, 1.0, 1.0)));
+			_shader.setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
+			_shader.setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
+			_shader.setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
 
-			glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(sphere->modelMatrix()));
 			sphere->draw();
 		}
 
 		{
-			glm::mat3 normalToCameraMatrix = glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny->modelMatrix())));
-			glUniformMatrix3fv(_normalToCameraMatrixUniform, 1, GL_FALSE, glm::value_ptr(normalToCameraMatrix));
+			_shader.setMat4Uniform("modelMatrix", bunny->modelMatrix());
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny->modelMatrix()))));
 
-			glUniform3fv(_materialAmbientUniform, 1, glm::value_ptr(_rabbitAmbientColor));
-			glUniform3fv(_materialDiffuseUniform, 1, glm::value_ptr(_rabbitDiffuseColor));
-			glUniform3fv(_materialSpecularUniform, 1, glm::value_ptr(_rabbitSpecularColor));
+			_shader.setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
+			_shader.setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
+			_shader.setVec3Uniform("material.Ks", glm::vec3(_rabbitSpecularColor));
 
-			glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
 			bunny->draw();
 		}
 
 		//Рисуем маркер для источника света		
 		{
-			glUseProgram(_markerShaderProgram);
-			glUniformMatrix4fv(_mvpMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix * _viewMatrix * glm::translate(glm::mat4(1.0f), _lightPos)));
+			_markerShader.use();
+			_markerShader.setMat4Uniform("mvpMatrix", _projMatrix * _viewMatrix * glm::translate(glm::mat4(1.0f), _lightPos));
 			marker->draw();
 		}
 	}

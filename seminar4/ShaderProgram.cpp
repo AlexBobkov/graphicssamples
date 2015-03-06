@@ -48,7 +48,7 @@ GLuint ShaderProgram::createShader(GLenum shaderType, const std::string& filenam
 	return vs;
 }
 
-GLuint ShaderProgram::createProgram(const std::string& vertFilename, const std::string& fragFilename)
+void ShaderProgram::createProgram(const std::string& vertFilename, const std::string& fragFilename)
 {
 	GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
 	GLuint fs = createShader(GL_FRAGMENT_SHADER, fragFilename);
@@ -77,5 +77,5 @@ GLuint ShaderProgram::createProgram(const std::string& vertFilename, const std::
 		exit(1);
 	}
 
-	return shaderProgram;
+	_shaderId = shaderProgram;
 }
