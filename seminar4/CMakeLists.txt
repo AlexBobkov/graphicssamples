@@ -19,8 +19,14 @@ SET(SHADER_FILES
 	shaders4/diffusePointLight.vert
 	shaders4/diffusePointLight.frag
 	
-	shaders4/specularPointLight.vert
-	shaders4/specularPointLight.frag
+	shaders4/specularPointLightPerVertex.vert
+	shaders4/specularPointLightPerVertex.frag
+	
+	shaders4/specularPointLightPerFragment.vert	
+	shaders4/specularPointLightPerFragment.frag
+	
+	shaders4/specularAttenuationPointLightPerFragment.vert
+	shaders4/specularAttenuationPointLightPerFragment.frag
 	
 	shaders4/marker.vert
 	shaders4/marker.frag
@@ -33,5 +39,6 @@ SOURCE_GROUP("Shaders" FILES
 MAKE_SAMPLE(Sample_4_1)
 MAKE_SAMPLE(Sample_4_2)
 MAKE_SAMPLE(Sample_4_3)
+MAKE_SAMPLE(Sample_4_4)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})

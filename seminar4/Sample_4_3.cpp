@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
-Точечный источник света
+Точечный источник света. 2 варианта шейдеров: с повершиным и пофрагментым освещением
 */
 class SampleApplication : public Application
 {
@@ -48,7 +48,7 @@ public:
 		cube->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
 
 		sphere = std::make_shared<Mesh>();
-		sphere->makeSphere(0.5, 100);
+		sphere->makeSphere(0.5, 40);
 		sphere->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
 
 		bunny = std::make_shared<Mesh>();
@@ -182,7 +182,7 @@ public:
 
 			//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 			{
-				_shaderPerFragment.setMat4Uniform("modelMatrix", glm::translate(cube->modelMatrix(), glm::vec3(0.0f, 0.0f, 1.5f)));
+				_shaderPerFragment.setMat4Uniform("modelMatrix", glm::translate(cube->modelMatrix(), glm::vec3(1.5f, 0.0f, 0.0f)));
 				_shaderPerFragment.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube->modelMatrix()))));
 
 				_shaderPerFragment.setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
@@ -195,7 +195,7 @@ public:
 			}
 
 			{
-				_shaderPerFragment.setMat4Uniform("modelMatrix", glm::translate(sphere->modelMatrix(), glm::vec3(0.0f, 0.0f, 1.5f)));
+				_shaderPerFragment.setMat4Uniform("modelMatrix", glm::translate(sphere->modelMatrix(), glm::vec3(1.5f, 0.0f, 0.0f)));
 				_shaderPerFragment.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * sphere->modelMatrix()))));
 
 				_shaderPerFragment.setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
@@ -207,7 +207,7 @@ public:
 			}
 
 			{
-				_shaderPerFragment.setMat4Uniform("modelMatrix", glm::translate(bunny->modelMatrix(), glm::vec3(0.0f, 0.0f, 1.5f)));
+				_shaderPerFragment.setMat4Uniform("modelMatrix", glm::translate(bunny->modelMatrix(), glm::vec3(1.5f, 0.0f, 0.0f)));
 				_shaderPerFragment.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny->modelMatrix()))));
 
 				_shaderPerFragment.setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
