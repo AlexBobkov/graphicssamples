@@ -21,8 +21,11 @@ public:
 	ShaderProgram _shader;
 	ShaderProgram _markerShader;	
 
+	float _lr;
+	float _phi;
+	float _theta;
+
 	//переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
-	glm::vec3 _lightPos; //in world space
 	glm::vec3 _lightAmbientColor;
 	glm::vec3 _lightDiffuseColor;	
 		
@@ -59,7 +62,10 @@ public:
 		
 		//=========================================================
 		//Инициализация значений переменных освщения
-		_lightPos = glm::vec3(0.0f, 1.0f, 0.8f) * 3.0f;
+		_lr = 5.0;
+		_phi = 0.0;
+		_theta = glm::pi<float>() * 0.25f;
+		
 		_lightAmbientColor = glm::vec3(0.2, 0.2, 0.2);
 		_lightDiffuseColor = glm::vec3(0.8, 0.8, 0.8);
 
@@ -72,7 +78,9 @@ public:
 	{
 		Application::initGUI();
 
-		TwAddVarRW(_bar, "LightPos", TW_TYPE_DIR3F, &_lightPos, " group=Light ");
+		TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
+		TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
+		TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
 		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_lightAmbientColor, " group=Light label='ambient' ");
 		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_lightDiffuseColor, " group=Light label='diffuse' ");
 		TwAddVarRW(_bar, "Ka", TW_TYPE_COLOR3F, &_rabbitAmbientColor, " group='Rabbit material' label='ambient' ");
@@ -97,7 +105,8 @@ public:
 		_shader.setMat4Uniform("viewMatrix", _viewMatrix);
 		_shader.setMat4Uniform("projectionMatrix", _projMatrix);
 
-		_shader.setVec3Uniform("light.pos", _lightPos);
+		glm::vec3 lightPos = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
+		_shader.setVec3Uniform("light.pos", lightPos);
 		_shader.setVec3Uniform("light.La", _lightAmbientColor);
 		_shader.setVec3Uniform("light.Ld", _lightDiffuseColor);
 
@@ -135,7 +144,7 @@ public:
 		//Рисуем маркер для источника света		
 		{
 			_markerShader.use();
-			_markerShader.setMat4Uniform("mvpMatrix", _projMatrix * _viewMatrix * glm::translate(glm::mat4(1.0f), _lightPos));
+			_markerShader.setMat4Uniform("mvpMatrix", _projMatrix * _viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));
 			marker->draw();
 		}
 	}

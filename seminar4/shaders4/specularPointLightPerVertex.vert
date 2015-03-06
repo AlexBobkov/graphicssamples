@@ -13,6 +13,7 @@ struct LightInfo
 	vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
 	vec3 La; //цвет и интенсивность переотраженного света
 	vec3 Ld; //цвет и интенсивность диффузного света
+	vec3 Ls; //цвет и интенсивность бликового света
 };
 uniform LightInfo light;
 
@@ -20,6 +21,8 @@ struct MaterialInfo
 {	
 	vec3 Ka; //коэффициент отражения окружающего света
 	vec3 Kd; //коэффициент отражения диффузного света
+	vec3 Ks; //коэффициент отражения бликового света
+	float shininess;
 };
 uniform MaterialInfo material;
 
@@ -37,8 +40,18 @@ void main()
 	vec4 lightDirCamSpace = normalize(lightPosCamSpace - posCamSpace); 
 				    
     float NdotL = max(dot(normalCamSpace, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
-        
-    color = light.La * material.Ka + light.Ld * material.Kd * NdotL; //цвет вершины
+
+	color = light.La * material.Ka + light.Ld * material.Kd * NdotL; //цвет вершины
+
+	if (NdotL > 0.0)
+	{
+		vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
+		vec3 halfAngle = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
+
+		float blinnTerm = max(dot(normalCamSpace, halfAngle), 0.0); //интенсивность бликового освещения по Блинну				
+		blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
+		color += light.Ls * material.Ks * blinnTerm;
+	}
 	
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

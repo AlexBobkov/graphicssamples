@@ -39,7 +39,7 @@ public:
 	/**
 	Инициализирует меш сферы
 	*/
-	void makeSphere(float radius);	
+	void makeSphere(float radius, int N = 100);	
 
 	/**
 	Инициализирует меш куба

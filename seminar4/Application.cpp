@@ -117,7 +117,12 @@ void Application::initGUI()
 	int width, height;
 	glfwGetFramebufferSize(_window, &width, &height);
 
+#ifdef USE_CORE_PROFILE
+	TwInit(TW_OPENGL_CORE, NULL);
+#else
 	TwInit(TW_OPENGL, NULL);	
+#endif
+
 	TwWindowSize(width, height);
 
 	_bar = TwNewBar("TweakBar");
