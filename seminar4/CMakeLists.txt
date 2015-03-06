@@ -28,6 +28,9 @@ SET(SHADER_FILES
 	shaders4/specularAttenuationPointLightPerFragment.vert
 	shaders4/specularAttenuationPointLightPerFragment.frag
 	
+	shaders4/CookTorrance.vert
+	shaders4/CookTorrance.frag
+	
 	shaders4/marker.vert
 	shaders4/marker.frag
 )
@@ -40,5 +43,6 @@ MAKE_SAMPLE(Sample_4_1)
 MAKE_SAMPLE(Sample_4_2)
 MAKE_SAMPLE(Sample_4_3)
 MAKE_SAMPLE(Sample_4_4)
+MAKE_SAMPLE(Sample_4_5)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})
