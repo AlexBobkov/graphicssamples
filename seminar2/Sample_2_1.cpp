@@ -60,7 +60,7 @@ public:
 		cube->draw(); //Рисуем первый меш
 
 		float angle = (float)glfwGetTime();
-		bunny->modelMatrix() = glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f)); //Изменяем матрицу модели второго меша
+		bunny->modelMatrix() = glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0)), angle, glm::vec3(0.0f, 0.0f, 1.0f)); //Изменяем матрицу модели второго меша
 
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix())); //Загружаем на видеокарту матрицу модели второго меша
 		bunny->draw(); //Рисуем второй меш
