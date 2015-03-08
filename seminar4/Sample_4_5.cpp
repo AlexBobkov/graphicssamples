@@ -29,12 +29,10 @@ public:
 	glm::vec3 _lightAmbientColor;
 	glm::vec3 _lightDiffuseColor;
 	glm::vec3 _lightSpecularColor;
-	//float _attenuation;
 
 	glm::vec3 _rabbitAmbientColor;
 	glm::vec3 _rabbitDiffuseColor;
 	glm::vec3 _rabbitSpecularColor;
-	//float _rabbitShininess;
 	float _roughnessValue;
 	float _F0;
 
@@ -75,13 +73,11 @@ public:
 		_lightAmbientColor = glm::vec3(0.0, 0.0, 0.0);
 		_lightDiffuseColor = glm::vec3(0.0, 0.0, 0.0);
 		_lightSpecularColor = glm::vec3(1.0, 1.0, 1.0);
-		//_attenuation = 1.0f;
 
 		//Инициализация материала кролика
 		_rabbitAmbientColor = glm::vec3(1.0, 1.0, 0.0);
 		_rabbitDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
 		_rabbitSpecularColor = glm::vec3(1.0, 1.0, 1.0);
-		//_rabbitShininess = 128.0f;
 		_roughnessValue = 0.3f;
 		_F0 = 0.8f;
 	}
@@ -96,11 +92,9 @@ public:
 		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_lightAmbientColor, " group=Light label='ambient' ");
 		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_lightDiffuseColor, " group=Light label='diffuse' ");
 		TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_lightSpecularColor, " group=Light label='specular' ");
-		//TwAddVarRW(_bar, "attenuation", TW_TYPE_FLOAT, &_attenuation, " group=Light step=0.01 min=0.01 max=255.0");
 		TwAddVarRW(_bar, "Ka", TW_TYPE_COLOR3F, &_rabbitAmbientColor, " group='Rabbit material' label='ambient' ");
 		TwAddVarRW(_bar, "Kd", TW_TYPE_COLOR3F, &_rabbitDiffuseColor, " group='Rabbit material' label='diffuse' ");
 		TwAddVarRW(_bar, "Ks", TW_TYPE_COLOR3F, &_rabbitSpecularColor, " group='Rabbit material' label='specular' ");
-		//TwAddVarRW(_bar, "shininess", TW_TYPE_FLOAT, &_rabbitShininess, " group='Rabbit material' min=0.1 max=255.0");
 		TwAddVarRW(_bar, "roughness", TW_TYPE_FLOAT, &_roughnessValue, " group='Rabbit material' step=0.01 min=0.1 max=1.0");
 		TwAddVarRW(_bar, "F0", TW_TYPE_FLOAT, &_F0, " group='Rabbit material' step=0.01 min=0.1 max=1.0");
 	}
@@ -130,7 +124,6 @@ public:
 		_shader.setVec3Uniform("light.La", _lightAmbientColor);
 		_shader.setVec3Uniform("light.Ld", _lightDiffuseColor);
 		_shader.setVec3Uniform("light.Ls", _lightSpecularColor);
-		//_shader.setFloatUniform("light.attenuation", _attenuation);
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
@@ -141,7 +134,6 @@ public:
 			_shader.setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
 			_shader.setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
 			_shader.setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-			//_shader.setFloatUniform("material.shininess", _rabbitShininess);
 			_shader.setFloatUniform("material.roughnessValue", _roughnessValue);
 			_shader.setFloatUniform("material.F0", _F0);
 
@@ -155,7 +147,6 @@ public:
 			_shader.setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
 			_shader.setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
 			_shader.setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-			//_shader.setFloatUniform("material.shininess", _rabbitShininess);
 			_shader.setFloatUniform("material.roughnessValue", _roughnessValue);
 			_shader.setFloatUniform("material.F0", _F0);
 
@@ -169,7 +160,6 @@ public:
 			_shader.setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
 			_shader.setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
 			_shader.setVec3Uniform("material.Ks", glm::vec3(_rabbitSpecularColor));
-			//_shader.setFloatUniform("material.shininess", _rabbitShininess);
 			_shader.setFloatUniform("material.roughnessValue", _roughnessValue);
 			_shader.setFloatUniform("material.F0", _F0);
 

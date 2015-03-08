@@ -1,3 +1,7 @@
+/**
+Простой шейдер для отрисовки маркера источника света
+*/
+
 #version 330
 
 uniform mat4 mvpMatrix; //произведение матриц projectionMatrix * viewMatrix * modelMatrix

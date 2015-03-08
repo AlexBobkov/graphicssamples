@@ -1,9 +1,15 @@
+/**
+Пофрагментное освещение точечным источником света с учетом затухания. Окружающий, диффузный и бликовый свет.
+Бликовое освещение считается по модели Кука-Торренса.
+Код был заимствован отсюда: http://ruh.li/GraphicsCookTorrance.html
+*/
+
 #version 330
 
 struct LightInfo
 {
 	vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
-	vec3 La; //цвет и интенсивность переотраженного света
+	vec3 La; //цвет и интенсивность окружающего света
 	vec3 Ld; //цвет и интенсивность диффузного света
 	vec3 Ls; //цвет и интенсивность бликового света
 };
@@ -39,13 +45,7 @@ void main()
 	if (NdotL > 0.0)
 	{
 		vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
-		//vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
-
-		//float blinnTerm = max(dot(normalCamSpace, halfAngle), 0.0); //интенсивность бликового освещения по Блинну				
-		//blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
-		//color += light.Ls * material.Ks * blinnTerm;
-
-
+		
 		// calculate intermediary values
 		vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection);
 		float NdotH = max(dot(normalCamSpace, halfVector), 0.0);
