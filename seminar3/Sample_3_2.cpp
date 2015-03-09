@@ -11,8 +11,8 @@
 class SampleApplication : public Application
 {
 public:
-	MeshPtr cube;
-	MeshPtr bunny;
+	Mesh cube;
+	Mesh bunny;
 
 	GLuint _shaderProgram;
 	GLuint _modelMatrixUniform;	
@@ -29,15 +29,13 @@ public:
 		//Включает изменение размера точек через шейдер
 		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 				
-		cube = std::make_shared<Mesh>();
-		cube->makeCube(0.5);
-		cube->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
-		cube->primitiveType() = GL_POINTS;
+		cube.makeCube(0.5);
+		cube.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
+		cube.primitiveType() = GL_POINTS;
 
-		bunny = std::make_shared<Mesh>();
-		bunny->loadFromFile("models/bunny.obj");
-		bunny->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		bunny->primitiveType() = GL_POINTS;
+		bunny.loadFromFile("models/bunny.obj");
+		bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		bunny.primitiveType() = GL_POINTS;
 
 		//=========================================================
 
@@ -70,11 +68,11 @@ public:
 		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
-		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube->modelMatrix()));
-		cube->draw();
+		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube.modelMatrix()));
+		cube.draw();
 
-		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny->modelMatrix()));
-		bunny->draw();
+		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny.modelMatrix()));
+		bunny.draw();
 	}
 };
 

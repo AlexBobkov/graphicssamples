@@ -39,7 +39,7 @@ public:
 	/**
 	Инициализирует меш сферы
 	*/
-	void makeSphere(float radius);	
+	void makeSphere(float radius, int N = 100);	
 
 	/**
 	Инициализирует меш куба
@@ -62,5 +62,3 @@ protected:
 	unsigned int _numVertices;
 	glm::mat4 _modelMatrix;
 };
-
-typedef std::shared_ptr<Mesh> MeshPtr;

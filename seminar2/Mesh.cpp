@@ -48,10 +48,9 @@ _numVertices(0)
 {
 }
 
-void Mesh::makeSphere(float radius)
+void Mesh::makeSphere(float radius, int N)
 {
-	int N = 100;
-	int M = 50;	
+	int M = N / 2;	
 
 	Buffer<float> vertices;
 	Buffer<float> normals;

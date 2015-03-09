@@ -11,7 +11,7 @@
 class SampleApplication : public Application
 {
 public:
-	MeshPtr quad;
+	Mesh quad;
 
 	GLuint _shaderProgram;
 	GLuint _modelMatrixUniform;	
@@ -23,8 +23,7 @@ public:
 	{
 		Application::makeScene();
 
-		quad = std::make_shared<Mesh>();
-		quad->makeScreenAlignedQuad();
+		quad.makeScreenAlignedQuad();
 
 		//=========================================================
 
@@ -60,7 +59,7 @@ public:
 		glUseProgram(_shaderProgram);
 
 		//Рисуем квад
-		quad->draw();
+		quad.draw();
 	}
 };
 

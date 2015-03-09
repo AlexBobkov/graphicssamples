@@ -62,5 +62,3 @@ protected:
 	unsigned int _numVertices;
 	glm::mat4 _modelMatrix;
 };
-
-typedef std::shared_ptr<Mesh> MeshPtr;

@@ -11,9 +11,9 @@
 class SampleApplication : public Application
 {
 public:
-	MeshPtr cube;
-	MeshPtr sphere;
-	MeshPtr bunny;
+	Mesh cube;
+	Mesh sphere;
+	Mesh bunny;
 
 	ShaderProgram _shader;
 
@@ -34,17 +34,14 @@ public:
 		//=========================================================
 		//—оздание и загрузка мешей		
 				
-		cube = std::make_shared<Mesh>();
-		cube->makeCube(0.5);
-		cube->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
+		cube.makeCube(0.5);
+		cube.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
 
-		sphere = std::make_shared<Mesh>();
-		sphere->makeSphere(0.5);
-		sphere->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
+		sphere.makeSphere(0.5);
+		sphere.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
 
-		bunny = std::make_shared<Mesh>();
-		bunny->loadFromFile("models/bunny.obj");
-		bunny->modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		bunny.loadFromFile("models/bunny.obj");
+		bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 		//=========================================================
 		//»нициализаци€ шейдеров
@@ -101,33 +98,33 @@ public:
 		
 		//«агружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
-			_shader.setMat4Uniform("modelMatrix", cube->modelMatrix());
-			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube->modelMatrix()))));
+			_shader.setMat4Uniform("modelMatrix", cube.modelMatrix());
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube.modelMatrix()))));
 
 			_shader.setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
 			_shader.setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
 
-			cube->draw();
+			cube.draw();
 		}	
 
 		{
-			_shader.setMat4Uniform("modelMatrix", sphere->modelMatrix());
-			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * sphere->modelMatrix()))));
+			_shader.setMat4Uniform("modelMatrix", sphere.modelMatrix());
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * sphere.modelMatrix()))));
 
 			_shader.setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
 			_shader.setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
 
-			sphere->draw();
+			sphere.draw();
 		}
 
 		{
-			_shader.setMat4Uniform("modelMatrix", bunny->modelMatrix());
-			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny->modelMatrix()))));
+			_shader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny.modelMatrix()))));
 
 			_shader.setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
 			_shader.setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
 
-			bunny->draw();
+			bunny.draw();
 		}
 	}
 };

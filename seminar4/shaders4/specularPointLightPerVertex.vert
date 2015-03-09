@@ -50,9 +50,9 @@ void main()
 	if (NdotL > 0.0)
 	{
 		vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
-		vec3 halfAngle = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
+		vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
 
-		float blinnTerm = max(dot(normalCamSpace, halfAngle), 0.0); //интенсивность бликового освещения по Блинну				
+		float blinnTerm = max(dot(normalCamSpace, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 		blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
 		color += light.Ls * material.Ks * blinnTerm;
 	}
