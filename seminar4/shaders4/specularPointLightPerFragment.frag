@@ -34,7 +34,7 @@ void main()
 
 	vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции				    
 
-	float NdotL = max(dot(normalCamSpace, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
+	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
 	vec3 color = light.La * material.Ka + light.Ld * material.Kd * NdotL; //цвет вершины
 
@@ -43,7 +43,7 @@ void main()
 		vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
 		vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
 
-		float blinnTerm = max(dot(normalCamSpace, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
+		float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 		blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
 		color += light.Ls * material.Ks * blinnTerm;
 	}

@@ -141,8 +141,6 @@ public:
 			std::ostringstream str;
 			str << "light[" << i << "]";
 
-			std::cout << str.str() << std::endl;
-
 			glm::vec3 lightPosCamSpace = glm::vec3(_viewMatrix * glm::vec4(_light[i].position, 1.0));
 
 			_shader.setVec3Uniform(str.str() + ".pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры

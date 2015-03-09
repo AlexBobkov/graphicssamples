@@ -38,7 +38,7 @@ void main()
 
 	vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции				    
 
-	float NdotL = max(dot(normalCamSpace, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
+	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
 	vec3 color = light.La * material.Ka + light.Ld * material.Kd * NdotL; //цвет вершины
 
@@ -48,8 +48,8 @@ void main()
 		
 		// calculate intermediary values
 		vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection);
-		float NdotH = max(dot(normalCamSpace, halfVector), 0.0);
-		float NdotV = max(dot(normalCamSpace, viewDirection), 0.0); // note: this could also be NdotL, which is the same value
+		float NdotH = max(dot(normal, halfVector), 0.0);
+		float NdotV = max(dot(normal, viewDirection), 0.0); // note: this could also be NdotL, which is the same value
 		float VdotH = max(dot(viewDirection, halfVector), 0.0);
 		float mSquared = material.roughnessValue * material.roughnessValue;
 
