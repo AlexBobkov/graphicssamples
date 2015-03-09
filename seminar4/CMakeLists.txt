@@ -28,8 +28,11 @@ SET(SHADER_FILES
 	shaders4/specularAttenuationPointLightPerFragment.vert
 	shaders4/specularAttenuationPointLightPerFragment.frag
 	
-	shaders4/CookTorrance.vert
+	shaders4/CookTorrance.vert	
 	shaders4/CookTorrance.frag
+	
+	shaders4/manyLights.vert
+	shaders4/manyLights.frag
 	
 	shaders4/marker.vert
 	shaders4/marker.frag
