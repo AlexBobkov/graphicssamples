@@ -352,8 +352,8 @@ void Mesh::makeGroundPlane(float size, float numTiles)
 	normals.addVec3(0.0, 0.0, 1.0);
 
 	texcoords.addVec2(-numTiles, numTiles);
-	texcoords.addVec2(numTiles, -numTiles);
 	texcoords.addVec2(numTiles, numTiles);
+	texcoords.addVec2(numTiles, -numTiles);
 
 	//front 2
 	vertices.addVec3(-size, size, 0.0);

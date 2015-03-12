@@ -24,6 +24,7 @@ public:
 	Mesh cube;
 	Mesh sphere;
 	Mesh bunny;
+	Mesh ground;
 
 	Mesh marker; //Меш - маркер для источника света
 
@@ -38,7 +39,13 @@ public:
 
 	LightInfo _light;
 
-	GLuint _texture;
+	GLuint _worldTexId;
+	GLuint _brickTexId;
+	GLuint _grassTexId;
+	GLuint _specularTexId;
+	GLuint _chessTexId;
+	GLuint _myTexId;
+
 	GLuint _sampler;
 
 	virtual void makeScene()
@@ -56,6 +63,8 @@ public:
 
 		bunny.loadFromFile("models/bunny.obj");
 		bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+		ground.makeGroundPlane(5.0f, 2.0f);
 
 		marker.makeSphere(0.1);
 
@@ -78,15 +87,20 @@ public:
 
 		//=========================================================
 		//Загрузка и создание текстур
-		_texture = Texture::loadTexture("images/earth_global.jpg");		
+		_worldTexId = Texture::loadTexture("images/earth_global.jpg");
+		_brickTexId = Texture::loadTexture("images/brick.jpg");
+		_grassTexId = Texture::loadTexture("images/grass.jpg");
+		_specularTexId = Texture::loadTexture("images/specular.dds");
+		_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
+		_myTexId = Texture::makeProceduralTexture();
 
 		//=========================================================
 		//Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
 		glGenSamplers(1, &_sampler);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
 
 	virtual void initGUI()
@@ -128,9 +142,8 @@ public:
 		_shader.setVec3Uniform("light.Ls", _light.specular);
 
 		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-		glBindTexture(GL_TEXTURE_2D, _texture);
+		glBindTexture(GL_TEXTURE_2D, _worldTexId);
 		glBindSampler(0, _sampler);
-
 		_shader.setIntUniform("diffuseTex", 0);
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
@@ -154,6 +167,13 @@ public:
 
 			bunny.draw();
 		}
+
+		//{
+		//	_shader.setMat4Uniform("modelMatrix", ground.modelMatrix());
+		//	_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * ground.modelMatrix()))));
+
+		//	ground.draw();
+		//}
 
 		//Рисуем маркеры для всех источников света		
 		{

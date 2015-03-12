@@ -12,4 +12,8 @@ class Texture
 {
 public:
 	static GLuint loadTexture(const std::string& filename);
+
+	static GLuint loadTextureWithMipmaps(const std::string& filename);
+
+	static GLuint makeProceduralTexture();
 };
