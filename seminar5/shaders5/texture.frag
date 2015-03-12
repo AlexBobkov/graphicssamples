@@ -35,7 +35,7 @@ void main()
 
 	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
-	vec3 color += diffuseColor * (light.La + light.Ld * NdotL);
+	vec3 color = diffuseColor * (light.La + light.Ld * NdotL);
 
 	if (NdotL > 0.0)
 	{			
@@ -46,5 +46,5 @@ void main()
 		color += light.Ls * Ks * blinnTerm;
 	}
 
-	fragColor = vec4(color, 1.0); //просто копируем
+	fragColor = vec4(color, 1.0); //просто копируем	
 }

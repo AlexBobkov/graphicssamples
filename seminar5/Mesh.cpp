@@ -114,7 +114,7 @@ void Mesh::makeSphere(float radius, int N)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4 * 2));
 
 	glBindVertexArray(0);
 }
@@ -300,7 +300,7 @@ void Mesh::makeCube(float size)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 3 * 4 * 2));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4 * 2));
 
 	glBindVertexArray(0);
 }

@@ -62,7 +62,7 @@ public:
 		//=========================================================
 		//Инициализация шейдеров
 
-		_shader.createProgram("shaders5/texture.vert", "shaders4/texture.frag");
+		_shader.createProgram("shaders5/texture.vert", "shaders5/texture.frag");
 		_markerShader.createProgram("shaders5/marker.vert", "shaders5/marker.frag");
 
 		//=========================================================
@@ -78,7 +78,7 @@ public:
 
 		//=========================================================
 		//Загрузка и создание текстур
-		GLuint _texture = Texture::loadTexture("images/earth_global.jpg");
+		_texture = Texture::loadTexture("images/earth_global.jpg");		
 
 		//=========================================================
 		//Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -130,6 +130,8 @@ public:
 		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
 		glBindTexture(GL_TEXTURE_2D, _texture);
 		glBindSampler(0, _sampler);
+
+		_shader.setIntUniform("diffuseTex", 0);
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
