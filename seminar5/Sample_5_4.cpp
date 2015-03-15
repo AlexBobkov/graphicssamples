@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Вариант с затуханием света с расстоянием
+Используются 2 текстуры: одна с картой земли (диффузный цвет), другая - с картой бликового цвета (specular map).
 */
 class SampleApplication : public Application
 {

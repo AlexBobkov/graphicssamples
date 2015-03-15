@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Вариант с затуханием света с расстоянием
+С клавиатуры происходит переключение вариантов минификации. Кнопки 1-6.
 */
 class SampleApplication : public Application
 {
@@ -221,7 +221,7 @@ public:
 		_shader.setVec3Uniform("light.Ld", _light.diffuse);
 		_shader.setVec3Uniform("light.Ls", _light.specular);
 
-		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
+		glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
 		glBindTexture(GL_TEXTURE_2D, _chessTexId);
 		glBindSampler(0, _actualSampler);
 		_shader.setIntUniform("diffuseTex", 0);
