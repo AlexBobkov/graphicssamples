@@ -169,8 +169,8 @@ GLuint Texture::loadCubeTexture(const std::string& basefilename)
 
 	loadCubeTextureFace(basefilename + "/negx.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
 	loadCubeTextureFace(basefilename + "/posx.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_X);
-	loadCubeTextureFace(basefilename + "/posy.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
-	loadCubeTextureFace(basefilename + "/negy.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
+	loadCubeTextureFace(basefilename + "/negy.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
+	loadCubeTextureFace(basefilename + "/posy.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
 	loadCubeTextureFace(basefilename + "/negz.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
 	loadCubeTextureFace(basefilename + "/posz.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
 

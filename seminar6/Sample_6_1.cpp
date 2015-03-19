@@ -82,9 +82,9 @@ public:
 
 		//=========================================================
 		//Инициализация значений переменных освщения
-		_lr = 3.0;
-		_phi = 0.0;
-		_theta = glm::pi<float>() * 0.25f;
+		_lr = 10.0;
+		_phi = 2.65f;
+		_theta = 0.48f;
 
 		_light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
 		_light.ambient = glm::vec3(0.2, 0.2, 0.2);
@@ -143,7 +143,7 @@ public:
 		{
 			_skyboxShader.use();
 
-			glm::vec3 cameraPos = glm::vec3(glm::inverse(_camera.viewMatrix)[3]); //Извлекаем положение виртуальный камеры из матрицы вида
+			glm::vec3 cameraPos = glm::vec3(glm::inverse(_camera.viewMatrix)[3]); //Извлекаем из матрицы вида положение виртуальный камеры в мировой системе координат
 
 			_skyboxShader.setVec3Uniform("cameraPos", cameraPos);
 			_skyboxShader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
@@ -177,7 +177,7 @@ public:
 		_commonShader.setVec3Uniform("light.Ls", _light.specular);
 
 		glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-		glBindTexture(GL_TEXTURE_2D, _worldTexId);
+		glBindTexture(GL_TEXTURE_2D, _brickTexId);
 		glBindSampler(0, _sampler);
 		_commonShader.setIntUniform("diffuseTex", 0);
 

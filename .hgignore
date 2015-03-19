@@ -1,0 +1,4 @@
+syntax: glob
+students/195*
+students/196*
+students/197*

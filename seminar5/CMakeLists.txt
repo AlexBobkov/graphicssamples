@@ -20,9 +20,6 @@ SET(SHADER_FILES
 	
 	shaders5/textureSpecular.vert
 	shaders5/textureSpecular.frag
-	
-	shaders5/marker.vert
-	shaders5/marker.frag
 )
 
 SOURCE_GROUP("Shaders" FILES	

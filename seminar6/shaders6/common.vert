@@ -8,25 +8,20 @@ uniform mat4 projectionMatrix; //из системы координат каме
 //матрица для преобразования нормалей из локальной системы координат в систему координат камеры
 uniform mat3 normalToCameraMatrix;
 
-uniform vec4 lightPos; //положение источника света в мировой системе координат (для точечного источника)
-
-layout(location = 0) in vec3 vp; //координаты вершины в локальной системе координат
-layout(location = 1) in vec3 normal; //нормаль в локальной системе координат
-layout(location = 2) in vec2 tc; //текстурные координаты
+layout(location = 0) in vec3 vertexPosition; //координаты вершины в локальной системе координат
+layout(location = 1) in vec3 vertexNormal; //нормаль в локальной системе координат
+layout(location = 2) in vec2 vertexTexCoord; //текстурные координаты вершины
 
 out vec3 normalCamSpace; //нормаль в системе координат камеры
-out vec4 lightPosCamSpace; //положение источника света в системе координат камеры
 out vec4 posCamSpace; //координаты вершины в системе координат камеры
-
-out vec2 interpTc; //выходные текстурные координаты
+out vec2 texCoord; //текстурные координаты
 
 void main()
 {
-	posCamSpace = viewMatrix * modelMatrix * vec4(vp, 1.0); //преобразование координат вершины в систему координат камеры
-	gl_Position = projectionMatrix * posCamSpace;
+	texCoord = vertexTexCoord;
 
-	normalCamSpace = normalize(normalToCameraMatrix * normal); //преобразование нормали в систему координат камеры
-	lightPosCamSpace = viewMatrix * lightPos; //преобразование положения источника света в систему координат камеры
-
-	interpTc = tc; //просто копируем
+	posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0); //преобразование координат вершины в систему координат камеры
+	normalCamSpace = normalize(normalToCameraMatrix * vertexNormal); //преобразование нормали в систему координат камеры
+	
+	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

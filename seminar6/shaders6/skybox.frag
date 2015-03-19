@@ -2,14 +2,13 @@
 
 uniform samplerCube cubeTex;
 
-in vec3 interpTc; //текстурные координаты (интерполированы между вершинами треугольника)
+in vec3 texCoord; //текстурные координаты (интерполированы между вершинами треугольника)
 
 out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-	//vec3 texColor = texture(tex, interpTc).rgb;
-	vec3 texColor = texture(cubeTex, interpTc).rgb;
+	vec3 texColor = texture(cubeTex, texCoord).rgb;
 
-	fragColor = vec4(texColor, 1.0); //просто копируем
+	fragColor = vec4(texColor, 1.0);
 }

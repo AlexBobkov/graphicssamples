@@ -78,7 +78,7 @@ public:
 		//Инициализация шейдеров
 
 		_shader.createProgram("shaders5/texture.vert", "shaders5/texture.frag");
-		_markerShader.createProgram("shaders5/marker.vert", "shaders5/marker.frag");
+		_markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
