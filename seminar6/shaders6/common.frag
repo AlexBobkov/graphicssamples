@@ -42,5 +42,5 @@ void main()
 		color += light.Ls * Ks * blinnTerm;
 	}
 
-	fragColor = vec4(color, 1.0);
+	fragColor = vec4(color, 0.5);
 }

@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Пример z-fighting
+Пример back face culling
 */
 class SampleApplication : public Application
 {
@@ -51,17 +51,13 @@ public:
 	GLuint _sampler;
 	GLuint _cubeTexSampler;
 
-	bool disableDepthTest;
-	bool enablePolygonOffset;
-	bool addZOffset;
+	bool backFaceCull;
 
 	virtual void makeScene()
 	{
 		Application::makeScene();
 
-		disableDepthTest = false;
-		enablePolygonOffset = false;
-		addZOffset = false;
+		backFaceCull = false;
 
 		//=========================================================
 		//Создание и загрузка мешей		
@@ -144,15 +140,7 @@ public:
 		{
 			if (key == GLFW_KEY_1)
 			{
-				disableDepthTest = !disableDepthTest;
-			}
-			else if (key == GLFW_KEY_2)
-			{
-				enablePolygonOffset = !enablePolygonOffset;
-			}
-			else if (key == GLFW_KEY_3)
-			{
-				addZOffset = !addZOffset;
+				backFaceCull = !backFaceCull;
 			}
 		}
 	}
@@ -184,56 +172,37 @@ public:
 		_commonShader.setVec3Uniform("light.Ls", _light.specular);
 
 		glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-		glBindTexture(GL_TEXTURE_2D, _worldTexId);
-		glBindSampler(0, _sampler);
-		_commonShader.setIntUniform("diffuseTex", 0);
-
-		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
-		{
-			glm::mat4 modelMatrix = cube.modelMatrix();
-			
-			_commonShader.setMat4Uniform("modelMatrix", modelMatrix);
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-						
-			plane.draw();
-		}
-
-		glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
 		glBindTexture(GL_TEXTURE_2D, _brickTexId);
 		glBindSampler(0, _sampler);
 		_commonShader.setIntUniform("diffuseTex", 0);
 
+		glEnable(GL_CULL_FACE);
+		glFrontFace(GL_CCW);
+		glCullFace(backFaceCull ? GL_BACK : GL_FRONT);
+
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
-			float zOffset = addZOffset ? 0.01f : 0.0f;
+			_commonShader.setMat4Uniform("modelMatrix", cube.modelMatrix());
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * cube.modelMatrix()))));
 
-			glm::mat4 modelMatrix = glm::translate(cube.modelMatrix(), glm::vec3(0.001f, 0.0f, zOffset));
-
-			_commonShader.setMat4Uniform("modelMatrix", modelMatrix);
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-
-			if (disableDepthTest)
-			{
-				glDisable(GL_DEPTH_TEST);
-			}
-			if (enablePolygonOffset)
-			{
-				glEnable(GL_POLYGON_OFFSET_FILL);
-				glPolygonOffset(-1.0f, -1.0f);
-			}
-
-			plane.draw();
-
-			if (enablePolygonOffset)
-			{
-				glPolygonOffset(0.0f, 0.0f);
-				glDisable(GL_POLYGON_OFFSET_FILL);
-			}			
-			if (disableDepthTest)
-			{
-				glEnable(GL_DEPTH_TEST);
-			}			
+			cube.draw();
 		}
+
+		{
+			_commonShader.setMat4Uniform("modelMatrix", sphere.modelMatrix());
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * sphere.modelMatrix()))));
+
+			sphere.draw();
+		}
+
+		{
+			_commonShader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * bunny.modelMatrix()))));
+
+			bunny.draw();
+		}
+
+		glDisable(GL_CULL_FACE);
 
 		//Рисуем маркеры для всех источников света		
 		{
