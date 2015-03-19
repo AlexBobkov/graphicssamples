@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Пример с кубической текстурой
+2 виртуальный камеры и 2 вьюпорта
 */
 class SampleApplication : public Application
 {
@@ -50,6 +50,8 @@ public:
 
 	GLuint _sampler;
 	GLuint _cubeTexSampler;
+
+	CameraInfo _camera2;
 
 	virtual void makeScene()
 	{
@@ -114,6 +116,16 @@ public:
 		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+		//=========================================================
+		//Инициализация 2й виртуальной камеры
+
+		_camera2.viewMatrix = glm::lookAt(glm::vec3(-5.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f));
+		
+		int width, height;
+		glfwGetFramebufferSize(_window, &width, &height);
+
+		_camera2.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 	}
 
 	virtual void initGUI()
@@ -139,15 +151,26 @@ public:
 		//Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glViewport(0, 0, width / 2, height / 2);
+
+		drawSceneWithCamera(_camera);
+
+		glViewport(width / 2, height / 2, width / 2, height / 2);
+
+		drawSceneWithCamera(_camera2);
+	}
+
+	void drawSceneWithCamera(const CameraInfo& camera)
+	{
 		//====== РИСУЕМ ФОН С КУБИЧЕСКОЙ ТЕКСТУРОЙ ======
 		{
 			_skyboxShader.use();
 
-			glm::vec3 cameraPos = glm::vec3(glm::inverse(_camera.viewMatrix)[3]); //Извлекаем из матрицы вида положение виртуальный камеры в мировой системе координат
+			glm::vec3 cameraPos = glm::vec3(glm::inverse(camera.viewMatrix)[3]); //Извлекаем из матрицы вида положение виртуальный камеры в мировой системе координат
 
 			_skyboxShader.setVec3Uniform("cameraPos", cameraPos);
-			_skyboxShader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-			_skyboxShader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+			_skyboxShader.setMat4Uniform("viewMatrix", camera.viewMatrix);
+			_skyboxShader.setMat4Uniform("projectionMatrix", camera.projMatrix);
 
 			glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
 			glBindTexture(GL_TEXTURE_CUBE_MAP, _cubeTexId);
@@ -165,11 +188,11 @@ public:
 		_commonShader.use();
 
 		//Загружаем на видеокарту значения юниформ-переменных
-		_commonShader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-		_commonShader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+		_commonShader.setMat4Uniform("viewMatrix", camera.viewMatrix);
+		_commonShader.setMat4Uniform("projectionMatrix", camera.projMatrix);
 
 		_light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
-		glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
+		glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
 		_commonShader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
 		_commonShader.setVec3Uniform("light.La", _light.ambient);
@@ -184,21 +207,21 @@ public:
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
 			_commonShader.setMat4Uniform("modelMatrix", cube.modelMatrix());
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * cube.modelMatrix()))));
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * cube.modelMatrix()))));
 
 			cube.draw();
 		}
 
 		{
 			_commonShader.setMat4Uniform("modelMatrix", sphere.modelMatrix());
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * sphere.modelMatrix()))));
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * sphere.modelMatrix()))));
 
 			sphere.draw();
 		}
 
 		{
 			_commonShader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * bunny.modelMatrix()))));
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * bunny.modelMatrix()))));
 
 			bunny.draw();
 		}
@@ -207,7 +230,7 @@ public:
 		{
 			_markerShader.use();
 
-			_markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
+			_markerShader.setMat4Uniform("mvpMatrix", camera.projMatrix * camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
 			marker.draw();
 		}
 

@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Пример с кубической текстурой
+Пример z-fighting
 */
 class SampleApplication : public Application
 {
@@ -24,7 +24,7 @@ public:
 	Mesh cube;
 	Mesh sphere;
 	Mesh bunny;
-	Mesh ground;
+	Mesh plane;
 	Mesh backgroundCube;
 
 	Mesh marker; //Меш - маркер для источника света
@@ -67,7 +67,7 @@ public:
 		bunny.loadFromFile("models/bunny.obj");
 		bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		ground.makeGroundPlane(5.0f, 2.0f);
+		plane.makeGroundPlane(1.0f, 1.0f);
 
 		marker.makeSphere(0.1);
 
@@ -139,28 +139,6 @@ public:
 		//Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//====== РИСУЕМ ФОН С КУБИЧЕСКОЙ ТЕКСТУРОЙ ======
-		{
-			_skyboxShader.use();
-
-			glm::vec3 cameraPos = glm::vec3(glm::inverse(_camera.viewMatrix)[3]); //Извлекаем из матрицы вида положение виртуальный камеры в мировой системе координат
-
-			_skyboxShader.setVec3Uniform("cameraPos", cameraPos);
-			_skyboxShader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-			_skyboxShader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
-			glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-			glBindTexture(GL_TEXTURE_CUBE_MAP, _cubeTexId);
-			glBindSampler(0, _cubeTexSampler);
-			_skyboxShader.setIntUniform("cubeTex", 0);
-
-			glDepthMask(GL_FALSE); //Отключаем запись в буфер глубины
-
-			backgroundCube.draw();
-
-			glDepthMask(GL_TRUE); //Включаем обратно запись в буфер глубины
-		}
-
 		//====== РИСУЕМ ОСНОВНЫЕ ОБЪЕКТЫ СЦЕНЫ ======
 		_commonShader.use();
 
@@ -177,30 +155,41 @@ public:
 		_commonShader.setVec3Uniform("light.Ls", _light.specular);
 
 		glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+		glBindTexture(GL_TEXTURE_2D, _worldTexId);
+		glBindSampler(0, _sampler);
+		_commonShader.setIntUniform("diffuseTex", 0);
+
+		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+		{
+			glm::mat4 modelMatrix = cube.modelMatrix();
+			
+			_commonShader.setMat4Uniform("modelMatrix", modelMatrix);
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+						
+			plane.draw();
+		}
+
+		glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
 		glBindTexture(GL_TEXTURE_2D, _brickTexId);
 		glBindSampler(0, _sampler);
 		_commonShader.setIntUniform("diffuseTex", 0);
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
-			_commonShader.setMat4Uniform("modelMatrix", cube.modelMatrix());
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * cube.modelMatrix()))));
+			glm::mat4 modelMatrix = glm::translate(cube.modelMatrix(), glm::vec3(0.001f, 0.0f, 0.0f));
 
-			cube.draw();
-		}
+			_commonShader.setMat4Uniform("modelMatrix", modelMatrix);
+			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-		{
-			_commonShader.setMat4Uniform("modelMatrix", sphere.modelMatrix());
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * sphere.modelMatrix()))));
+			//glDisable(GL_DEPTH_TEST);
+			//glEnable(GL_POLYGON_OFFSET_FILL);
+			//glPolygonOffset(-1.0f, -1.0f);
 
-			sphere.draw();
-		}
+			plane.draw();
 
-		{
-			_commonShader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
-			_commonShader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * bunny.modelMatrix()))));
-
-			bunny.draw();
+			//glPolygonOffset(0.0f, 0.0f);
+			//glDisable(GL_POLYGON_OFFSET_FILL);
+			//glEnable(GL_DEPTH_TEST);
 		}
 
 		//Рисуем маркеры для всех источников света		
