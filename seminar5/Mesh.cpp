@@ -192,16 +192,16 @@ void Mesh::makeCube(float size)
 
 	//top 2
 	vertices.addVec3(-size, size, size);
-	vertices.addVec3(-size, -size, size);
 	vertices.addVec3(size, -size, size);
+	vertices.addVec3(-size, -size, size);	
 
 	normals.addVec3(0.0, 0.0, 1.0);
 	normals.addVec3(0.0, 0.0, 1.0);
 	normals.addVec3(0.0, 0.0, 1.0);
 
 	texcoords.addVec2(0.0, 1.0);
-	texcoords.addVec2(0.0, 0.0);
 	texcoords.addVec2(1.0, 0.0);
+	texcoords.addVec2(0.0, 0.0);	
 
 	//back 1
 	vertices.addVec3(-size, -size, size);
@@ -270,16 +270,16 @@ void Mesh::makeCube(float size)
 
 	//bottom 2
 	vertices.addVec3(-size, size, -size);
-	vertices.addVec3(size, -size, -size);
 	vertices.addVec3(-size, -size, -size);
-
+	vertices.addVec3(size, -size, -size);
+	
 	normals.addVec3(0.0, 0.0, -1.0);
 	normals.addVec3(0.0, 0.0, -1.0);
 	normals.addVec3(0.0, 0.0, -1.0);
 
 	texcoords.addVec2(0.0, 1.0);
-	texcoords.addVec2(1.0, 0.0);
 	texcoords.addVec2(0.0, 0.0);
+	texcoords.addVec2(1.0, 0.0);	
 
 	vertices.insert(vertices.end(), normals.begin(), normals.end());
 	vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());

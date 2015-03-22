@@ -25,6 +25,12 @@ public:
 		glUseProgram(_shaderId);
 	}
 
+	void setIntUniform(const std::string& name, const int& value)
+	{
+		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
+		glUniform1i(uniformLoc, value);
+	}
+
 	void setFloatUniform(const std::string& name, const float& value)
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());

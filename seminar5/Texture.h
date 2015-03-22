@@ -15,5 +15,7 @@ public:
 
 	static GLuint loadTextureWithMipmaps(const std::string& filename);
 
+	static GLuint loadCubeTexture(const std::string& basefilename);
+
 	static GLuint makeProceduralTexture();
 };
