@@ -17,9 +17,15 @@ SET(HEADER_FILES
 SET(SHADER_FILES
 	shaders7/projector.vert	
 	shaders7/projector.frag
+	
+	shaders7/mrt.vert	
+	shaders7/mrt.frag
 
-	shaders7/quad.vert
-	shaders7/quad.frag	
+	shaders7/quad.vert	
+	shaders7/quad.frag
+
+	shaders7/quad2.vert
+	shaders7/quad2.frag	
 )
 
 SOURCE_GROUP("Shaders" FILES	
@@ -28,5 +34,7 @@ SOURCE_GROUP("Shaders" FILES
 
 MAKE_SAMPLE(Sample_7_1_Projector)
 MAKE_SAMPLE(Sample_7_2_CopyTex)
+MAKE_SAMPLE(Sample_7_3_Framebuffer)
+MAKE_SAMPLE(Sample_7_4_MRT)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders7 DESTINATION ${CMAKE_INSTALL_PREFIX})
