@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Пример с проективной текстурой
+Пример с копированием буфера глубины в текстуру
 */
 class SampleApplication : public Application
 {

@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Пример с проективной текстурой
+Пример с рендерингом во множество буферов цвета одновременно
 */
 class SampleApplication : public Application
 {
