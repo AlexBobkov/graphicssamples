@@ -21,11 +21,11 @@ SET(SHADER_FILES
 	shaders7/mrt.vert	
 	shaders7/mrt.frag
 
-	shaders7/quad.vert	
-	shaders7/quad.frag
+	shaders7/quadDepth.vert	
+	shaders7/quadDepth.frag
 
-	shaders7/quad2.vert
-	shaders7/quad2.frag	
+	shaders7/quadColor.vert
+	shaders7/quadColor.frag	
 )
 
 SOURCE_GROUP("Shaders" FILES	

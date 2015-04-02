@@ -132,7 +132,7 @@ public:
 		_commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
 		_markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
 		_skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-		_quadShader.createProgram("shaders7/quad.vert", "shaders7/quad.frag");
+		_quadShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
