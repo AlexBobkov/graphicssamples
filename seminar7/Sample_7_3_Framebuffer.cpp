@@ -307,6 +307,7 @@ public:
 			_markerShader.use();
 
 			_markerShader.setMat4Uniform("mvpMatrix", camera.projMatrix * camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
+            _markerShader.setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
 			marker.draw();
 		}
 

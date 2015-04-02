@@ -20,42 +20,42 @@ public:
 	*/
 	void createProgram(const std::string& vertFilename, const std::string& fragFilename);
 
-	void use()
+	void use() const
 	{
 		glUseProgram(_shaderId);
 	}
 
-	void setIntUniform(const std::string& name, const int& value)
+    void setIntUniform(const std::string& name, const int& value) const
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
 		glUniform1i(uniformLoc, value);
 	}
 
-	void setFloatUniform(const std::string& name, const float& value)
+    void setFloatUniform(const std::string& name, const float& value) const
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
 		glUniform1f(uniformLoc, value);
 	}
 
-	void setVec3Uniform(const std::string& name, const glm::vec3& vec)
+    void setVec3Uniform(const std::string& name, const glm::vec3& vec) const
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
 		glUniform3fv(uniformLoc, 1, glm::value_ptr(vec));
 	}
 
-	void setVec4Uniform(const std::string& name, const glm::vec4& vec)
+    void setVec4Uniform(const std::string& name, const glm::vec4& vec) const
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
 		glUniform4fv(uniformLoc, 1, glm::value_ptr(vec));
 	}
 
-	void setMat3Uniform(const std::string& name, const glm::mat3& mat)
+    void setMat3Uniform(const std::string& name, const glm::mat3& mat) const
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
 		glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
 	}
 
-	void setMat4Uniform(const std::string& name, const glm::mat4& mat)
+    void setMat4Uniform(const std::string& name, const glm::mat4& mat) const
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
 		glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));

@@ -193,6 +193,7 @@ public:
 			for (unsigned int i = 0; i < LightNum; i++)
 			{
 				_markerShader.setMat4Uniform("mvpMatrix", _projMatrix * _viewMatrix * glm::translate(glm::mat4(1.0f), _light[i].position));
+                _markerShader.setVec4Uniform("color", glm::vec4(_light[i].diffuse, 1.0f));
 				marker.draw();
 			}
 		}
