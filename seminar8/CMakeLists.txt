@@ -20,6 +20,7 @@ SET(SHADER_FILES
 	
 	shaders8/shadow.vert
 	shaders8/shadow.frag
+	shaders8/shadow2.frag
 )
 
 SOURCE_GROUP("Shaders" FILES	

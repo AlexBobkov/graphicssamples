@@ -38,6 +38,7 @@ public:
 	ShaderProgram _quadShader;
     ShaderProgram _renderToShadowMapShader;
     ShaderProgram _commonWithShadowsShader;
+    ShaderProgram _commonWithShadowsShaderVar2;
 
 	//Переменные для управления положением одного источника света
 	float _lr;
@@ -67,6 +68,7 @@ public:
     bool _showDepthQuad;
     bool _isLinearSampler;
     bool _cullFrontFaces;
+    bool _randomPoints;
     
     void initFramebuffer()
     {
@@ -106,6 +108,7 @@ public:
         _showDepthQuad = false;
         _isLinearSampler = false;
         _cullFrontFaces = false;
+        _randomPoints = false;
 
 		//=========================================================
 		//Создание и загрузка мешей		
@@ -136,6 +139,7 @@ public:
 		_quadShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
         _renderToShadowMapShader.createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
         _commonWithShadowsShader.createProgram("shaders8/shadow.vert", "shaders8/shadow.frag");
+        _commonWithShadowsShaderVar2.createProgram("shaders8/shadow.vert", "shaders8/shadow2.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
@@ -229,6 +233,10 @@ public:
             {
                 _cullFrontFaces = !_cullFrontFaces;
             }
+            else if (key == GLFW_KEY_1)
+            {
+                _randomPoints = !_randomPoints;
+            }
         }
     }
 
@@ -244,7 +252,7 @@ public:
     virtual void draw()
     {
         drawToShadowMap(_lightCamera);
-        drawToScreen(_camera, _lightCamera);
+        drawToScreen(_randomPoints ? _commonWithShadowsShaderVar2 : _commonWithShadowsShader, _camera, _lightCamera);
 
         if (_showDepthQuad)
         {
@@ -281,7 +289,7 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, 0); //Отключаем фреймбуфер
     }
 
-    void drawToScreen(const CameraInfo& camera, const CameraInfo& lightCamera)
+    void drawToScreen(const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
 	{
 		//Получаем текущие размеры экрана и выставлям вьюпорт
 		int width, height;
@@ -292,37 +300,37 @@ public:
 		//Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        _commonWithShadowsShader.use();
-        _commonWithShadowsShader.setMat4Uniform("viewMatrix", camera.viewMatrix);
-        _commonWithShadowsShader.setMat4Uniform("projectionMatrix", camera.projMatrix);
+        shader.use();
+        shader.setMat4Uniform("viewMatrix", camera.viewMatrix);
+        shader.setMat4Uniform("projectionMatrix", camera.projMatrix);
 
 		glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-		_commonWithShadowsShader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-		_commonWithShadowsShader.setVec3Uniform("light.La", _light.ambient);
-		_commonWithShadowsShader.setVec3Uniform("light.Ld", _light.diffuse);
-		_commonWithShadowsShader.setVec3Uniform("light.Ls", _light.specular);
+        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader.setVec3Uniform("light.La", _light.ambient);
+        shader.setVec3Uniform("light.Ld", _light.diffuse);
+        shader.setVec3Uniform("light.Ls", _light.specular);
 
         {
-            _commonWithShadowsShader.setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
-            _commonWithShadowsShader.setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
+            shader.setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
+            shader.setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
 
             glm::mat4 projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
-            _commonWithShadowsShader.setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
+            shader.setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
         }
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         glBindTexture(GL_TEXTURE_2D, _brickTexId);
         glBindSampler(0, _sampler);
-        _commonWithShadowsShader.setIntUniform("diffuseTex", 0);
+        shader.setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glBindSampler(1, _isLinearSampler ? _depthSamplerLinear : _depthSampler);
-        _commonWithShadowsShader.setIntUniform("shadowTex", 1);
+        shader.setIntUniform("shadowTex", 1);
 
 
-        drawScene(_commonWithShadowsShader, camera);
+        drawScene(shader, camera);
 
 		//Рисуем маркеры для всех источников света		
 		{
