@@ -59,40 +59,4 @@ void main()
 	//==========================================
 
 	fragColor = vec4(color, 1.0);
-
-/*
-	vec3 diffuseMaterial = texture(diffuseTex, interpTc).rgb; //читаем из текстуры
-	
-	//первый вариант: вручную выполняем перспективное деление
-	vec4 projTc = interProjTc;		
-	projTc.xyz /= projTc.w;
-	vec3 projColor = texture(projTex, projTc.xy).rgb; //читаем из текстуры
-
-	//второй вариант: используем функцию textureProj
-	//vec3 projColor = textureProj(projTex, interProjTc).rgb; //читаем из текстуры
-
-	vec3 lightDirCamSpace = lightPosCamSpace.xyz - posCamSpace.xyz; //направление на источник света
-	lightDirCamSpace = normalize(lightDirCamSpace); //нормализуем направление
-
-	vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции
-				    
-    float cosAngIncidence = dot(normal, lightDirCamSpace); //интенсивность диффузного света
-    cosAngIncidence = clamp(cosAngIncidence, 0, 1);
-    
-	vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
-		
-	vec3 halfAngle = normalize(lightDirCamSpace + viewDirection); //биссектриса между направлениями на камеру и на источник света
-	float blinnTerm = dot(normal, halfAngle); //интенсивность бликового освещения по Блинну
-	blinnTerm = clamp(blinnTerm, 0, 1);
-	blinnTerm = cosAngIncidence != 0.0 ? blinnTerm : 0.0;
-	blinnTerm = pow(blinnTerm, shininessFactor);  //регулируем размер блика
-
-	//результирующий цвет
-    vec3 color = diffuseMaterial * ambientColor + diffuseMaterial * diffuseColor * cosAngIncidence + specularColor * blinnTerm;
-	
-	color += projColor;
-
-	fragColor = vec4(color, 1.0);
-	//fragColor = vec4(projColor, 1.0);
-	*/
 }
