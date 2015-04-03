@@ -21,6 +21,12 @@ SET(SHADER_FILES
 	shaders8/shadow.vert
 	shaders8/shadow.frag
 	shaders8/shadow2.frag
+	
+	shaders8/togbuffer.vert	
+	shaders8/togbuffer.frag
+	
+	shaders8/deferred.vert
+	shaders8/deferred.frag
 )
 
 SOURCE_GROUP("Shaders" FILES	
@@ -28,5 +34,6 @@ SOURCE_GROUP("Shaders" FILES
 )
 
 MAKE_SAMPLE(Sample_8_1_Shadows)
+MAKE_SAMPLE(Sample_8_2_Deferred)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders8 DESTINATION ${CMAKE_INSTALL_PREFIX})
