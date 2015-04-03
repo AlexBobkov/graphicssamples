@@ -86,6 +86,7 @@ public:
         glGenRenderbuffers(1, &depthRenderBuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _fbWidth, _fbHeight);
+
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
 
 
@@ -251,6 +252,7 @@ public:
 		glViewport(0, 0, width, height);
 
 		//Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//====== РИСУЕМ ОСНОВНЫЕ ОБЪЕКТЫ СЦЕНЫ ======
