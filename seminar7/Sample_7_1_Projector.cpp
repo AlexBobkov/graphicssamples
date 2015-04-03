@@ -241,6 +241,7 @@ public:
 			_markerShader.use();
 
 			_markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
+            _markerShader.setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
 			marker.draw();
 		}
 
@@ -251,6 +252,7 @@ public:
 			glm::vec3 projPos = glm::vec3(glm::cos(_projPhi) * glm::cos(_projTheta), glm::sin(_projPhi) * glm::cos(_projTheta), glm::sin(_projTheta)) * _projR;
 
 			_markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), projPos));
+            _markerShader.setVec4Uniform("color", glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
 			marker.draw();
 		}
 

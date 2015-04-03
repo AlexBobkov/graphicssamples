@@ -1,7 +1,10 @@
 #version 330
 
+uniform sampler2D normalsTex;
 uniform sampler2D diffuseTex;
-uniform sampler2D projTex;
+uniform sampler2D depthTex;
+
+uniform mat4 projMatrixInverse;
 
 struct LightInfo
 {
@@ -12,10 +15,7 @@ struct LightInfo
 };
 uniform LightInfo light;
 
-in vec3 normalCamSpace; //нормаль в системе координат камеры (интерполирована между вершинами треугольника)
-in vec4 posCamSpace; //координаты вершины в системе координат камеры (интерполированы между вершинами треугольника)
-in vec2 texCoord; //текстурные координаты (интерполирована между вершинами треугольника)
-in vec4 projTexCoord; //выходные текстурные координаты для проективное текстуры
+in vec2 texCoord; //текстурные координаты (интерполированы между вершинами треугольника)
 
 out vec4 fragColor; //выходной цвет фрагмента
 
@@ -23,17 +23,32 @@ const vec3 Ks = vec3(1.0, 1.0, 1.0); //Коэффициент бликового
 const float shininess = 128.0;
 
 void main()
-{
+{	
 	vec3 diffuseColor = texture(diffuseTex, texCoord).rgb;
+	
+	if (all(lessThan(diffuseColor, vec3(0.1))))
+	{
+		discard;
+	}
 
-	vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции
+	float depthColor = texture(depthTex, texCoord).r;
+	vec3 depthCoords = vec3(texCoord, depthColor) * 2.0 - 1.0;
+	vec4 posCamSpace = projMatrixInverse * vec4(depthCoords, 1.0);
+	posCamSpace.xyz /= posCamSpace.w;
+			
+	vec3 normalColor = texture(normalsTex, texCoord).rgb;	
+	vec3 normal = normalize(normalColor * 2.0 - 1.0);
+		
 	vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
 	
 	vec3 lightDirCamSpace = normalize(light.pos - posCamSpace.xyz); //направление на источник света	
 
 	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
+	
+	float distance = length(light.pos - posCamSpace.xyz);
+	float attenuationCoef = 1.0 / (1.0 + 0.1 * distance);
 
-	vec3 color = diffuseColor * (light.La + light.Ld * NdotL);
+	vec3 color = diffuseColor * (light.La + light.Ld * NdotL) * attenuationCoef;
 
 	if (NdotL > 0.0)
 	{			
@@ -41,22 +56,8 @@ void main()
 
 		float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 		blinnTerm = pow(blinnTerm, shininess); //регулируем размер блика
-		color += light.Ls * Ks * blinnTerm;
+		color += light.Ls * Ks * blinnTerm * attenuationCoef;
 	}
-	
-	//==========================================
-	
-	//первый вариант: вручную выполняем перспективное деление
-	vec4 projTc = projTexCoord;		
-	projTc.xyz /= projTc.w;
-	vec3 projColor = texture(projTex, projTc.xy).rgb; //читаем из текстуры
-
-	//второй вариант: используем функцию textureProj
-	//vec3 projColor = textureProj(projTex, projTexCoord).rgb; //читаем из текстуры
-	
-	color += projColor;
-	
-	//==========================================
 
 	fragColor = vec4(color, 1.0);
 }

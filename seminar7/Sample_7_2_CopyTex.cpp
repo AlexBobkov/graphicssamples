@@ -16,7 +16,7 @@ struct LightInfo
 };
 
 /**
-Пример с проективной текстурой
+Пример с копированием буфера глубины в текстуру
 */
 class SampleApplication : public Application
 {
@@ -85,7 +85,7 @@ public:
 		_commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
 		_markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
 		_skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-		_quadShader.createProgram("shaders7/quad.vert", "shaders7/quad.frag");
+		_quadShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
@@ -209,6 +209,7 @@ public:
 			_markerShader.use();
 
 			_markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
+            _markerShader.setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
 			marker.draw();
 		}
 
