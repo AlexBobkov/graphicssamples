@@ -44,8 +44,11 @@ void main()
 	vec3 lightDirCamSpace = normalize(light.pos - posCamSpace.xyz); //направление на источник света	
 
 	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
+	
+	float distance = length(light.pos - posCamSpace.xyz);
+	float attenuationCoef = 1.0 / (1.0 + 0.1 * distance);
 
-	vec3 color = diffuseColor * (light.La + light.Ld * NdotL);
+	vec3 color = diffuseColor * (light.La + light.Ld * NdotL) * attenuationCoef;
 
 	if (NdotL > 0.0)
 	{			
@@ -53,7 +56,7 @@ void main()
 
 		float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 		blinnTerm = pow(blinnTerm, shininess); //регулируем размер блика
-		color += light.Ls * Ks * blinnTerm;
+		color += light.Ls * Ks * blinnTerm * attenuationCoef;
 	}
 
 	fragColor = vec4(color, 1.0);

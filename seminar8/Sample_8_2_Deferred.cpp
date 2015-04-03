@@ -15,6 +15,13 @@ struct LightInfo
 	glm::vec3 specular;
 };
 
+float frand()
+{
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+}
+
+void getColorFromLinearPalette(float value, float& r, float& g, float& b);
+
 /**
 Пример с тенями
 */
@@ -46,8 +53,7 @@ public:
 	float _theta;
 		
 	LightInfo _light;
-    CameraInfo _lightCamera;
-
+    
 	GLuint _worldTexId;
 	GLuint _brickTexId;
 	GLuint _grassTexId;
@@ -68,6 +74,14 @@ public:
     unsigned int _fbHeight;
 
     bool _showDebugQuads;
+
+    int Npositions;
+    int Ncurrent;
+    std::vector<glm::vec3> _positions;
+
+    int Klights;
+    int Kcurrent;
+    std::vector<LightInfo> _lights;
     
     void initFramebuffer()
     {
@@ -189,6 +203,36 @@ public:
         //Инициализация фреймбуфера для рендера теневой карты
 
         initFramebuffer();    
+
+        //=========================================================
+        srand((int)(glfwGetTime() * 1000));
+
+        Npositions = 100;
+        Ncurrent = 0;
+        float size = 20.0f;
+        for (int i = 0; i < Npositions; i++)
+        {
+            _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
+        }
+
+        //=========================================================
+        Klights = 100;
+        Kcurrent = 0;
+        size = 30.0f;
+        for (int i = 0; i < Klights; i++)
+        {
+            LightInfo light;
+
+            float r, g, b;
+            getColorFromLinearPalette(frand(), r, g, b);
+
+            light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 10.0);
+            light.ambient = glm::vec3(0.0 * r, 0.0 * g, 0.0 * b);
+            light.diffuse = glm::vec3(0.4 * r, 0.4 * g, 0.4 * b);
+            light.specular = glm::vec3(0.5, 0.5, 0.5);
+
+            _lights.push_back(light);
+        }
 	}
 
 	virtual void initGUI()
@@ -201,6 +245,8 @@ public:
 		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
 		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
 		TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
+        TwAddVarRW(_bar, "Npositions", TW_TYPE_INT32, &Ncurrent, "step=1 min=0 max=100");
+        TwAddVarRW(_bar, "Klights", TW_TYPE_INT32, &Kcurrent, "step=1 min=0 max=100");
 	}
 
     virtual void handleKey(int key, int scancode, int action, int mods)
@@ -221,8 +267,6 @@ public:
         Application::update();
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
-        _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
     }
 
     virtual void draw()
@@ -273,13 +317,13 @@ public:
         shader.use();
         shader.setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
 
-		glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
+        glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
         shader.setVec3Uniform("light.La", _light.ambient);
         shader.setVec3Uniform("light.Ld", _light.diffuse);
         shader.setVec3Uniform("light.Ls", _light.specular);
-
+        		
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         glBindTexture(GL_TEXTURE_2D, _normalsTexId);
         glBindSampler(0, _sampler);
@@ -294,8 +338,27 @@ public:
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glBindSampler(2, _sampler);
         shader.setIntUniform("depthTex", 2);
-                
-        quad.draw();
+        
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+
+        quad.draw(); //main light
+
+        for (unsigned int i = 0; i < Kcurrent; i++)
+        {
+            glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
+
+            shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+            shader.setVec3Uniform("light.La", _lights[i].ambient);
+            shader.setVec3Uniform("light.Ld", _lights[i].diffuse);
+            shader.setVec3Uniform("light.Ls", _lights[i].specular);
+
+            quad.draw();
+        }
+
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
 
         //Отсоединяем сэмплер и шейдерную программу
 		glBindSampler(0, 0);
@@ -322,7 +385,17 @@ public:
         shader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
         shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * bunny.modelMatrix()))));
         
-        bunny.draw();        
+        bunny.draw();
+
+        for (unsigned int i = 0; i < Ncurrent; i++)
+        {
+            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _positions[i]);
+
+            shader.setMat4Uniform("modelMatrix", modelMatrix);
+            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * modelMatrix))));
+
+            bunny.draw();
+        }
     }
 
     void drawDebug()
