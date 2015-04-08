@@ -1,7 +1,8 @@
 #version 330
 
 uniform sampler2D diffuseTex;
-uniform sampler2D shadowTex;
+//uniform sampler2D shadowTex; //Вариант 1
+uniform sampler2DShadow shadowTex; //Вариант 2
 
 struct LightInfo
 {
