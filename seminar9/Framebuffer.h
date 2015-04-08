@@ -32,12 +32,12 @@ public:
         glGenFramebuffers(1, &_fboId);
     }
 
-    void bind()
+    void bind() const
     {
         glBindFramebuffer(GL_FRAMEBUFFER, _fboId);
     }
 
-    void unbind()
+    void unbind() const
     {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }

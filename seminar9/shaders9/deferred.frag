@@ -3,7 +3,9 @@
 uniform sampler2D normalsTex;
 uniform sampler2D diffuseTex;
 uniform sampler2D depthTex;
+uniform sampler2DShadow shadowTex;
 
+uniform mat4 viewMatrixInverse;
 uniform mat4 projMatrixInverse;
 
 struct LightInfo
@@ -14,6 +16,10 @@ struct LightInfo
 	vec3 Ls; //цвет и интенсивность бликового света
 };
 uniform LightInfo light;
+
+uniform mat4 lightViewMatrix; //из мировой в систему координат камеры
+uniform mat4 lightProjectionMatrix; //из системы координат камеры в усеченные координаты
+uniform mat4 lightScaleBiasMatrix;
 
 in vec2 texCoord; //текстурные координаты (интерполированы между вершинами треугольника)
 
@@ -33,8 +39,15 @@ void main()
 
 	float depthColor = texture(depthTex, texCoord).r;
 	vec3 depthCoords = vec3(texCoord, depthColor) * 2.0 - 1.0;
-	vec4 posCamSpace = projMatrixInverse * vec4(depthCoords, 1.0);
+	vec4 posCamSpace = projMatrixInverse * vec4(depthCoords, 1.0);	
 	posCamSpace.xyz /= posCamSpace.w;
+	
+	vec4 posWorldSpace = viewMatrixInverse * projMatrixInverse * vec4(depthCoords, 1.0);
+	posWorldSpace.xyz /= posWorldSpace.w;
+	vec4 shadowTexCoord = lightScaleBiasMatrix * lightProjectionMatrix * lightViewMatrix * posWorldSpace;
+	float visibility = textureProj(shadowTex, shadowTexCoord); //глубина ближайшего фрагмента в пространстве источника света
+	//float visibility = 1.0;
+	//shadowTexCoord.xyz /= shadowTexCoord.w;
 			
 	vec3 normalColor = texture(normalsTex, texCoord).rgb;	
 	vec3 normal = normalize(normalColor * 2.0 - 1.0);
@@ -45,7 +58,7 @@ void main()
 
 	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
-	vec3 color = diffuseColor * (light.La + light.Ld * NdotL);
+	vec3 color = diffuseColor * (light.La + light.Ld * NdotL * visibility);
 
 	if (NdotL > 0.0)
 	{			
@@ -53,7 +66,7 @@ void main()
 
 		float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 		blinnTerm = pow(blinnTerm, shininess); //регулируем размер блика
-		color += light.Ls * Ks * blinnTerm;
+		color += light.Ls * Ks * blinnTerm * visibility;
 	}
 
 	fragColor = vec4(color, 1.0);

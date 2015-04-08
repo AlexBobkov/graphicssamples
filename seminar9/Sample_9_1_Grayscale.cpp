@@ -45,6 +45,7 @@ public:
 	ShaderProgram _skyboxShader;
 	ShaderProgram _quadDepthShader;
     ShaderProgram _quadColorShader;
+    ShaderProgram _renderToShadowMapShader;
     ShaderProgram _renderToGBufferShader;
     ShaderProgram _renderDeferredShader;
 
@@ -54,6 +55,7 @@ public:
 	float _theta;
 		
 	LightInfo _light;
+    CameraInfo _lightCamera;
     
 	GLuint _worldTexId;
 	GLuint _brickTexId;
@@ -64,6 +66,7 @@ public:
 
 	GLuint _sampler;
 	GLuint _cubeTexSampler;
+    GLuint _depthSampler;
     
     bool _showDebugQuads;
 
@@ -71,6 +74,9 @@ public:
     GLuint _depthTexId;
     GLuint _normalsTexId;
     GLuint _diffuseTexId;
+
+    Framebuffer _shadowFB;
+    GLuint _shadowTexId;
 
     //Старые размеры экрана
     int _oldWidth;
@@ -95,6 +101,24 @@ public:
         }
 
         _gbufferFB.unbind();
+
+        //=========================================================
+
+        _shadowFB.create();
+        _shadowFB.bind();
+        _shadowFB.setSize(1024, 1024);
+
+        _shadowTexId = _shadowFB.addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
+
+        _shadowFB.initDrawBuffers();
+
+        if (!_shadowFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _shadowFB.unbind();
     }
 
 	virtual void makeScene()
@@ -131,7 +155,7 @@ public:
 		_skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
 		_quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
         _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
-
+        _renderToShadowMapShader.createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
         _renderToGBufferShader.createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
         _renderDeferredShader.createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
 
@@ -169,6 +193,17 @@ public:
 		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
+
+        GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+        glGenSamplers(1, &_depthSampler);
+        glSamplerParameteri(_depthSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_depthSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glSamplerParameterfv(_depthSampler, GL_TEXTURE_BORDER_COLOR, border);
+        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
         //=========================================================
         glfwGetFramebufferSize(_window, &_oldWidth, &_oldHeight);
@@ -209,6 +244,8 @@ public:
         Application::update();
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
@@ -223,8 +260,9 @@ public:
 
     virtual void draw()
     {
-        drawToGBuffer(_camera);
-        drawToScreen(_renderDeferredShader, _camera);
+        drawToGBuffer(_gbufferFB, _renderToGBufferShader, _camera);
+        drawToShadowMap(_shadowFB, _renderToShadowMapShader, _lightCamera);
+        drawToScreen(_renderDeferredShader, _camera, _lightCamera);
 
         if (_showDebugQuads)
         {
@@ -232,43 +270,63 @@ public:
         }
     }
 
-    void drawToGBuffer(const CameraInfo& camera)
+    void drawToGBuffer(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera)
     {
-        //=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========
+        fb.bind();
 
-        _gbufferFB.bind();
-
-        glViewport(0, 0, _gbufferFB.width(), _gbufferFB.height());                
+        glViewport(0, 0, fb.width(), fb.height());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        _renderToGBufferShader.use();
-        _renderToGBufferShader.setMat4Uniform("viewMatrix", camera.viewMatrix);
-        _renderToGBufferShader.setMat4Uniform("projectionMatrix", camera.projMatrix);
+        shader.use();
+        shader.setMat4Uniform("viewMatrix", camera.viewMatrix);
+        shader.setMat4Uniform("projectionMatrix", camera.projMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         glBindTexture(GL_TEXTURE_2D, _brickTexId);
         glBindSampler(0, _sampler);
-        _renderToGBufferShader.setIntUniform("diffuseTex", 0);
+        shader.setIntUniform("diffuseTex", 0);
 
-        drawScene(_renderToGBufferShader, camera);
+        drawScene(shader, camera);
 
         glUseProgram(0); //Отключаем шейдер
 
-        _gbufferFB.unbind(); //Отключаем фреймбуфер
+        fb.unbind(); //Отключаем фреймбуфер
     }
 
-    void drawToScreen(const ShaderProgram& shader, const CameraInfo& camera)
+    void drawToShadowMap(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& lightCamera)
+    {
+        fb.bind();
+
+        glViewport(0, 0, fb.width(), fb.width());
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        shader.use();
+        shader.setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
+        shader.setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
+
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+
+        drawScene(shader, lightCamera);
+
+        glDisable(GL_CULL_FACE);
+
+        glUseProgram(0);
+
+        fb.unbind();
+    }
+
+    void drawToScreen(const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
 	{
 		//Получаем текущие размеры экрана и выставлям вьюпорт
 		int width, height;
 		glfwGetFramebufferSize(_window, &width, &height);
 
-		glViewport(0, 0, width, height);
-        
-		//Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+		glViewport(0, 0, width, height);        
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
+        shader.setMat4Uniform("viewMatrixInverse", glm::inverse(camera.viewMatrix));
         shader.setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
@@ -277,6 +335,12 @@ public:
         shader.setVec3Uniform("light.La", _light.ambient);
         shader.setVec3Uniform("light.Ld", _light.diffuse);
         shader.setVec3Uniform("light.Ls", _light.specular);
+
+        shader.setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
+        shader.setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
+
+        glm::mat4 projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
+        shader.setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
         		
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         glBindTexture(GL_TEXTURE_2D, _normalsTexId);
@@ -292,6 +356,11 @@ public:
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glBindSampler(2, _sampler);
         shader.setIntUniform("depthTex", 2);
+
+        glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3
+        glBindTexture(GL_TEXTURE_2D, _shadowTexId);
+        glBindSampler(1, _depthSampler);
+        shader.setIntUniform("shadowTex", 3);
         
         quad.draw(); //main light
 
@@ -325,9 +394,11 @@ public:
 
     void drawDebug()
     {
+        int size = 500;
+
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        glViewport(0, 0, 500, 500);
+        glViewport(0, 0, size, size);
 
         _quadDepthShader.use();
 
@@ -338,7 +409,7 @@ public:
 
         quad.draw();
 
-        glViewport(500, 0, 500, 500);
+        glViewport(size, 0, size, size);
 
         _quadColorShader.use();
 
@@ -349,7 +420,7 @@ public:
 
         quad.draw();
 
-        glViewport(1000, 0, 500, 500);
+        glViewport(size * 2, 0, size, size);
 
         _quadColorShader.use();
 

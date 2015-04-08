@@ -45,7 +45,15 @@ void Framebuffer::initDrawBuffers()
         }
     }
 
-    glDrawBuffers(attachments.size(), attachments.data());
+    if (attachments.size() > 0)
+    {
+        glDrawBuffers(attachments.size(), attachments.data());
+    }
+    else
+    {
+        GLenum buffers[] = { GL_NONE };
+        glDrawBuffers(1, buffers);
+    }
 }
 
 void Framebuffer::resize(unsigned int width, unsigned int height)
