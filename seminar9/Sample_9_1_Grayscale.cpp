@@ -359,7 +359,7 @@ public:
 
         glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3
         glBindTexture(GL_TEXTURE_2D, _shadowTexId);
-        glBindSampler(1, _depthSampler);
+        glBindSampler(3, _depthSampler);
         shader.setIntUniform("shadowTex", 3);
         
         quad.draw(); //main light
@@ -371,6 +371,8 @@ public:
 
     void drawScene(const ShaderProgram& shader, const CameraInfo& camera)
     {
+        glFrontFace(GL_CW);
+
         shader.setMat4Uniform("modelMatrix", cube.modelMatrix());
         shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * cube.modelMatrix()))));
 
@@ -386,6 +388,8 @@ public:
 
         ground.draw();
 
+        glFrontFace(GL_CCW);
+
         shader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
         shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * bunny.modelMatrix()))));
         
@@ -393,46 +397,31 @@ public:
     }
 
     void drawDebug()
-    {
-        int size = 500;
-
+    {        
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        glViewport(0, 0, size, size);
+        int size = 500;
 
-        _quadDepthShader.use();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _depthTexId);
-        glBindSampler(0, _sampler);
-        _quadDepthShader.setIntUniform("tex", 0);
-
-        quad.draw();
-
-        glViewport(size, 0, size, size);
-
-        _quadColorShader.use();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _normalsTexId);
-        glBindSampler(0, _sampler);
-        _quadColorShader.setIntUniform("tex", 0);
-
-        quad.draw();
-
-        glViewport(size * 2, 0, size, size);
-
-        _quadColorShader.use();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
-        glBindSampler(0, _sampler);
-        _quadColorShader.setIntUniform("tex", 0);
-
-        quad.draw();
+        drawQuad(_quadDepthShader, _depthTexId, 0, 0, size, size);
+        drawQuad(_quadColorShader, _normalsTexId, size, 0, size, size);
+        drawQuad(_quadColorShader, _diffuseTexId, size * 2, 0, size, size);
 
         glBindSampler(0, 0);
         glUseProgram(0);
+    }
+
+    void drawQuad(const ShaderProgram& shader, GLuint& texId, GLint x, GLint y, GLint width, GLint height)
+    {
+        glViewport(x, y, width, height);
+
+        shader.use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("tex", 0);
+
+        quad.draw();
     }
 };
 

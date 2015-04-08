@@ -43,11 +43,8 @@ void main()
 	posCamSpace.xyz /= posCamSpace.w;
 	
 	vec4 posWorldSpace = viewMatrixInverse * projMatrixInverse * vec4(depthCoords, 1.0);
-	posWorldSpace.xyz /= posWorldSpace.w;
 	vec4 shadowTexCoord = lightScaleBiasMatrix * lightProjectionMatrix * lightViewMatrix * posWorldSpace;
 	float visibility = textureProj(shadowTex, shadowTexCoord); //глубина ближайшего фрагмента в пространстве источника света
-	//float visibility = 1.0;
-	//shadowTexCoord.xyz /= shadowTexCoord.w;
 			
 	vec3 normalColor = texture(normalsTex, texCoord).rgb;	
 	vec3 normal = normalize(normalColor * 2.0 - 1.0);
