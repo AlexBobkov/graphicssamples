@@ -24,7 +24,7 @@ float frand()
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
 /**
-Пример с тенями
+Пример эффектом постобработки - вывод изображения в оттенках серого
 */
 class SampleApplication : public Application
 {
@@ -48,6 +48,7 @@ public:
     ShaderProgram _renderToShadowMapShader;
     ShaderProgram _renderToGBufferShader;
     ShaderProgram _renderDeferredShader;
+    ShaderProgram _grayscaleShader;
 
 	//Переменные для управления положением одного источника света
 	float _lr;
@@ -68,7 +69,11 @@ public:
 	GLuint _cubeTexSampler;
     GLuint _depthSampler;
     
-    bool _showDebugQuads;
+    bool _applyEffect;
+
+    bool _showGBufferDebug;
+    bool _showShadowDebug;
+    bool _showDeferredDebug;
 
     Framebuffer _gbufferFB;
     GLuint _depthTexId;
@@ -77,6 +82,9 @@ public:
 
     Framebuffer _shadowFB;
     GLuint _shadowTexId;
+
+    Framebuffer _deferredFB;
+    GLuint _deferredTexId;
 
     //Старые размеры экрана
     int _oldWidth;
@@ -119,13 +127,34 @@ public:
         }
 
         _shadowFB.unbind();
+
+        //=========================================================
+
+        _deferredFB.create();
+        _deferredFB.bind();
+        _deferredFB.setSize(1024, 1024);
+
+        _deferredTexId = _deferredFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _deferredFB.initDrawBuffers();
+
+        if (!_deferredFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _deferredFB.unbind();
     }
 
 	virtual void makeScene()
 	{
 		Application::makeScene();   
 
-        _showDebugQuads = false;
+        _applyEffect = true;
+        _showGBufferDebug = false;
+        _showShadowDebug = false;
+        _showDeferredDebug = false;
 
 		//=========================================================
 		//Создание и загрузка мешей		
@@ -158,6 +187,7 @@ public:
         _renderToShadowMapShader.createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
         _renderToGBufferShader.createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
         _renderDeferredShader.createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
+        _grayscaleShader.createProgram("shaders9/quad.vert", "shaders9/grayscale.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
@@ -232,9 +262,21 @@ public:
 
         if (action == GLFW_PRESS)
         {
-            if (key == GLFW_KEY_Z)
+            if (key == GLFW_KEY_1)
             {
-                _showDebugQuads = !_showDebugQuads;
+                _applyEffect = !_applyEffect;
+            }
+            else if (key == GLFW_KEY_Z)
+            {
+                _showGBufferDebug = !_showGBufferDebug;
+            }
+            else if (key == GLFW_KEY_X)
+            {
+                _showShadowDebug = !_showShadowDebug;
+            }
+            else if (key == GLFW_KEY_C)
+            {
+                _showDeferredDebug = !_showDeferredDebug;
             }
         }
     }
@@ -247,11 +289,14 @@ public:
         _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
+        //Если размер окна изменился, то изменяем размеры фреймбуферов - перевыделяем память под текстуры
+
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
         if (width != _oldWidth || height != _oldHeight)
         {
             _gbufferFB.resize(width, height);
+            _deferredFB.resize(width, height);
 
             _oldWidth = width;
             _oldHeight = height;
@@ -260,14 +305,27 @@ public:
 
     virtual void draw()
     {
+        //Рендерим геометрию сцены в G-буфер
         drawToGBuffer(_gbufferFB, _renderToGBufferShader, _camera);
-        drawToShadowMap(_shadowFB, _renderToShadowMapShader, _lightCamera);
-        drawToScreen(_renderDeferredShader, _camera, _lightCamera);
 
-        if (_showDebugQuads)
+        //Рендерим геометрию сцены в теневую карту с позиции источника света
+        drawToShadowMap(_shadowFB, _renderToShadowMapShader, _lightCamera);
+
+        //Выполняем отложенное освещение, заодно накладывает тени, а результат записываем в текстуру
+        drawDeferred(_deferredFB, _renderDeferredShader, _camera, _lightCamera);
+
+        //Выводим полученную текстуру на экран, попутно применяя эффект постобработки
+        if (_applyEffect)
         {
-            drawDebug();
+            drawToScreen(_grayscaleShader);
         }
+        else
+        {
+            drawToScreen(_quadColorShader);
+        }
+
+        //Отладочный рендер текстур
+        drawDebug();
     }
 
     void drawToGBuffer(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera)
@@ -297,7 +355,7 @@ public:
     {
         fb.bind();
 
-        glViewport(0, 0, fb.width(), fb.width());
+        glViewport(0, 0, fb.width(), fb.height());
         glClear(GL_DEPTH_BUFFER_BIT);
 
         shader.use();
@@ -316,14 +374,12 @@ public:
         fb.unbind();
     }
 
-    void drawToScreen(const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
+    void drawDeferred(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
 	{
-		//Получаем текущие размеры экрана и выставлям вьюпорт
-		int width, height;
-		glfwGetFramebufferSize(_window, &width, &height);
+        fb.bind();
 
-		glViewport(0, 0, width, height);        
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, fb.width(), fb.height());
+        glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
         shader.setMat4Uniform("viewMatrixInverse", glm::inverse(camera.viewMatrix));
@@ -364,10 +420,33 @@ public:
         
         quad.draw(); //main light
 
-        //Отсоединяем сэмплер и шейдерную программу
-		glBindSampler(0, 0);
-		glUseProgram(0);
+        glUseProgram(0);
+
+        fb.unbind();
 	}
+
+    void drawToScreen(const ShaderProgram& shader)
+    {
+        //Получаем текущие размеры экрана и выставлям вьюпорт
+        int width, height;
+        glfwGetFramebufferSize(_window, &width, &height);
+
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        shader.use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _deferredTexId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("tex", 0);
+
+        quad.draw();
+
+        //Отсоединяем сэмплер и шейдерную программу
+        glBindSampler(0, 0);
+        glUseProgram(0);
+    }
 
     void drawScene(const ShaderProgram& shader, const CameraInfo& camera)
     {
@@ -402,9 +481,20 @@ public:
 
         int size = 500;
 
-        drawQuad(_quadDepthShader, _depthTexId, 0, 0, size, size);
-        drawQuad(_quadColorShader, _normalsTexId, size, 0, size, size);
-        drawQuad(_quadColorShader, _diffuseTexId, size * 2, 0, size, size);
+        if (_showGBufferDebug)
+        {
+            drawQuad(_quadDepthShader, _depthTexId, 0, 0, size, size);
+            drawQuad(_quadColorShader, _normalsTexId, size, 0, size, size);
+            drawQuad(_quadColorShader, _diffuseTexId, size * 2, 0, size, size);            
+        }
+        else if (_showShadowDebug)
+        {
+            drawQuad(_quadDepthShader, _shadowTexId, 0, 0, size, size);
+        }
+        else if (_showDeferredDebug)
+        {
+            drawQuad(_quadColorShader, _deferredTexId, 0, 0, size, size);
+        }
 
         glBindSampler(0, 0);
         glUseProgram(0);
