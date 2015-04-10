@@ -6,7 +6,7 @@
 
 #include "Texture.h"
 
-GLuint Texture::loadTexture(const std::string& filename)
+GLuint Texture::loadTexture(const std::string& filename, bool gamma)
 {
 	GLuint texId;
 
@@ -28,7 +28,7 @@ GLuint Texture::loadTexture(const std::string& filename)
 
 		glGenTextures(1, &texId);
 		glBindTexture(GL_TEXTURE_2D, texId);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
+        glTexImage2D(GL_TEXTURE_2D, 0, gamma ? GL_SRGB8 : GL_RGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 

@@ -261,4 +261,6 @@ void Application::update()
 
 	//Обновляем матрицу проекции на случай, если размеры окна изменились
 	_camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
+
+    TwRefreshBar(_bar);
 }

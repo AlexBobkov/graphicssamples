@@ -37,6 +37,12 @@ public:
 		glUniform1f(uniformLoc, value);
 	}
 
+    void setVec2Uniform(const std::string& name, const glm::vec2& vec) const
+    {
+        GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
+        glUniform2fv(uniformLoc, 1, glm::value_ptr(vec));
+    }
+
     void setVec3Uniform(const std::string& name, const glm::vec3& vec) const
 	{
 		GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());

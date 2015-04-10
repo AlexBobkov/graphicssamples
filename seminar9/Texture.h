@@ -11,7 +11,7 @@
 class Texture
 {
 public:
-	static GLuint loadTexture(const std::string& filename);
+	static GLuint loadTexture(const std::string& filename, bool gamma = false);
 
 	static GLuint loadTextureWithMipmaps(const std::string& filename);
 

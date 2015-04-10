@@ -24,7 +24,7 @@ float frand()
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
 /**
-Пример эффектом постобработки - вывод изображения в оттенках серого
+Пример эффектом постобработки - вывод изображения с гамма-коррекцией
 */
 class SampleApplication : public Application
 {
@@ -48,7 +48,7 @@ public:
     ShaderProgram _renderToShadowMapShader;
     ShaderProgram _renderToGBufferShader;
     ShaderProgram _renderDeferredShader;
-    ShaderProgram _grayscaleShader;
+    ShaderProgram _gammaShader;
 
 	//Переменные для управления положением одного источника света
 	float _lr;
@@ -60,6 +60,7 @@ public:
     
 	GLuint _worldTexId;
 	GLuint _brickTexId;
+    GLuint _brickGammaTexId;
 	GLuint _grassTexId;
 	GLuint _chessTexId;
 	GLuint _myTexId;
@@ -70,6 +71,7 @@ public:
     GLuint _depthSampler;
     
     bool _applyEffect;
+    bool _applyGammaTexture;
 
     bool _showGBufferDebug;
     bool _showShadowDebug;
@@ -152,6 +154,7 @@ public:
 		Application::makeScene();   
 
         _applyEffect = true;
+        _applyGammaTexture = true;
         _showGBufferDebug = false;
         _showShadowDebug = false;
         _showDeferredDebug = false;
@@ -187,7 +190,7 @@ public:
         _renderToShadowMapShader.createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
         _renderToGBufferShader.createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
         _renderDeferredShader.createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
-        _grayscaleShader.createProgram("shaders9/quad.vert", "shaders9/grayscale.frag");
+        _gammaShader.createProgram("shaders9/quad.vert", "shaders9/gamma.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
@@ -203,7 +206,8 @@ public:
 		//=========================================================
 		//Загрузка и создание текстур
 		_worldTexId = Texture::loadTexture("images/earth_global.jpg");
-		_brickTexId = Texture::loadTexture("images/brick.jpg");
+		_brickTexId = Texture::loadTexture("images/brick.jpg", false);
+        _brickGammaTexId = Texture::loadTexture("images/brick.jpg", true);
 		_grassTexId = Texture::loadTexture("images/grass.jpg");
 		_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
 		_myTexId = Texture::makeProceduralTexture();
@@ -254,7 +258,8 @@ public:
 		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
 		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
 		TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
-        TwAddVarRO(_bar, "Grayscale", TW_TYPE_BOOLCPP, &_applyEffect, "");
+        TwAddVarRO(_bar, "Gamma", TW_TYPE_BOOLCPP, &_applyEffect, "");
+        TwAddVarRO(_bar, "Texture_SRGB", TW_TYPE_BOOLCPP, &_applyGammaTexture, "");
 	}
 
     virtual void handleKey(int key, int scancode, int action, int mods)
@@ -266,6 +271,10 @@ public:
             if (key == GLFW_KEY_1)
             {
                 _applyEffect = !_applyEffect;
+            }
+            else if (key == GLFW_KEY_2)
+            {
+                _applyGammaTexture = !_applyGammaTexture;
             }
             else if (key == GLFW_KEY_Z)
             {
@@ -284,7 +293,7 @@ public:
 
     void update()
     {
-        Application::update();
+        Application::update();        
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -318,7 +327,7 @@ public:
         //Выводим полученную текстуру на экран, попутно применяя эффект постобработки
         if (_applyEffect)
         {
-            drawToScreen(_grayscaleShader);
+            drawToScreen(_gammaShader);
         }
         else
         {
@@ -341,7 +350,7 @@ public:
         shader.setMat4Uniform("projectionMatrix", camera.projMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        glBindTexture(GL_TEXTURE_2D, _applyGammaTexture ? _brickGammaTexId : _brickTexId);
         glBindSampler(0, _sampler);
         shader.setIntUniform("diffuseTex", 0);
 

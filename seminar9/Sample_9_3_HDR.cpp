@@ -24,7 +24,7 @@ float frand()
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
 /**
-Пример эффектом постобработки - вывод изображения в оттенках серого
+Пример эффектом постобработки - вывод изображения с гамма-коррекцией
 */
 class SampleApplication : public Application
 {
@@ -48,13 +48,18 @@ public:
     ShaderProgram _renderToShadowMapShader;
     ShaderProgram _renderToGBufferShader;
     ShaderProgram _renderDeferredShader;
-    ShaderProgram _grayscaleShader;
+    ShaderProgram _gammaShader;
+    ShaderProgram _brightShader;
+    ShaderProgram _horizBlurShader;
+    ShaderProgram _vertBlurShader;
+    ShaderProgram _toneMappingShader;
 
 	//Переменные для управления положением одного источника света
 	float _lr;
 	float _phi;
 	float _theta;
 		
+    float _lightIntensity;
 	LightInfo _light;
     CameraInfo _lightCamera;
     
@@ -66,14 +71,18 @@ public:
 	GLuint _cubeTexId;    
 
 	GLuint _sampler;
+    GLuint _repeatSampler;
 	GLuint _cubeTexSampler;
     GLuint _depthSampler;
     
     bool _applyEffect;
-
+    
     bool _showGBufferDebug;
     bool _showShadowDebug;
     bool _showDeferredDebug;
+    bool _showHDRDebug;
+
+    float _exposure; //Параметр алгоритма ToneMapping
 
     Framebuffer _gbufferFB;
     GLuint _depthTexId;
@@ -85,6 +94,18 @@ public:
 
     Framebuffer _deferredFB;
     GLuint _deferredTexId;
+
+    Framebuffer _brightFB;
+    GLuint _brightTexId;
+
+    Framebuffer _horizBlurFB;
+    GLuint _horizBlurTexId;
+
+    Framebuffer _vertBlurFB;
+    GLuint _vertBlurTexId;
+
+    Framebuffer _toneMappingFB;
+    GLuint _toneMappingTexId;
 
     //Старые размеры экрана
     int _oldWidth;
@@ -134,7 +155,7 @@ public:
         _deferredFB.bind();
         _deferredFB.setSize(1024, 1024);
 
-        _deferredTexId = _deferredFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+        _deferredTexId = _deferredFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
 
         _deferredFB.initDrawBuffers();
 
@@ -145,6 +166,78 @@ public:
         }
 
         _deferredFB.unbind();
+
+        //=========================================================
+
+        _brightFB.create();
+        _brightFB.bind();
+        _brightFB.setSize(512, 512); //В 2 раза меньше
+
+        _brightTexId = _brightFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+
+        _brightFB.initDrawBuffers();
+
+        if (!_brightFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _brightFB.unbind();
+
+        //=========================================================
+
+        _horizBlurFB.create();
+        _horizBlurFB.bind();
+        _horizBlurFB.setSize(512, 512); //В 2 раза меньше
+
+        _horizBlurTexId = _horizBlurFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+
+        _horizBlurFB.initDrawBuffers();
+
+        if (!_horizBlurFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _horizBlurFB.unbind();
+
+        //=========================================================
+
+        _vertBlurFB.create();
+        _vertBlurFB.bind();
+        _vertBlurFB.setSize(512, 512); //В 2 раза меньше
+
+        _vertBlurTexId = _vertBlurFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+
+        _vertBlurFB.initDrawBuffers();
+
+        if (!_vertBlurFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _vertBlurFB.unbind();
+
+        //=========================================================
+
+        _toneMappingFB.create();
+        _toneMappingFB.bind();
+        _toneMappingFB.setSize(1024, 1024);
+
+        _toneMappingTexId = _toneMappingFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _toneMappingFB.initDrawBuffers();
+
+        if (!_toneMappingFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _toneMappingFB.unbind();
     }
 
 	virtual void makeScene()
@@ -155,6 +248,7 @@ public:
         _showGBufferDebug = false;
         _showShadowDebug = false;
         _showDeferredDebug = false;
+        _showHDRDebug = false;
 
 		//=========================================================
 		//Создание и загрузка мешей		
@@ -187,13 +281,19 @@ public:
         _renderToShadowMapShader.createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
         _renderToGBufferShader.createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
         _renderDeferredShader.createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
-        _grayscaleShader.createProgram("shaders9/quad.vert", "shaders9/grayscale.frag");
+        _gammaShader.createProgram("shaders9/quad.vert", "shaders9/gamma.frag");
+        _brightShader.createProgram("shaders9/quad.vert", "shaders9/bright.frag");
+        _horizBlurShader.createProgram("shaders9/quad.vert", "shaders9/horizblur.frag");
+        _vertBlurShader.createProgram("shaders9/quad.vert", "shaders9/vertblur.frag");
+        _toneMappingShader.createProgram("shaders9/quad.vert", "shaders9/tonemapping.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
 		_lr = 10.0;
 		_phi = 0.0f;
 		_theta = 0.48f;
+
+        _lightIntensity = 1.0f;
 
 		_light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
 		_light.ambient = glm::vec3(0.2, 0.2, 0.2);
@@ -203,7 +303,7 @@ public:
 		//=========================================================
 		//Загрузка и создание текстур
 		_worldTexId = Texture::loadTexture("images/earth_global.jpg");
-		_brickTexId = Texture::loadTexture("images/brick.jpg");
+		_brickTexId = Texture::loadTexture("images/brick.jpg", true); //sRGB
 		_grassTexId = Texture::loadTexture("images/grass.jpg");
 		_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
 		_myTexId = Texture::makeProceduralTexture();
@@ -214,8 +314,14 @@ public:
 		glGenSamplers(1, &_sampler);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glGenSamplers(1, &_repeatSampler);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		glGenSamplers(1, &_cubeTexSampler);
 		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -242,6 +348,8 @@ public:
         //Инициализация фреймбуфера для рендера теневой карты
 
         initFramebuffers();
+
+        _exposure = 1.0f;
 	}
 
 	virtual void initGUI()
@@ -251,10 +359,12 @@ public:
 		TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
 		TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
 		TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
+        TwAddVarRW(_bar, "intensity", TW_TYPE_FLOAT, &_lightIntensity, "group=Light step=0.01 min=0.0 max=100.0");
 		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
 		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
 		TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
-        TwAddVarRO(_bar, "Grayscale", TW_TYPE_BOOLCPP, &_applyEffect, "");
+        TwAddVarRO(_bar, "HDR", TW_TYPE_BOOLCPP, &_applyEffect, "");
+        TwAddVarRW(_bar, "Exposure", TW_TYPE_FLOAT, &_exposure, "min=0.01 max=100.0 step=0.01");        
 	}
 
     virtual void handleKey(int key, int scancode, int action, int mods)
@@ -279,12 +389,16 @@ public:
             {
                 _showDeferredDebug = !_showDeferredDebug;
             }
+            else if (key == GLFW_KEY_V)
+            {
+                _showHDRDebug = !_showHDRDebug;
+            }
         }
     }
 
     void update()
     {
-        Application::update();
+        Application::update();        
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -298,6 +412,11 @@ public:
         {
             _gbufferFB.resize(width, height);
             _deferredFB.resize(width, height);
+
+            _brightFB.resize(width / 2, height / 2);
+            _horizBlurFB.resize(width / 2, height / 2);
+            _vertBlurFB.resize(width / 2, height / 2);
+            _toneMappingFB.resize(width, height);
 
             _oldWidth = width;
             _oldHeight = height;
@@ -314,15 +433,22 @@ public:
 
         //Выполняем отложенное освещение, заодно накладывает тени, а результат записываем в текстуру
         drawDeferred(_deferredFB, _renderDeferredShader, _camera, _lightCamera);
+        
+        //Получаем текстуру с яркими областями
+        drawProcessTexture(_brightFB, _brightShader, _deferredTexId, _deferredFB.width(), _deferredFB.height());
 
-        //Выводим полученную текстуру на экран, попутно применяя эффект постобработки
+        //Выполняем размытие текстуры с яркими областями
+        drawProcessTexture(_horizBlurFB, _horizBlurShader, _brightTexId, _brightFB.width(), _brightFB.height());
+        drawProcessTexture(_vertBlurFB, _vertBlurShader, _horizBlurTexId, _horizBlurFB.width(), _horizBlurFB.height());
+
         if (_applyEffect)
         {
-            drawToScreen(_grayscaleShader);
+            drawToneMapping(_toneMappingFB, _toneMappingShader);
+            drawToScreen(_gammaShader, _toneMappingTexId);
         }
         else
         {
-            drawToScreen(_quadColorShader);
+            drawToScreen(_gammaShader, _deferredTexId);
         }
 
         //Отладочный рендер текстур
@@ -342,7 +468,7 @@ public:
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         glBindTexture(GL_TEXTURE_2D, _brickTexId);
-        glBindSampler(0, _sampler);
+        glBindSampler(0, _repeatSampler);
         shader.setIntUniform("diffuseTex", 0);
 
         drawScene(shader, camera);
@@ -389,9 +515,9 @@ public:
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient);
-        shader.setVec3Uniform("light.Ld", _light.diffuse);
-        shader.setVec3Uniform("light.Ls", _light.specular);
+        shader.setVec3Uniform("light.La", _light.ambient * _lightIntensity);
+        shader.setVec3Uniform("light.Ld", _light.diffuse * _lightIntensity);
+        shader.setVec3Uniform("light.Ls", _light.specular * _lightIntensity);
 
         shader.setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
         shader.setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
@@ -419,14 +545,65 @@ public:
         glBindSampler(3, _depthSampler);
         shader.setIntUniform("shadowTex", 3);
         
-        quad.draw(); //main light
+        quad.draw();
 
         glUseProgram(0);
 
         fb.unbind();
 	}
 
-    void drawToScreen(const ShaderProgram& shader)
+    void drawProcessTexture(const Framebuffer& fb, const ShaderProgram& shader, GLuint inputTextureId, int inputTexWidth, int inputTexHeight)
+    {
+        fb.bind();
+
+        glViewport(0, 0, fb.width(), fb.height());
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.use();
+
+        shader.setVec2Uniform("texSize", glm::vec2(inputTexWidth, inputTexHeight));
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, inputTextureId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("tex", 0);
+
+        quad.draw();
+
+        glUseProgram(0);
+
+        fb.unbind();
+    }
+
+    void drawToneMapping(const Framebuffer& fb, const ShaderProgram& shader)
+    {
+        fb.bind();
+
+        glViewport(0, 0, fb.width(), fb.height());
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.use();
+
+        shader.setFloatUniform("exposure", _exposure);
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _deferredTexId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("tex", 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, _vertBlurTexId);
+        glBindSampler(1, _sampler);
+        shader.setIntUniform("bloomTex", 1);
+
+        quad.draw();
+
+        glUseProgram(0);
+
+        fb.unbind();
+    }
+
+    void drawToScreen(const ShaderProgram& shader, GLuint inputTextureId)
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -438,7 +615,7 @@ public:
         shader.use();
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _deferredTexId);
+        glBindTexture(GL_TEXTURE_2D, inputTextureId);
         glBindSampler(0, _sampler);
         shader.setIntUniform("tex", 0);
 
@@ -486,7 +663,7 @@ public:
         {
             drawQuad(_quadDepthShader, _depthTexId, 0, 0, size, size);
             drawQuad(_quadColorShader, _normalsTexId, size, 0, size, size);
-            drawQuad(_quadColorShader, _diffuseTexId, size * 2, 0, size, size);            
+            drawQuad(_quadColorShader, _diffuseTexId, size * 2, 0, size, size);
         }
         else if (_showShadowDebug)
         {
@@ -495,6 +672,12 @@ public:
         else if (_showDeferredDebug)
         {
             drawQuad(_quadColorShader, _deferredTexId, 0, 0, size, size);
+        }
+        else if (_showHDRDebug)
+        {
+            drawQuad(_quadColorShader, _brightTexId, 0, 0, size, size);
+            drawQuad(_quadColorShader, _horizBlurTexId, size, 0, size, size);
+            drawQuad(_quadColorShader, _vertBlurTexId, size * 2, 0, size, size);
         }
 
         glBindSampler(0, 0);
