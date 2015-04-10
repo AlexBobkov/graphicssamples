@@ -55,6 +55,7 @@ public:
     ShaderProgram _vertBlurShader;
     ShaderProgram _toneMappingShader;
     ShaderProgram _ssaoShader;
+    ShaderProgram _dofShader;
 
 	//Переменные для управления положением одного источника света
 	float _lr;
@@ -85,8 +86,11 @@ public:
     bool _showDeferredDebug;
     bool _showHDRDebug;
     bool _showSSAODebug;
+    bool _showDoFDebug;
 
     float _exposure; //Параметр алгоритма ToneMapping
+    float _focalDistance;
+    float _focalRange;
 
     Framebuffer _gbufferFB;
     GLuint _depthTexId;
@@ -113,6 +117,15 @@ public:
 
     Framebuffer _ssaoFB;
     GLuint _ssaoTexId;
+
+    Framebuffer _horizBlurDofFB;
+    GLuint _horizBlurDofTexId;
+
+    Framebuffer _vertBlurDofFB;
+    GLuint _vertBlurDofTexId;
+
+    Framebuffer _dofFB;
+    GLuint _dofTexId;
 
     //Старые размеры экрана
     int _oldWidth;
@@ -263,6 +276,60 @@ public:
         }
 
         _ssaoFB.unbind();
+
+        //=========================================================
+
+        _horizBlurDofFB.create();
+        _horizBlurDofFB.bind();
+        _horizBlurDofFB.setSize(512, 512); //В 2 раза меньше
+
+        _horizBlurDofTexId = _horizBlurDofFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _horizBlurDofFB.initDrawBuffers();
+
+        if (!_horizBlurDofFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _horizBlurDofFB.unbind();
+
+        //=========================================================
+
+        _vertBlurDofFB.create();
+        _vertBlurDofFB.bind();
+        _vertBlurDofFB.setSize(512, 512); //В 2 раза меньше
+
+        _vertBlurDofTexId = _vertBlurDofFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _vertBlurDofFB.initDrawBuffers();
+
+        if (!_vertBlurDofFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _vertBlurDofFB.unbind();
+
+        //=========================================================
+
+        _dofFB.create();
+        _dofFB.bind();
+        _dofFB.setSize(1024, 1024);
+
+        _dofTexId = _dofFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _dofFB.initDrawBuffers();
+
+        if (!_dofFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _dofFB.unbind();
     }
 
 	virtual void makeScene()
@@ -275,6 +342,7 @@ public:
         _showDeferredDebug = false;
         _showHDRDebug = false;
         _showSSAODebug = false;
+        _showDoFDebug = false;
 
 		//=========================================================
 		//Создание и загрузка мешей		
@@ -314,6 +382,7 @@ public:
         _vertBlurShader.createProgram("shaders9/quad.vert", "shaders9/vertblur.frag");
         _toneMappingShader.createProgram("shaders9/quad.vert", "shaders9/tonemapping.frag");
         _ssaoShader.createProgram("shaders9/quad.vert", "shaders9/ssao.frag");
+        _dofShader.createProgram("shaders9/quad.vert", "shaders9/dof.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
@@ -379,6 +448,9 @@ public:
         initFramebuffers();
 
         _exposure = 1.0f;
+
+        _focalDistance = 5.0f;
+        _focalRange = 1.0f;
 	}
 
 	virtual void initGUI()
@@ -392,8 +464,10 @@ public:
 		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
 		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
 		TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
-        TwAddVarRO(_bar, "SSAO", TW_TYPE_BOOLCPP, &_applyEffect, "");
-        TwAddVarRW(_bar, "Exposure", TW_TYPE_FLOAT, &_exposure, "min=0.01 max=100.0 step=0.01");        
+        TwAddVarRO(_bar, "DoF", TW_TYPE_BOOLCPP, &_applyEffect, "");
+        TwAddVarRW(_bar, "Exposure", TW_TYPE_FLOAT, &_exposure, "min=0.01 max=100.0 step=0.01");
+        TwAddVarRW(_bar, "Focal distance", TW_TYPE_FLOAT, &_focalDistance, "min=1.0 max=100.0 step=0.1");
+        TwAddVarRW(_bar, "Focal range", TW_TYPE_FLOAT, &_focalRange, "min=0.1 max=100.0 step=0.1");
 	}
 
     virtual void handleKey(int key, int scancode, int action, int mods)
@@ -426,6 +500,10 @@ public:
             {
                 _showSSAODebug = !_showSSAODebug;
             }
+            else if (key == GLFW_KEY_N)
+            {
+                _showDoFDebug = !_showDoFDebug;
+            }
         }
     }
 
@@ -453,6 +531,10 @@ public:
 
             _ssaoFB.resize(width, height);
 
+            _horizBlurDofFB.resize(width / 2, height / 2);
+            _vertBlurDofFB.resize(width / 2, height / 2);
+            _dofFB.resize(width, height);
+
             _oldWidth = width;
             _oldHeight = height;
         }
@@ -469,15 +551,10 @@ public:
         //Генерируем Ambient Occlusion текстуру
         drawSSAO(_ssaoFB, _ssaoShader, _camera);
 
-        if (_applyEffect)
-        {
-            //Выполняем отложенное освещение, заодно накладывает тени, а результат записываем в текстуру
-            drawDeferred(_deferredFB, _renderDeferredWithSSAOShader, _camera, _lightCamera);
-        }
-        else
-        {
-            drawDeferred(_deferredFB, _renderDeferredShader, _camera, _lightCamera);
-        }
+        
+        //Выполняем отложенное освещение, заодно накладывает тени, а результат записываем в текстуру
+        drawDeferred(_deferredFB, _renderDeferredWithSSAOShader, _camera, _lightCamera);
+        
         
         //Получаем текстуру с яркими областями
         drawProcessTexture(_brightFB, _brightShader, _deferredTexId, _deferredFB.width(), _deferredFB.height());
@@ -485,9 +562,23 @@ public:
         //Выполняем размытие текстуры с яркими областями
         drawProcessTexture(_horizBlurFB, _horizBlurShader, _brightTexId, _brightFB.width(), _brightFB.height());
         drawProcessTexture(_vertBlurFB, _vertBlurShader, _horizBlurTexId, _horizBlurFB.width(), _horizBlurFB.height());
-                
+
         drawToneMapping(_toneMappingFB, _toneMappingShader);
-        drawToScreen(_gammaShader, _toneMappingTexId);
+
+        drawProcessTexture(_horizBlurDofFB, _horizBlurShader, _toneMappingTexId, _toneMappingFB.width(), _toneMappingFB.height());
+        drawProcessTexture(_vertBlurDofFB, _vertBlurShader, _horizBlurDofTexId, _horizBlurDofFB.width(), _horizBlurDofFB.height());
+
+        drawDoF(_dofFB, _dofShader, _camera);
+        
+        if (_applyEffect)
+        {
+            drawToScreen(_gammaShader, _dofTexId);
+        }
+        else
+        {
+            drawToScreen(_gammaShader, _toneMappingTexId);
+        }
+        
         
         //Отладочный рендер текстур
         drawDebug();
@@ -615,6 +706,41 @@ public:
         glBindTexture(GL_TEXTURE_2D, _rotateTexId);
         glBindSampler(1, _repeatSampler);
         shader.setIntUniform("rotateTex", 1);
+
+        quad.draw();
+
+        glUseProgram(0);
+
+        fb.unbind();
+    }
+
+    void drawDoF(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera)
+    {
+        fb.bind();
+
+        glViewport(0, 0, fb.width(), fb.height());
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader.use();
+        shader.setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
+        
+        shader.setFloatUniform("focalDistance", _focalDistance);
+        shader.setFloatUniform("focalRange", _focalRange);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glBindTexture(GL_TEXTURE_2D, _toneMappingTexId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("tex", 0);
+
+        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
+        glBindTexture(GL_TEXTURE_2D, _vertBlurDofTexId);
+        glBindSampler(1, _sampler);
+        shader.setIntUniform("blurTex", 1);
+
+        glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
+        glBindTexture(GL_TEXTURE_2D, _depthTexId);
+        glBindSampler(2, _sampler);
+        shader.setIntUniform("depthTex", 2);
 
         quad.draw();
 
@@ -753,6 +879,10 @@ public:
         else if (_showSSAODebug)
         {
             drawQuad(_quadColorShader, _ssaoTexId, 0, 0, size, size);
+        }
+        else if (_showDoFDebug)
+        {
+            drawQuad(_quadColorShader, _vertBlurDofTexId, 0, 0, size, size);
         }
 
         glBindSampler(0, 0);
