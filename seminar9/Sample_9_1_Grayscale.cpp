@@ -24,7 +24,7 @@ float frand()
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
 /**
-Пример эффектом постобработки - вывод изображения в оттенках серого
+Пример эффекта постобработки - вывод изображения в оттенках серого
 */
 class SampleApplication : public Application
 {

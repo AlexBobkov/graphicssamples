@@ -24,7 +24,7 @@ float frand()
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
 /**
-Пример эффектом постобработки - вывод изображения с гамма-коррекцией
+Пример эффекта Screen Space Ambient Occlusion
 */
 class SampleApplication : public Application
 {
