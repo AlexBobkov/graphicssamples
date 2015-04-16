@@ -79,3 +79,17 @@ void ShaderProgram::createProgram(const std::string& vertFilename, const std::st
 
 	_shaderId = shaderProgram;
 }
+
+void ShaderProgram::setVec3UniformArray(const std::string& name, const std::vector<glm::vec3>& positions) const
+{
+    std::vector<float> data;
+    for (unsigned int i = 0; i < positions.size(); i++)
+    {
+        data.push_back(positions[i].x);
+        data.push_back(positions[i].y);
+        data.push_back(positions[i].z);
+    }
+
+    GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
+    glUniform3fv(uniformLoc, data.size() / 3, data.data());
+}

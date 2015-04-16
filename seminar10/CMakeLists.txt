@@ -18,6 +18,9 @@ SET(HEADER_FILES
 
 SET(SHADER_FILES
 	shaders10/instancingNoMatrix.vert	
+	shaders10/instancingUniform.vert	
+	shaders10/instancingTexture.vert	
+	shaders10/instancingDivisor.vert	
 )
 
 SOURCE_GROUP("Shaders" FILES	

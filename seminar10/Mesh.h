@@ -70,6 +70,11 @@ public:
     */
     void loadFromFileArray(const std::string& filename, std::vector<glm::vec3>& positions);
 
+    /**
+    Для примера с инстансингом. Добавляет ещё один вершинный атрибут с разделителем (divisor)
+    */
+    void addInstancedData(int attrNum, std::vector<glm::vec3>& positions);
+
 protected:
 	GLuint _primitiveType;
 	GLuint _vao;

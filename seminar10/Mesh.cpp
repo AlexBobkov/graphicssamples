@@ -568,6 +568,30 @@ void Mesh::loadFromFileArray(const std::string& filename, std::vector<glm::vec3>
     glBindVertexArray(0);
 }
 
+void Mesh::addInstancedData(int attrNum, std::vector<glm::vec3>& positions)
+{
+    std::vector<float> data;
+    for (unsigned int i = 0; i < positions.size(); i++)
+    {
+        data.push_back(positions[i].x);
+        data.push_back(positions[i].y);
+        data.push_back(positions[i].z);
+    }
+
+    GLuint vbo = 0;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
+
+    glBindVertexArray(_vao);
+    glEnableVertexAttribArray(attrNum);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glVertexAttribPointer(attrNum, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glVertexAttribDivisor(attrNum, 1);
+
+    glBindVertexArray(0);
+}
+
 void Mesh::draw()
 {
 	glBindVertexArray(_vao);

@@ -180,3 +180,30 @@ GLuint Texture::loadCubeTexture(const std::string& basefilename)
 
 	return texId;
 }
+
+GLuint Texture::makeTextureBuffer(std::vector<glm::vec3>& positions)
+{
+    std::vector<float> data;
+    for (unsigned int i = 0; i < positions.size(); i++)
+    {
+        data.push_back(positions[i].x);
+        data.push_back(positions[i].y);
+        data.push_back(positions[i].z);
+    }
+
+    GLuint texBufferId;
+    glGenBuffers(1, &texBufferId);
+    glBindBuffer(GL_TEXTURE_BUFFER, texBufferId);
+    glBufferData(GL_TEXTURE_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
+
+    GLuint texId;
+    glGenTextures(1, &texId);
+    glBindTexture(GL_TEXTURE_BUFFER, texId);
+
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, texBufferId);
+
+    glBindBuffer(GL_TEXTURE_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_BUFFER, 0);
+
+    return texId;
+}

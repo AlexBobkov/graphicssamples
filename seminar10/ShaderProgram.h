@@ -67,6 +67,8 @@ public:
 		glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
 	}
 
+    void setVec3UniformArray(const std::string& name, const std::vector<glm::vec3>& positions) const;
+
 protected:
 	/**
 	Вспомогательная функция для загрузки текста шейдера из файла и создания шейдерного объекта

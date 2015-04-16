@@ -49,7 +49,11 @@ public:
 	ShaderProgram _skyboxShader;
 	ShaderProgram _quadDepthShader;
     ShaderProgram _quadColorShader;
+
     ShaderProgram _instancingNoMatrixShader;
+    ShaderProgram _instancingUniformShader;
+    ShaderProgram _instancingTextureShader;
+    ShaderProgram _instancingDivisorShader;
 
 	//Переменные для управления положением одного источника света
 	float _lr;
@@ -65,6 +69,8 @@ public:
 	GLuint _chessTexId;
 	GLuint _myTexId;
 	GLuint _cubeTexId;    
+
+    GLuint _bufferTexId;
 
 	GLuint _sampler;
 	GLuint _cubeTexSampler;
@@ -130,6 +136,9 @@ public:
 		_quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
         _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
         _instancingNoMatrixShader.createProgram("shaders10/instancingNoMatrix.vert", "shaders6/common.frag");
+        _instancingUniformShader.createProgram("shaders10/instancingUniform.vert", "shaders6/common.frag");
+        _instancingTextureShader.createProgram("shaders10/instancingTexture.vert", "shaders6/common.frag");
+        _instancingDivisorShader.createProgram("shaders10/instancingDivisor.vert", "shaders6/common.frag");
 
 		//=========================================================
 		//Инициализация значений переменных освщения
@@ -182,12 +191,16 @@ public:
         srand((int)(glfwGetTime() * 1000));
 
         float size = 50.0f;
-        for (int i = 0; i < 2500; i++)
+        for (int i = 0; i < 500; i++)
         {
             _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
         }
 
         teapotArray.loadFromFileArray("models/teapot.obj", _positions);
+
+        _bufferTexId = Texture::makeTextureBuffer(_positions);
+
+        teapot.addInstancedData(3, _positions);
 	}
 
 	virtual void initGUI()
@@ -293,7 +306,22 @@ public:
         
         if (_noMatrixInstancing)
         {
-            drawInstancedScene(_instancingNoMatrixShader);
+            drawNoMatrixInstancedScene(_instancingNoMatrixShader);
+        }
+
+        if (_uniformInstancing)
+        {
+            drawUniformInstancedScene(_instancingUniformShader);
+        }
+
+        if (_textureInstancing)
+        {
+            drawTextureInstancedScene(_instancingTextureShader);
+        }
+
+        if (_divisorInstancing)
+        {
+            drawDivisorInstancedScene(_instancingDivisorShader);
         }
 
         //Отсоединяем сэмплер и шейдерную программу
@@ -330,8 +358,6 @@ public:
                 shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
                 teapot.draw();
-
-                glBindVertexArray(0);
             }
         }
 
@@ -346,7 +372,91 @@ public:
         }        
     }
 
-    void drawInstancedScene(const ShaderProgram& shader)
+    void drawNoMatrixInstancedScene(const ShaderProgram& shader)
+    {
+        shader.use();
+
+        //Загружаем на видеокарту значения юниформ-переменных
+        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+
+        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
+        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader.setVec3Uniform("light.La", _light.ambient);
+        shader.setVec3Uniform("light.Ld", _light.diffuse);
+        shader.setVec3Uniform("light.Ls", _light.specular);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("diffuseTex", 0);
+
+        glm::mat4 modelMatrix = glm::mat4(1.0);
+        shader.setMat4Uniform("modelMatrix", modelMatrix);
+        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+
+        teapot.drawInstanced(_positions.size());
+    }
+
+    void drawUniformInstancedScene(const ShaderProgram& shader)
+    {
+        shader.use();
+
+        //Загружаем на видеокарту значения юниформ-переменных
+        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+
+        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
+        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader.setVec3Uniform("light.La", _light.ambient);
+        shader.setVec3Uniform("light.Ld", _light.diffuse);
+        shader.setVec3Uniform("light.Ls", _light.specular);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("diffuseTex", 0);
+
+        shader.setVec3UniformArray("positions", _positions);
+
+        glm::mat4 modelMatrix = glm::mat4(1.0);
+        shader.setMat4Uniform("modelMatrix", modelMatrix);
+        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+
+        teapot.drawInstanced(_positions.size());
+    }
+
+    void drawTextureInstancedScene(const ShaderProgram& shader)
+    {
+        shader.use();
+
+        //Загружаем на видеокарту значения юниформ-переменных
+        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+
+        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
+        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader.setVec3Uniform("light.La", _light.ambient);
+        shader.setVec3Uniform("light.Ld", _light.diffuse);
+        shader.setVec3Uniform("light.Ls", _light.specular);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        glBindSampler(0, _sampler);
+        shader.setIntUniform("diffuseTex", 0);
+
+        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
+        glBindTexture(GL_TEXTURE_BUFFER, _bufferTexId);
+        shader.setIntUniform("texBuf", 1);        
+
+        glm::mat4 modelMatrix = glm::mat4(1.0);
+        shader.setMat4Uniform("modelMatrix", modelMatrix);
+        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+
+        teapot.drawInstanced(_positions.size());
+    }
+
+    void drawDivisorInstancedScene(const ShaderProgram& shader)
     {
         shader.use();
 

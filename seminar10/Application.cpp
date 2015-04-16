@@ -89,6 +89,8 @@ void Application::initContext()
 	}
 	glfwMakeContextCurrent(_window);
 
+    glfwSwapInterval(0); //Отключаем вертикальную синхронизацию
+
 	glfwSetWindowUserPointer(_window, this); //Регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова}
 
 	glfwSetKeyCallback(_window, keyCallback); //Регистрирует функцию обратного вызова для обработки событий клавиатуры
