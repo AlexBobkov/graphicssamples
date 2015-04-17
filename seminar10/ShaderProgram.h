@@ -20,6 +20,10 @@ public:
 	*/
 	void createProgram(const std::string& vertFilename, const std::string& fragFilename);
 
+    void createProgram(const std::string& vertFilename, const std::string& geomFilename, const std::string& fragFilename);
+
+    void createProgramForTransformFeedback(const std::string& vertFilename, const std::string& fragFilename, const std::vector<std::string>& attribs);
+
 	void use() const
 	{
 		glUseProgram(_shaderId);
