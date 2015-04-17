@@ -121,7 +121,7 @@ public:
 
 		ground.makeGroundPlane(5.0f, 2.0f);
 
-		marker.makeSphere(0.1);
+		marker.makeSphere(0.1f);
 
 		backgroundCube.makeCube(10.0f);
 
@@ -188,30 +188,13 @@ public:
 
         srand((int)(glfwGetTime() * 1000));
 
-#if 0
-        float size = 50.0f;
-        for (int i = 0; i < 500; i++)
-        {
-            _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
-        }
-#endif
-
         for (unsigned int i = 0; i < numParticles; i++)
         {
-            Particle p;
-            p.position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, frand() * 5.0);
-            p.velocity = glm::vec3(frand() * 0.01, frand() * 0.01, 0.0);
-            p.startTime = frand() * lifeTime;
-            _particles.push_back(p);
-        }
+            _particlePositions.push_back(0.0f);
+            _particlePositions.push_back(0.0f);
+            _particlePositions.push_back(0.0f);
 
-        for (unsigned int i = 0; i < _particles.size(); i++)
-        {
-            _particlePositions.push_back(_particles[i].position.x);
-            _particlePositions.push_back(_particles[i].position.y);
-            _particlePositions.push_back(_particles[i].position.z);
-
-            _particleTimes.push_back(_particles[i].startTime);
+            _particleTimes.push_back(0.0f);
         }
 
         _particlePosVbo = 0;
@@ -282,26 +265,51 @@ public:
         }
     }
 
-    void updateParticles()
+    Particle makeNewParticle()
     {
+        float r = frand() * emitterSize;
+        float theta = frand() * 0.1;
+        float phi = frand() * 2.0 * glm::pi<float>();
+
+        Particle p;
+        p.startTime = glfwGetTime();
+        p.position = glm::vec3(cos(phi) * r, sin(phi) * r, -2.0);
+        p.velocity = glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)) * 5.0f;
+
+        return p;
+    }
+
+    void updateParticles()
+    {   
+        if (_particles.size() < numParticles)
+        {
+            int planningCount = numParticles * glfwGetTime() / lifeTime;
+            int addParticlesCount = glm::min<int>(numParticles - _particles.size(), planningCount - _particles.size());
+
+            for (unsigned int i = 0; i < addParticlesCount; i++)
+            {
+                Particle p = makeNewParticle();
+                p.startTime = frand() * lifeTime;
+                _particles.push_back(p);
+            }
+        }
+
         float curTime = glfwGetTime();
-        float deltaTime = glm::min(_deltaTime, 0.03f);
+        float animationDeltaTime = glm::min(_deltaTime, 0.03f);
 
         for (unsigned int i = 0; i < _particles.size(); i++)
         {
-            _particles[i].velocity += glm::vec3(0.0, 0.0, -9.8) * deltaTime; //Гравитация
-            _particles[i].position += _particles[i].velocity * deltaTime;
+            _particles[i].velocity += glm::vec3(0.0, 0.0, -1.0) * animationDeltaTime; //Гравитация
+            _particles[i].position += _particles[i].velocity * animationDeltaTime;
 
             if (curTime - _particles[i].startTime > lifeTime)
             {
-                _particles[i].startTime += lifeTime;
-                
-                float r = frand() * emitterSize;
-                float theta = frand() * 0.1;
-                float phi = frand() * 2.0 * glm::pi<float>();
-                
-                _particles[i].position = glm::vec3(cos(phi) * r, sin(phi) * r, -2.0);
-                _particles[i].velocity = glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)) * 10.0f;
+                _particles[i] = makeNewParticle();
+            }
+
+            if (_particles[i].position.z < 0.0)
+            {
+                //_particles[i] = makeNewParticle();
             }
 
             _particlePositions[i * 3 + 0] = _particles[i].position.x;
