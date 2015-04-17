@@ -20,7 +20,10 @@ SET(SHADER_FILES
 	shaders10/instancingNoMatrix.vert	
 	shaders10/instancingUniform.vert	
 	shaders10/instancingTexture.vert	
-	shaders10/instancingDivisor.vert	
+	shaders10/instancingDivisor.vert
+	
+	shaders10/particle.vert
+	shaders10/particle.frag
 )
 
 SOURCE_GROUP("Shaders" FILES	
@@ -28,5 +31,6 @@ SOURCE_GROUP("Shaders" FILES
 )
 
 MAKE_SAMPLE(Sample_10_1_Instancing)
+MAKE_SAMPLE(Sample_10_2_Particles)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders10 DESTINATION ${CMAKE_INSTALL_PREFIX})
