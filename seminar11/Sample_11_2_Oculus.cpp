@@ -8,15 +8,19 @@
 #include <sstream>
 #include <vector>
 #include <deque>
+#include <algorithm>
 
-#include <OVR.h>
+#include <Windows.h>
+
+#include <OVR_CAPI_0_5_0.h>
+#include <OVR_CAPI_GL.h>
 
 struct LightInfo
 {
-	glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
+    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
 };
 
 float frand()
@@ -32,123 +36,242 @@ void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 class SampleApplication : public Application
 {
 public:
-	Mesh cube;
-	Mesh sphere;
-	Mesh bunny;
-	Mesh ground;
-	Mesh backgroundCube;
+    Mesh cube;
+    Mesh sphere;
+    Mesh bunny;
+    Mesh ground;
+    Mesh backgroundCube;
 
     Mesh teapot;
     Mesh teapotArray;
 
-	Mesh quad;
+    Mesh quad;
 
-	Mesh marker; //Меш - маркер для источника света
+    Mesh marker; //Меш - маркер для источника света
 
-	//Идентификатор шейдерной программы
-	ShaderProgram _commonShader;
-	ShaderProgram _markerShader;
-	ShaderProgram _skyboxShader;
-	ShaderProgram _quadDepthShader;
+    //Идентификатор шейдерной программы
+    ShaderProgram _commonShader;
+    ShaderProgram _markerShader;
+    ShaderProgram _skyboxShader;
+    ShaderProgram _quadDepthShader;
     ShaderProgram _quadColorShader;
 
-	//Переменные для управления положением одного источника света
-	float _lr;
-	float _phi;
-	float _theta;
-		
-	LightInfo _light;
-    CameraInfo _lightCamera;
-    
-	GLuint _worldTexId;
-	GLuint _brickTexId;
-	GLuint _grassTexId;
-	GLuint _chessTexId;
-	GLuint _myTexId;
-	GLuint _cubeTexId;    
+    //Переменные для управления положением одного источника света
+    float _lr;
+    float _phi;
+    float _theta;
 
-	GLuint _sampler;
-	GLuint _cubeTexSampler;
+    LightInfo _light;
+    CameraInfo _lightCamera;
+
+    GLuint _worldTexId;
+    GLuint _brickTexId;
+    GLuint _grassTexId;
+    GLuint _chessTexId;
+    GLuint _myTexId;
+    GLuint _cubeTexId;
+
+    GLuint _sampler;
+    GLuint _cubeTexSampler;
     GLuint _depthSampler;
-    
-    float _oldTime;    
+
+    float _oldTime;
     float _deltaTime;
     float _fps;
     std::deque<float> _fpsData;
-  
-	virtual void makeScene()
-	{
-		Application::makeScene();
+
+    HWND _hwnd;
+    HDC _hdc;
+
+    ovrHmd _hmd;
+    ovrEyeRenderDesc _eyeRenderDesc[2];
+
+    Framebuffer _oculusFB;
+    GLuint _oculusTexId;
+    GLuint _depthTexId;
+
+    ~SampleApplication()
+    {
+        if (_hmd)
+        {
+            ovrHmd_Destroy(_hmd);
+        }
+
+        ovr_Shutdown();
+    }
+
+    void initOVR()
+    {
+        ovr_Initialize();
+
+        int count = ovrHmd_Detect();
+        if (count == 0)
+        {
+            std::cerr << "Oculus is not found\n";
+            return;
+        }
+
+        _hmd = ovrHmd_Create(0);
+        if (!_hmd)
+        {
+            std::cerr << "Failed to create real hmd. Try to use debug one.\n";
+
+            _hmd = ovrHmd_CreateDebug(ovrHmd_DK2);
+        }
+
+        // Get more details about the HMD.
+        ovrSizei resolution = _hmd->Resolution;
+        std::cout << "Resoultion " << resolution.w << " " << resolution.h << std::endl;
+
+        //ovrBool result = ovrHmd_ConfigureTracking(_hmd, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position, 0);
+        //if (!result)
+        //{
+        //    std::cerr << "Failed to setup tracking\n";
+        //}
+
+
+
+
+        // Configure Stereo settings.
+        ovrSizei recommenedTex0Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Left, _hmd->DefaultEyeFov[0], 1.0f);
+        ovrSizei recommenedTex1Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Right, _hmd->DefaultEyeFov[1], 1.0f);
+        ovrSizei renderTargetSize;
+        renderTargetSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
+        renderTargetSize.h = std::max(recommenedTex0Size.h, recommenedTex1Size.h);
+
+        std::cout << "RRR " << renderTargetSize.w << " " << renderTargetSize.h << std::endl;
+
+        _oculusFB.create();
+        _oculusFB.bind();
+        _oculusFB.setSize(renderTargetSize.w, renderTargetSize.h);
+
+        _oculusTexId = _oculusFB.addBuffer(GL_RGBA, GL_COLOR_ATTACHMENT0);
+        _depthTexId = _oculusFB.addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
+
+        _oculusFB.initDrawBuffers();
+
+        if (!_oculusFB.valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        _oculusFB.unbind();
+
+        _hwnd = glfwGetWin32Window(_window);
+        _hdc = GetDC(_hwnd);
+
+        std::cout << "QQQ " << _hwnd << " " << _hdc << std::endl;
+
+        // Configure OpenGL.
+        ovrGLConfig cfg;
+        cfg.OGL.Header.API = ovrRenderAPI_OpenGL;
+        cfg.OGL.Header.BackBufferSize = _hmd->Resolution;
+        //cfg.OGL.Header.BackBufferSize = renderTargetSize;
+        cfg.OGL.Header.Multisample = 0;
+        cfg.OGL.Window = _hwnd;
+        cfg.OGL.DC = _hdc;
+
+
+        //m_eyeRenderDesc[0] = ovrHmd_GetRenderDesc(m_hmdDevice, ovrEye_Left, m_hmdDevice->DefaultEyeFov[0]);
+        //m_eyeRenderDesc[1] = ovrHmd_GetRenderDesc(m_hmdDevice, ovrEye_Right, m_hmdDevice->DefaultEyeFov[1]);
+
+        //result = ovrHmd_ConfigureRendering(_hmd, &cfg.Config, _hmd->DistortionCaps, _hmd->DefaultEyeFov, _eyeRenderDesc);
+
+        ovrHmd_ConfigureRendering(_hmd, &cfg.Config,
+            ovrDistortionCap_Vignette | ovrDistortionCap_TimeWarp |
+            ovrDistortionCap_Overdrive, _hmd->DefaultEyeFov, _eyeRenderDesc);
+
+        ovrHmd_SetEnabledCaps(_hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
+
+
+        // Direct rendering from a window handle to the Hmd.
+        // Not required if ovrHmdCap_ExtendDesktop flag is set.
+        ovrHmd_AttachToWindow(_hmd, _hwnd, NULL, NULL);
+
+        ovrHmd_DismissHSWDisplay(_hmd);
+
+        ovrHmd_ConfigureTracking(_hmd, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection |
+            ovrTrackingCap_Position, 0);
+    }
+
+    virtual void makeScene()
+    {
+        Application::makeScene();
+
+        initOVR();
+
+        //=========================================================
 
         _oldTime = 0.0;
         _deltaTime = 0.0;
         _fps = 0.0;
 
-		//=========================================================
-		//Создание и загрузка мешей		
+        //=========================================================
+        //Создание и загрузка мешей		
 
-		cube.makeCube(0.5);
-		cube.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
+        cube.makeCube(0.5);
+        cube.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
 
-		sphere.makeSphere(0.5, 100);
-		sphere.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
+        sphere.makeSphere(0.5, 100);
+        sphere.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
 
-		bunny.loadFromFile("models/bunny.obj");
-		bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        bunny.loadFromFile("models/bunny.obj");
+        bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
         teapot.loadFromFile("models/teapot.obj");
 
-		ground.makeGroundPlane(5.0f, 2.0f);
+        ground.makeGroundPlane(5.0f, 2.0f);
 
-		marker.makeSphere(0.1);
+        marker.makeSphere(0.1);
 
-		backgroundCube.makeCube(10.0f);
+        backgroundCube.makeCube(10.0f);
 
-		quad.makeScreenAlignedQuad();
+        quad.makeScreenAlignedQuad();
 
-		//=========================================================
-		//Инициализация шейдеров
+        //=========================================================
+        //Инициализация шейдеров
 
-		_commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
-		_markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-		_skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-		_quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+        _commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
+        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+        _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
+        _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
         _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
 
-		//=========================================================
-		//Инициализация значений переменных освщения
-		_lr = 10.0;
-		_phi = 0.0f;
-		_theta = 0.48f;
+        //=========================================================
+        //Инициализация значений переменных освщения
+        _lr = 10.0;
+        _phi = 0.0f;
+        _theta = 0.48f;
 
-		_light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
-		_light.ambient = glm::vec3(0.2, 0.2, 0.2);
-		_light.diffuse = glm::vec3(0.8, 0.8, 0.8);
-		_light.specular = glm::vec3(1.0, 1.0, 1.0);
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.ambient = glm::vec3(0.2, 0.2, 0.2);
+        _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
+        _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
-		//=========================================================
-		//Загрузка и создание текстур
-		_worldTexId = Texture::loadTexture("images/earth_global.jpg");
-		_brickTexId = Texture::loadTexture("images/brick.jpg");
-		_grassTexId = Texture::loadTexture("images/grass.jpg");
-		_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
-		_myTexId = Texture::makeProceduralTexture();
-		_cubeTexId = Texture::loadCubeTexture("images/cube");
+        //=========================================================
+        //Загрузка и создание текстур
+        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
+        _brickTexId = Texture::loadTexture("images/brick.jpg");
+        _grassTexId = Texture::loadTexture("images/grass.jpg");
+        _chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
+        _myTexId = Texture::makeProceduralTexture();
+        _cubeTexId = Texture::loadCubeTexture("images/cube");
 
-		//=========================================================
-		//Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
-		glGenSamplers(1, &_sampler);
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        //=========================================================
+        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        glGenSamplers(1, &_sampler);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		glGenSamplers(1, &_cubeTexSampler);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
+        glGenSamplers(1, &_cubeTexSampler);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -160,20 +283,20 @@ public:
         glSamplerParameterfv(_depthSampler, GL_TEXTURE_BORDER_COLOR, border);
         glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-	}
+    }
 
-	virtual void initGUI()
-	{
-		Application::initGUI();
+    virtual void initGUI()
+    {
+        Application::initGUI();
 
         TwAddVarRO(_bar, "FPS", TW_TYPE_FLOAT, &_fps, "");
-		TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-		TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-		TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
-		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
-		TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
-	}
+        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
+        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
+        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
+        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
+        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
+        TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
+    }
 
     virtual void handleKey(int key, int scancode, int action, int mods)
     {
@@ -181,7 +304,14 @@ public:
 
         if (action == GLFW_PRESS)
         {
-            if (key == GLFW_KEY_1)
+            ovrHSWDisplayState hswDisplayState;
+            ovrHmd_GetHSWDisplayState(_hmd, &hswDisplayState);
+            if (hswDisplayState.Displayed)
+            {
+                ovrHmd_DismissHSWDisplay(_hmd);
+            }
+
+            if (key == GLFW_KEY_SPACE)
             {
             }
         }
@@ -218,19 +348,44 @@ public:
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
         computeFPS();
+
+        //ovrTrackingState ts = ovrHmd_GetTrackingState(_hmd, ovr_GetTimeInSeconds());
+        //if (ts.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked))
+        //{
+        //    ovrPoseStatef pose = ts.HeadPose;
+
+        //    std::cout << "Pose " << pose.ThePose.Position.x << " " << pose.ThePose.Position.y << " " << pose.ThePose.Position.z << std::endl;;
+        //}
     }
 
     virtual void draw()
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
-        int width, height;
-        glfwGetFramebufferSize(_window, &width, &height);
+        //static unsigned int frameIndex = 0;
+        //ovrFrameTiming timing = ovrHmd_BeginFrame(_hmd, frameIndex++);
 
-        glViewport(0, 0, width, height);
+        ovrFrameTiming timing = ovrHmd_BeginFrame(_hmd, 0);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        _oculusFB.bind();
+
+        //std::cout << "IIIIII " << _oculusFB.width() << " " << _oculusFB.height() << std::endl;
+
+        //std::cout << _oculusTexId << std::endl;
+
+        glViewport(0, 0, _oculusFB.width(), _oculusFB.height());
+        glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
+        //ovrPosef headPose[2];
+        //ovrVector3f hmdToEyeViewOffset[2];
+        //hmdToEyeViewOffset[0] = _eyeRenderDesc[0].HmdToEyeViewOffset;
+        //hmdToEyeViewOffset[1] = _eyeRenderDesc[1].HmdToEyeViewOffset;
+
+        ovrVector3f ViewOffset[2] = { _eyeRenderDesc[0].HmdToEyeViewOffset, _eyeRenderDesc[1].HmdToEyeViewOffset };
+        ovrPosef EyeRenderPose[2];
+        ovrHmd_GetEyePoses(_hmd, 0, ViewOffset, EyeRenderPose, NULL);
+
+        //ovrHmd_GetEyePoses(_hmd, 0, hmdToEyeViewOffset, headPose, 0);
+
 
         CameraInfo leftCamera;
         CameraInfo rightCamera;
@@ -252,24 +407,69 @@ public:
             0.0f, 0.0f, 0.0f, 1.0f);
 
         leftCamera.projMatrix = _camera.projMatrix * glm::scale(leftShiftMat, glm::vec3(2.0f, 1.0f, 1.0f));
-        rightCamera.projMatrix = _camera.projMatrix * glm::scale(rightShiftMat, glm::vec3(2.0f, 1.0f, 1.0f));        
+        rightCamera.projMatrix = _camera.projMatrix * glm::scale(rightShiftMat, glm::vec3(2.0f, 1.0f, 1.0f));
 
         leftCamera.viewMatrix = glm::translate(_camera.viewMatrix, glm::vec3(-halfIOD, 0, 0));
         rightCamera.viewMatrix = glm::translate(_camera.viewMatrix, glm::vec3(halfIOD, 0, 0));
 
 
-        glClearColor(199.0f / 255, 221.0f / 255, 235.0f / 255, 1); //blue color
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glViewport(0, 0, width / 2, height);
+        glViewport(0, 0, _oculusFB.width() / 2, _oculusFB.height());
         drawScene(_commonShader, leftCamera); //left
 
-        glViewport(width / 2, 0, width / 2, height);
+        glViewport(_oculusFB.width() / 2, 0, _oculusFB.width() / 2, _oculusFB.height());
         drawScene(_commonShader, rightCamera); //right
 
-        //Отсоединяем сэмплер и шейдерную программу
+
+
+#if 0
+        for (int eyeIndex = 0; eyeIndex < ovrEye_Count; eyeIndex++)
+        {
+            ovrEyeType eye = _hmd->EyeRenderOrder[eyeIndex];
+
+
+
+
+            //Quatf orientation = Quatf(headPose[eye].Orientation);
+            //Matrix4f proj = ovrMatrix4f_Projection(EyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true);            
+            //Matrix4f view = Matrix4f(orientation.Inverted()) * Matrix4f::Translation(-WorldEyePos);
+            //pRender->SetViewport(EyeRenderViewport[eye]);
+            //pRender->SetProjection(proj);
+
+            //pRoomScene->Render(pRender, Matrix4f::Translation(EyeRenderDesc[eye].ViewAdjust) * view);
+        }
+#endif
+
+
         glBindSampler(0, 0);
         glUseProgram(0);
+        _oculusFB.unbind();
+
+        ovrGLTexture EyeTexture[2];
+        EyeTexture[0].OGL.Header.API = ovrRenderAPI_OpenGL;
+        EyeTexture[0].OGL.Header.TextureSize.w = _oculusFB.width();
+        EyeTexture[0].OGL.Header.TextureSize.h = _oculusFB.height();
+        EyeTexture[0].OGL.Header.RenderViewport.Pos.x = 0;
+        EyeTexture[0].OGL.Header.RenderViewport.Pos.y = 0;
+        EyeTexture[0].OGL.Header.RenderViewport.Size.w = _oculusFB.width() / 2;
+        EyeTexture[0].OGL.Header.RenderViewport.Size.h = _oculusFB.height() / 2;
+        EyeTexture[0].OGL.TexId = _oculusTexId;
+
+        EyeTexture[1].OGL.Header.API = ovrRenderAPI_OpenGL;
+        EyeTexture[1].OGL.Header.TextureSize.w = _oculusFB.width();
+        EyeTexture[1].OGL.Header.TextureSize.h = _oculusFB.height();
+        EyeTexture[1].OGL.Header.RenderViewport.Pos.x = _oculusFB.width() / 2;
+        EyeTexture[1].OGL.Header.RenderViewport.Pos.y = 0;
+        EyeTexture[1].OGL.Header.RenderViewport.Size.w = _oculusFB.width() / 2;
+        EyeTexture[1].OGL.Header.RenderViewport.Size.h = _oculusFB.height() / 2;
+        EyeTexture[1].OGL.TexId = _oculusTexId;
+
+        //ovrTexture et[2];
+        //et[0] = EyeTexture[0].Texture;
+        //et[1] = EyeTexture[1].Texture;
+
+        ovrHmd_EndFrame(_hmd, EyeRenderPose, &EyeTexture[0].Texture);
+
+        //glfwSwapBuffers(_window);
     }
 
     void drawScene(const ShaderProgram& shader, const CameraInfo& camera)
@@ -324,8 +524,8 @@ public:
 
 int main()
 {
-	SampleApplication app;
-	app.start();
+    SampleApplication app;
+    app.start();
 
-	return 0;
+    return 0;
 }

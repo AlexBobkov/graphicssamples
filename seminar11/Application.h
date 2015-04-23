@@ -3,7 +3,11 @@
 #include <string>
 
 #include <GL/glew.h>
+
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 #include <AntTweakBar.h>
 
@@ -14,83 +18,83 @@
 
 struct CameraInfo
 {
-	glm::mat4 viewMatrix;
-	glm::mat4 projMatrix;
+    glm::mat4 viewMatrix;
+    glm::mat4 projMatrix;
 };
 
 class Application
 {
 public:
-	Application();
-	~Application();
+    Application();
+    ~Application();
 
-	/**
-	Запускает приложение
-	*/
-	void start();	
+    /**
+    Запускает приложение
+    */
+    void start();
 
-	/**
-	Обрабатывает нажатия кнопок на клавитуре.
-	См. сигнатуру GLFWkeyfun библиотеки GLFW
-	*/
-	virtual void handleKey(int key, int scancode, int action, int mods);
+    /**
+    Обрабатывает нажатия кнопок на клавитуре.
+    См. сигнатуру GLFWkeyfun библиотеки GLFW
+    */
+    virtual void handleKey(int key, int scancode, int action, int mods);
 
 protected:
-	/**
-	Инициализирует графический контекст
-	*/
-	void initContext();
+    /**
+    Инициализирует графический контекст
+    */
+    void initContext();
 
-	/**
-	Настраивает некоторые параметры OpenGL
-	*/
-	void initGL();
+    /**
+    Настраивает некоторые параметры OpenGL
+    */
+    void initGL();
 
-	/**
-	Инициализирует графический интерфейс пользователя
-	*/
-	virtual void initGUI();
+    /**
+    Инициализирует графический интерфейс пользователя
+    */
+    virtual void initGUI();
 
-	/**
-	Создает трехмерную сцену
-	*/
-	virtual void makeScene();
+    /**
+    Создает трехмерную сцену
+    */
+    virtual void makeScene();
 
-	/**
-	Запускает цикл рендеринга
-	*/
-	void run();
+    /**
+    Запускает цикл рендеринга
+    */
+    void run();
 
-	/**
-	Выполняет обновление сцены и виртуальной камеры
-	*/
-	virtual void update();
+    /**
+    Выполняет обновление сцены и виртуальной камеры
+    */
+    virtual void update();
 
-	/**
-	Отрисовывает один кадр
-	*/
-	virtual void draw() = 0;	
+    /**
+    Отрисовывает один кадр
+    */
+    virtual void draw() = 0;
 
-	//---------------------------------------------
+    //---------------------------------------------
 
-	GLFWwindow* _window; //Графичекое окно
-	
-	CameraInfo _camera;
+    GLFWwindow* _window; //Графичекое окно
 
-	//Положение виртуальный камеры задается в сферических координат
-	double _phiAng;
-	double _thetaAng;
-	double _r;
+    CameraInfo _camera;
 
-	double _oldTime; //Время на предыдущем кадре
+    //Положение виртуальный камеры задается в сферических координат
+    double _phiAng;
+    double _thetaAng;
+    double _r;
 
-	//Вспомогальные переменные для управления виртуальной камерой
-	bool _rotateLeft;
-	bool _rotateRight;	
-	bool _rotateUp;
-	bool _rotateDown;
-	bool _radiusInc;
-	bool _radiusDec;
+    double _oldTime; //Время на предыдущем кадре
 
-	TwBar* _bar; //GUI
+    //Вспомогальные переменные для управления виртуальной камерой
+    bool _rotateLeft;
+    bool _rotateRight;
+    bool _rotateUp;
+    bool _rotateDown;
+    bool _radiusInc;
+    bool _radiusDec;
+
+    TwBar* _bar; //GUI
 };
