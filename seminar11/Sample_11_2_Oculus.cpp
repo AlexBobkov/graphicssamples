@@ -55,6 +55,7 @@ public:
     ShaderProgram _skyboxShader;
     ShaderProgram _quadDepthShader;
     ShaderProgram _quadColorShader;
+    ShaderProgram _oculusShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -79,12 +80,14 @@ public:
     float _deltaTime;
     float _fps;
     std::deque<float> _fpsData;
-
-    HWND _hwnd;
-    HDC _hdc;
-
+       
     ovrHmd _hmd;
     ovrEyeRenderDesc _eyeRenderDesc[2];
+    ovrVector2f UVScaleOffset[2][2];
+    ovrRecti viewports[2];
+
+    GLuint _distortionMeshVao[2];
+    int _numIndices;
 
     Framebuffer _oculusFB;
     GLuint _oculusTexId;
@@ -104,13 +107,6 @@ public:
     {
         ovr_Initialize();
 
-        int count = ovrHmd_Detect();
-        if (count == 0)
-        {
-            std::cerr << "Oculus is not found\n";
-            return;
-        }
-
         _hmd = ovrHmd_Create(0);
         if (!_hmd)
         {
@@ -119,27 +115,20 @@ public:
             _hmd = ovrHmd_CreateDebug(ovrHmd_DK2);
         }
 
-        // Get more details about the HMD.
-        ovrSizei resolution = _hmd->Resolution;
-        std::cout << "Resoultion " << resolution.w << " " << resolution.h << std::endl;
+        ovrBool result = ovrHmd_ConfigureTracking(_hmd, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position, 0);
+        if (!result)
+        {
+            std::cerr << "Failed to setup tracking\n";
+        }
 
-        //ovrBool result = ovrHmd_ConfigureTracking(_hmd, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection | ovrTrackingCap_Position, 0);
-        //if (!result)
-        //{
-        //    std::cerr << "Failed to setup tracking\n";
-        //}
-
-
-
-
-        // Configure Stereo settings.
+        //--------------------------------------------------
+        //Конфигурируем фреймбуфер для рендера исходных изображений для левого и правого глаз
+        
         ovrSizei recommenedTex0Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Left, _hmd->DefaultEyeFov[0], 1.0f);
         ovrSizei recommenedTex1Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Right, _hmd->DefaultEyeFov[1], 1.0f);
         ovrSizei renderTargetSize;
         renderTargetSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
         renderTargetSize.h = std::max(recommenedTex0Size.h, recommenedTex1Size.h);
-
-        std::cout << "RRR " << renderTargetSize.w << " " << renderTargetSize.h << std::endl;
 
         _oculusFB.create();
         _oculusFB.bind();
@@ -158,41 +147,121 @@ public:
 
         _oculusFB.unbind();
 
-        _hwnd = glfwGetWin32Window(_window);
-        _hdc = GetDC(_hwnd);
+        //--------------------------------------------------
 
-        std::cout << "QQQ " << _hwnd << " " << _hdc << std::endl;
+        viewports[0].Pos.x = 0;
+        viewports[0].Pos.y = 0;
+        viewports[0].Size.w = _oculusFB.width() / 2;
+        viewports[0].Size.h = _oculusFB.height();
 
-        // Configure OpenGL.
-        ovrGLConfig cfg;
-        cfg.OGL.Header.API = ovrRenderAPI_OpenGL;
-        cfg.OGL.Header.BackBufferSize = _hmd->Resolution;
-        //cfg.OGL.Header.BackBufferSize = renderTargetSize;
-        cfg.OGL.Header.Multisample = 0;
-        cfg.OGL.Window = _hwnd;
-        cfg.OGL.DC = _hdc;
+        viewports[1].Pos.x = _oculusFB.width() / 2;
+        viewports[1].Pos.y = 0;
+        viewports[1].Size.w = _oculusFB.width() / 2;
+        viewports[1].Size.h = _oculusFB.height();
 
+        //--------------------------------------------------
+       
+        _eyeRenderDesc[0] = ovrHmd_GetRenderDesc(_hmd, ovrEye_Left, _hmd->DefaultEyeFov[0]);
+        _eyeRenderDesc[1] = ovrHmd_GetRenderDesc(_hmd, ovrEye_Right, _hmd->DefaultEyeFov[1]);
 
-        //m_eyeRenderDesc[0] = ovrHmd_GetRenderDesc(m_hmdDevice, ovrEye_Left, m_hmdDevice->DefaultEyeFov[0]);
-        //m_eyeRenderDesc[1] = ovrHmd_GetRenderDesc(m_hmdDevice, ovrEye_Right, m_hmdDevice->DefaultEyeFov[1]);
+        //--------------------------------------------------
 
-        //result = ovrHmd_ConfigureRendering(_hmd, &cfg.Config, _hmd->DistortionCaps, _hmd->DefaultEyeFov, _eyeRenderDesc);
+        glGenVertexArrays(2, _distortionMeshVao);
+        
+        //Generate distortion mesh for each eye
+        for (int eyeNum = 0; eyeNum < 2; eyeNum++)
+        {
+            ovrDistortionMesh meshData;
+            ovrHmd_CreateDistortionMesh(_hmd,
+                                        _eyeRenderDesc[eyeNum].Eye,
+                                        _eyeRenderDesc[eyeNum].Fov,
+                                        _hmd->DistortionCaps, &meshData);
 
-        ovrHmd_ConfigureRendering(_hmd, &cfg.Config,
-            ovrDistortionCap_Vignette | ovrDistortionCap_TimeWarp |
-            ovrDistortionCap_Overdrive, _hmd->DefaultEyeFov, _eyeRenderDesc);
+            ovrHmd_GetRenderScaleAndOffset(_eyeRenderDesc[eyeNum].Fov,
+                                           renderTargetSize, viewports[eyeNum],
+                                           UVScaleOffset[eyeNum]);
 
-        ovrHmd_SetEnabledCaps(_hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
+            ovrDistortionVertex* ov = meshData.pVertexData;
+            unsigned short* index = meshData.pIndexData;
 
+            _numIndices = meshData.IndexCount;
 
-        // Direct rendering from a window handle to the Hmd.
-        // Not required if ovrHmdCap_ExtendDesktop flag is set.
-        ovrHmd_AttachToWindow(_hmd, _hwnd, NULL, NULL);
+            std::vector<float> vertices;
+            std::vector<float> colors;
+            std::vector<float> texRarray;
+            std::vector<float> texGarray;
+            std::vector<float> texBarray;
+            std::vector<unsigned short> indices;
 
-        ovrHmd_DismissHSWDisplay(_hmd);
+            for (unsigned vertNum = 0; vertNum < meshData.VertexCount; vertNum++)
+            {
+                vertices.push_back(ov[vertNum].ScreenPosNDC.x);
+                vertices.push_back(ov[vertNum].ScreenPosNDC.y);                
 
-        ovrHmd_ConfigureTracking(_hmd, ovrTrackingCap_Orientation | ovrTrackingCap_MagYawCorrection |
-            ovrTrackingCap_Position, 0);
+                colors.push_back(ov[vertNum].VignetteFactor);
+                colors.push_back(ov[vertNum].VignetteFactor);
+                colors.push_back(ov[vertNum].VignetteFactor);
+                colors.push_back(ov[vertNum].TimeWarpFactor);
+
+                texRarray.push_back(ov[vertNum].TanEyeAnglesR.x);
+                texRarray.push_back(ov[vertNum].TanEyeAnglesR.y);
+
+                texGarray.push_back(ov[vertNum].TanEyeAnglesG.x);
+                texGarray.push_back(ov[vertNum].TanEyeAnglesG.y);
+
+                texBarray.push_back(ov[vertNum].TanEyeAnglesB.x);
+                texBarray.push_back(ov[vertNum].TanEyeAnglesB.y);
+            }
+
+            for (unsigned indexNum = 0; indexNum < meshData.IndexCount; ++indexNum)
+            {
+                indices.push_back(index[indexNum]);
+            }
+
+            glBindVertexArray(_distortionMeshVao[eyeNum]);
+
+            GLuint vbo = 0;
+
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(0);
+            glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(float), colors.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, texRarray.size() * sizeof(float), texRarray.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, texGarray.size() * sizeof(float), texGarray.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(3);
+            glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+            glGenBuffers(1, &vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, texBarray.size() * sizeof(float), texBarray.data(), GL_STATIC_DRAW);
+            glEnableVertexAttribArray(4);
+            glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+
+            GLuint ibo = 0;
+            glGenBuffers(1, &ibo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), indices.data(), GL_STATIC_DRAW);
+
+            glBindVertexArray(0);
+
+            // Deallocate the mesh data
+            ovrHmd_DestroyDistortionMesh(&meshData);
+        }        
     }
 
     virtual void makeScene()
@@ -237,6 +306,7 @@ public:
         _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
         _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
         _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
+        _oculusShader.createProgram("shaders11/oculus2.vert", "shaders11/oculus.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -348,128 +418,96 @@ public:
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
         computeFPS();
-
-        //ovrTrackingState ts = ovrHmd_GetTrackingState(_hmd, ovr_GetTimeInSeconds());
-        //if (ts.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked))
-        //{
-        //    ovrPoseStatef pose = ts.HeadPose;
-
-        //    std::cout << "Pose " << pose.ThePose.Position.x << " " << pose.ThePose.Position.y << " " << pose.ThePose.Position.z << std::endl;;
-        //}
     }
 
     virtual void draw()
     {
-        //static unsigned int frameIndex = 0;
-        //ovrFrameTiming timing = ovrHmd_BeginFrame(_hmd, frameIndex++);
-
-        ovrFrameTiming timing = ovrHmd_BeginFrame(_hmd, 0);
+        ovrFrameTiming frameTiming = ovrHmd_BeginFrameTiming(_hmd, 0);
 
         _oculusFB.bind();
 
-        //std::cout << "IIIIII " << _oculusFB.width() << " " << _oculusFB.height() << std::endl;
-
-        //std::cout << _oculusTexId << std::endl;
-
         glViewport(0, 0, _oculusFB.width(), _oculusFB.height());
         glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        //ovrPosef headPose[2];
-        //ovrVector3f hmdToEyeViewOffset[2];
-        //hmdToEyeViewOffset[0] = _eyeRenderDesc[0].HmdToEyeViewOffset;
-        //hmdToEyeViewOffset[1] = _eyeRenderDesc[1].HmdToEyeViewOffset;
-
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);                
+        
         ovrVector3f ViewOffset[2] = { _eyeRenderDesc[0].HmdToEyeViewOffset, _eyeRenderDesc[1].HmdToEyeViewOffset };
         ovrPosef EyeRenderPose[2];
         ovrHmd_GetEyePoses(_hmd, 0, ViewOffset, EyeRenderPose, NULL);
 
-        //ovrHmd_GetEyePoses(_hmd, 0, hmdToEyeViewOffset, headPose, 0);
-
-
-        CameraInfo leftCamera;
-        CameraInfo rightCamera;
-
-        float IOD = 0.06f;
-        float halfIOD = IOD * 0.5f;
-        float SD = 0.4f;
-
-        glm::mat4 leftShiftMat = glm::mat4(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            halfIOD / SD, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
-
-        glm::mat4 rightShiftMat = glm::mat4(
-            1.0f, 0.0f, 0.0f, 0.0f,
-            0.0f, 1.0f, 0.0f, 0.0f,
-            -halfIOD / SD, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f);
-
-        leftCamera.projMatrix = _camera.projMatrix * glm::scale(leftShiftMat, glm::vec3(2.0f, 1.0f, 1.0f));
-        rightCamera.projMatrix = _camera.projMatrix * glm::scale(rightShiftMat, glm::vec3(2.0f, 1.0f, 1.0f));
-
-        leftCamera.viewMatrix = glm::translate(_camera.viewMatrix, glm::vec3(-halfIOD, 0, 0));
-        rightCamera.viewMatrix = glm::translate(_camera.viewMatrix, glm::vec3(halfIOD, 0, 0));
-
-
-        glViewport(0, 0, _oculusFB.width() / 2, _oculusFB.height());
-        drawScene(_commonShader, leftCamera); //left
-
-        glViewport(_oculusFB.width() / 2, 0, _oculusFB.width() / 2, _oculusFB.height());
-        drawScene(_commonShader, rightCamera); //right
-
-
-
-#if 0
         for (int eyeIndex = 0; eyeIndex < ovrEye_Count; eyeIndex++)
         {
-            ovrEyeType eye = _hmd->EyeRenderOrder[eyeIndex];
+            CameraInfo camera;
 
+            ovrMatrix4f proj = ovrMatrix4f_Projection(_eyeRenderDesc[eyeIndex].Fov, 0.01f, 10000.0f, true);
 
+            camera.projMatrix = glm::mat4(proj.M[0][0], proj.M[1][0], proj.M[2][0], proj.M[3][0],
+                                          proj.M[0][1], proj.M[1][1], proj.M[2][1], proj.M[3][1],
+                                          proj.M[0][2], proj.M[1][2], proj.M[2][2], proj.M[3][2],
+                                          proj.M[0][3], proj.M[1][3], proj.M[2][3], proj.M[3][3]);
 
+            
+            glm::vec3 pos = glm::vec3(EyeRenderPose[eyeIndex].Position.x, EyeRenderPose[eyeIndex].Position.y, EyeRenderPose[eyeIndex].Position.z);
+            glm::quat rot = glm::quat(EyeRenderPose[eyeIndex].Orientation.w, EyeRenderPose[eyeIndex].Orientation.x, EyeRenderPose[eyeIndex].Orientation.y, EyeRenderPose[eyeIndex].Orientation.z);
 
-            //Quatf orientation = Quatf(headPose[eye].Orientation);
-            //Matrix4f proj = ovrMatrix4f_Projection(EyeRenderDesc[eye].Fov, 0.01f, 10000.0f, true);            
-            //Matrix4f view = Matrix4f(orientation.Inverted()) * Matrix4f::Translation(-WorldEyePos);
-            //pRender->SetViewport(EyeRenderViewport[eye]);
-            //pRender->SetProjection(proj);
-
-            //pRoomScene->Render(pRender, Matrix4f::Translation(EyeRenderDesc[eye].ViewAdjust) * view);
+            camera.viewMatrix = glm::translate(glm::mat4(1.0f), -pos) * glm::mat4_cast(glm::inverse(rot)) * _camera.viewMatrix;
+            
+            glViewport(viewports[eyeIndex].Pos.x, viewports[eyeIndex].Pos.y, viewports[eyeIndex].Size.w, viewports[eyeIndex].Size.h);
+            drawScene(_commonShader, camera);
         }
-#endif
-
 
         glBindSampler(0, 0);
         glUseProgram(0);
         _oculusFB.unbind();
 
-        ovrGLTexture EyeTexture[2];
-        EyeTexture[0].OGL.Header.API = ovrRenderAPI_OpenGL;
-        EyeTexture[0].OGL.Header.TextureSize.w = _oculusFB.width();
-        EyeTexture[0].OGL.Header.TextureSize.h = _oculusFB.height();
-        EyeTexture[0].OGL.Header.RenderViewport.Pos.x = 0;
-        EyeTexture[0].OGL.Header.RenderViewport.Pos.y = 0;
-        EyeTexture[0].OGL.Header.RenderViewport.Size.w = _oculusFB.width() / 2;
-        EyeTexture[0].OGL.Header.RenderViewport.Size.h = _oculusFB.height() / 2;
-        EyeTexture[0].OGL.TexId = _oculusTexId;
+        ovr_WaitTillTime(frameTiming.TimewarpPointSeconds);
 
-        EyeTexture[1].OGL.Header.API = ovrRenderAPI_OpenGL;
-        EyeTexture[1].OGL.Header.TextureSize.w = _oculusFB.width();
-        EyeTexture[1].OGL.Header.TextureSize.h = _oculusFB.height();
-        EyeTexture[1].OGL.Header.RenderViewport.Pos.x = _oculusFB.width() / 2;
-        EyeTexture[1].OGL.Header.RenderViewport.Pos.y = 0;
-        EyeTexture[1].OGL.Header.RenderViewport.Size.w = _oculusFB.width() / 2;
-        EyeTexture[1].OGL.Header.RenderViewport.Size.h = _oculusFB.height() / 2;
-        EyeTexture[1].OGL.TexId = _oculusTexId;
+        //Получаем текущие размеры экрана и выставлям вьюпорт
+        int width, height;
+        glfwGetFramebufferSize(_window, &width, &height);
 
-        //ovrTexture et[2];
-        //et[0] = EyeTexture[0].Texture;
-        //et[1] = EyeTexture[1].Texture;
+        glViewport(0, 0, width, height);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        ovrHmd_EndFrame(_hmd, EyeRenderPose, &EyeTexture[0].Texture);
+        _oculusShader.use();
 
-        //glfwSwapBuffers(_window);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _oculusTexId);
+        glBindSampler(0, _sampler);
+        _oculusShader.setIntUniform("Texture", 0);
+
+        for (int eyeIndex = 0; eyeIndex < 2; eyeIndex++)
+        {
+            _oculusShader.setVec2Uniform("EyeToSourceUVScale", glm::vec2(UVScaleOffset[eyeIndex][0].x, UVScaleOffset[eyeIndex][0].y));
+            _oculusShader.setVec2Uniform("EyeToSourceUVOffset", glm::vec2(UVScaleOffset[eyeIndex][1].x, UVScaleOffset[eyeIndex][1].y));
+            
+            ovrMatrix4f timeWarpMatrices[2];
+            ovrHmd_GetEyeTimewarpMatrices(_hmd, (ovrEyeType)eyeIndex,
+                                          EyeRenderPose[eyeIndex],
+                                          timeWarpMatrices);
+
+            glm::mat4 start = glm::mat4(timeWarpMatrices[0].M[0][0], timeWarpMatrices[0].M[1][0], timeWarpMatrices[0].M[2][0], timeWarpMatrices[0].M[3][0],
+                                        timeWarpMatrices[0].M[0][1], timeWarpMatrices[0].M[1][1], timeWarpMatrices[0].M[2][1], timeWarpMatrices[0].M[3][1],
+                                        timeWarpMatrices[0].M[0][2], timeWarpMatrices[0].M[1][2], timeWarpMatrices[0].M[2][2], timeWarpMatrices[0].M[3][2],
+                                        timeWarpMatrices[0].M[0][3], timeWarpMatrices[0].M[1][3], timeWarpMatrices[0].M[2][3], timeWarpMatrices[0].M[3][3]);
+
+            glm::mat4 end = glm::mat4(timeWarpMatrices[1].M[0][0], timeWarpMatrices[1].M[1][0], timeWarpMatrices[1].M[2][0], timeWarpMatrices[1].M[3][0],
+                                      timeWarpMatrices[1].M[0][1], timeWarpMatrices[1].M[1][1], timeWarpMatrices[1].M[2][1], timeWarpMatrices[1].M[3][1],
+                                      timeWarpMatrices[1].M[0][2], timeWarpMatrices[1].M[1][2], timeWarpMatrices[1].M[2][2], timeWarpMatrices[1].M[3][2],
+                                      timeWarpMatrices[1].M[0][3], timeWarpMatrices[1].M[1][3], timeWarpMatrices[1].M[2][3], timeWarpMatrices[1].M[3][3]);
+
+            _oculusShader.setMat4Uniform("EyeRotationStart", start);
+            _oculusShader.setMat4Uniform("EyeRotationEnd", end);
+
+            glBindVertexArray(_distortionMeshVao[eyeIndex]);
+            glDrawElements(GL_TRIANGLES, _numIndices, GL_UNSIGNED_SHORT, 0);
+        }
+
+        //Отсоединяем сэмплер и шейдерную программу
+        glBindSampler(0, 0);
+        glUseProgram(0);
+                
+        ovrHmd_EndFrameTiming(_hmd);
     }
 
     void drawScene(const ShaderProgram& shader, const CameraInfo& camera)

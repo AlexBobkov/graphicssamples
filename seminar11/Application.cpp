@@ -77,21 +77,20 @@ void Application::initContext()
     }
 
 #ifdef USE_CORE_PROFILE
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    //glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
     int count;
     GLFWmonitor** monitors = glfwGetMonitors(&count);
 
-
-
     if (count == 2)
     {
-        std::cout << "TTTTTTT\n";
-        _window = glfwCreateWindow(1920, 1080, "My Title", monitors[1], NULL);
+        std::cout << "Open window in fullscreen mode on the 2nd monitor\n";
+
+        _window = glfwCreateWindow(1920, 1080, "MIPT OpenGL demos", monitors[1], NULL);
     }
     else
     {
@@ -275,7 +274,7 @@ void Application::update()
     //-----------------------------------------
 
     int width = 1920, height = 1080;
-    //glfwGetFramebufferSize(_window, &width, &height);	
+    glfwGetFramebufferSize(_window, &width, &height);	
 
     //Обновляем матрицу проекции на случай, если размеры окна изменились
     _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);

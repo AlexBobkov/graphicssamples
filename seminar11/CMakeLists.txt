@@ -17,8 +17,9 @@ SET(HEADER_FILES
 )
 
 SET(SHADER_FILES
-	#shaders10/instancingNoMatrix.vert	
-	#shaders10/instancingUniform.vert
+	shaders11/oculus.vert	
+	shaders11/oculus2.vert	
+	shaders11/oculus.frag
 )
 
 SOURCE_GROUP("Shaders" FILES	
