@@ -5,21 +5,21 @@
  *      Author: Bjorn Blissing
  */
 
-#version 110
+#version 330
 
 uniform vec2 EyeToSourceUVScale;
 uniform vec2 EyeToSourceUVOffset;
 
-attribute vec2 Position;
-attribute vec4 Color;
-attribute vec2 TexCoord0;
-attribute vec2 TexCoord1;
-attribute vec2 TexCoord2;
+layout(location = 0) in vec2 Position;
+layout(location = 1) in vec4 Color;
+layout(location = 2) in vec2 TexCoord0;
+layout(location = 3) in vec2 TexCoord1;
+layout(location = 4) in vec2 TexCoord2;
 
-varying vec4 oColor;
-varying vec2 oTexCoord0;
-varying vec2 oTexCoord1;
-varying vec2 oTexCoord2;
+out vec4 oColor;
+out vec2 oTexCoord0;
+out vec2 oTexCoord1;
+out vec2 oTexCoord2;
 
 void main()
 {

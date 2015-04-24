@@ -306,7 +306,7 @@ public:
         _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
         _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
         _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
-        _oculusShader.createProgram("shaders11/oculus2.vert", "shaders11/oculus.frag");
+        _oculusShader.createProgram("shaders11/oculus.vert", "shaders11/oculus.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -471,6 +471,7 @@ public:
 
         _oculusShader.use();
 
+#if 1
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _oculusTexId);
         glBindSampler(0, _sampler);
@@ -502,6 +503,16 @@ public:
             glBindVertexArray(_distortionMeshVao[eyeIndex]);
             glDrawElements(GL_TRIANGLES, _numIndices, GL_UNSIGNED_SHORT, 0);
         }
+#else        
+        _quadColorShader.use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, _oculusTexId);
+        glBindSampler(0, _sampler);
+        _quadColorShader.setIntUniform("tex", 0);
+
+        quad.draw();
+#endif
 
         //Отсоединяем сэмплер и шейдерную программу
         glBindSampler(0, 0);

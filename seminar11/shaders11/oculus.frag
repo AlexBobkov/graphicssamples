@@ -5,21 +5,23 @@
  *      Author: Bjorn Blissing
  */
 
-#version 110
+#version 330
 
 uniform sampler2D Texture;
 
-varying vec4 oColor;
-varying vec2 oTexCoord0;
-varying vec2 oTexCoord1;
-varying vec2 oTexCoord2;
+out vec4 fragColor;
+
+in vec4 oColor;
+in vec2 oTexCoord0;
+in vec2 oTexCoord1;
+in vec2 oTexCoord2;
 
 void main()
 {
-   gl_FragColor.r = oColor.r * texture2D(Texture, oTexCoord0).r;
-   gl_FragColor.g = oColor.g * texture2D(Texture, oTexCoord1).g;
-   gl_FragColor.b = oColor.b * texture2D(Texture, oTexCoord2).b;
-   gl_FragColor.a = 1.0;
+   fragColor.r = oColor.r * texture(Texture, oTexCoord0).r;
+   fragColor.g = oColor.g * texture(Texture, oTexCoord1).g;
+   fragColor.b = oColor.b * texture(Texture, oTexCoord2).b;
+   fragColor.a = 1.0;
    
-   //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+   //fragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
