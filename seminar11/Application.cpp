@@ -5,9 +5,6 @@
 #include <vector>
 #include <cstdlib>
 
-#include <OVR_CAPI_0_5_0.h>
-#include <OVR_CAPI_GL.h>
-
 //======================================
 
 //Функция обратного вызова для обработки нажатий на клавиатуре

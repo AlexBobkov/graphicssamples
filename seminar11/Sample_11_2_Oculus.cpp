@@ -10,6 +10,7 @@
 #include <deque>
 #include <algorithm>
 
+#define NOMINMAX
 #include <Windows.h>
 
 #include <OVR_CAPI_0_5_0.h>
