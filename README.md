@@ -11,10 +11,9 @@
 
 * GLEW (<http://sourceforge.net/projects/glew/>)
 * GLM (<http://glm.g-truc.net/0.9.5/index.html>)
+* GLIMG (<http://glsdk.sourceforge.net/docs/html/group__module__glimg.html>)
 
-В дальнейшем понадобятся и другие библиотеки.
-
-Подробная инструкция по сборке на сайте курса: <http://alexander-bobkov.ru/graphics/course/2015/>
+Подробная инструкция по сборке на сайте курса: <http://alexander-bobkov.ru/opengl/samples>
 
 Темы разбираемые на семинарах:
 
