@@ -1,22 +1,52 @@
 SET(APP_NAME seminar4)
 
-SET(SRC_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
+SET(SRC_FILES	
+	Application.cpp
+	Mesh.cpp
+	ShaderProgram.cpp
 )
 
 SET(HEADER_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
+	Application.h
+	Mesh.h
+	ShaderProgram.h
 )
 
-ADD_EXECUTABLE(${APP_NAME} ${SRC_FILES} ${HEADER_FILES})
+SET(SHADER_FILES
+	shaders4/diffuseDirectionalLight.vert
+	shaders4/diffuseDirectionalLight.frag
+	
+	shaders4/diffusePointLight.vert
+	shaders4/diffusePointLight.frag
+	
+	shaders4/specularPointLightPerVertex.vert
+	shaders4/specularPointLightPerVertex.frag
+	
+	shaders4/specularPointLightPerFragment.vert	
+	shaders4/specularPointLightPerFragment.frag
+	
+	shaders4/specularAttenuationPointLightPerFragment.vert
+	shaders4/specularAttenuationPointLightPerFragment.frag
+	
+	shaders4/CookTorrance.vert	
+	shaders4/CookTorrance.frag
+	
+	shaders4/manyLights.vert
+	shaders4/manyLights.frag
+	
+	shaders4/marker.vert
+	shaders4/marker.frag
+)
 
-TARGET_LINK_LIBRARIES(${APP_NAME} ${GLEW_LIBRARY} ${GLFW_LIBRARY})
+SOURCE_GROUP("Shaders" FILES	
+	${SHADER_FILES}	
+)
 
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(${APP_NAME} opengl32.lib)
-ELSE(WIN32)
-	TARGET_LINK_LIBRARIES(${APP_NAME} ${OPENGL_LIBRARIES} ${X11_Xxf86vm_LIB} ${X11_Xi_LIB} ${X11_Xrandr_LIB} ${PTHREAD_LIBRARY})
-ENDIF(WIN32)
+MAKE_SAMPLE(Sample_4_1)
+MAKE_SAMPLE(Sample_4_2)
+MAKE_SAMPLE(Sample_4_3)
+MAKE_SAMPLE(Sample_4_4)
+MAKE_SAMPLE(Sample_4_5)
+MAKE_SAMPLE(Sample_4_6)
 
-INSTALL(TARGETS ${APP_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})

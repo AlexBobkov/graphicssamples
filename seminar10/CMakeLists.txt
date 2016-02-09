@@ -1,56 +1,45 @@
 SET(APP_NAME seminar10)
-SET(SHADERS_FOLDER shaders10)
 
-SET(SRC_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Navigation.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.cpp
+SET(SRC_FILES	
+	Application.cpp
+	Mesh.cpp
+	ShaderProgram.cpp
+	Texture.cpp
+	Framebuffer.cpp
 )
 
 SET(HEADER_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.h
+	Application.h
+	Mesh.h
+	ShaderProgram.h
+	Texture.h
+	Framebuffer.h
 )
 
-SET(MATERIAL_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ParticleMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/TransformFeedbackShader.h
+SET(SHADER_FILES
+	shaders10/instancingNoMatrix.vert	
+	shaders10/instancingUniform.vert	
+	shaders10/instancingTexture.vert	
+	shaders10/instancingDivisor.vert
 	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ParticleMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/TransformFeedbackShader.cpp
+	shaders10/particle.vert	
+	shaders10/particle.frag
+	
+	shaders10/transformFeedbackPass1.vert
+	shaders10/transformFeedbackPass2.vert
+	
+	shaders10/particleWithGeomShader.vert	
+	shaders10/particleWithGeomShader.geom
+	shaders10/particleWithGeomShader.frag
 )
 
-SOURCE_GROUP("Materials" FILES
-	${MATERIAL_FILES}	
+SOURCE_GROUP("Shaders" FILES	
+	${SHADER_FILES}	
 )
 
-IF(GLIMAGE_FOUND AND ASSIMP_FOUND AND ANTTWEAKBAR_FOUND)
+MAKE_SAMPLE(Sample_10_1_Instancing)
+MAKE_SAMPLE(Sample_10_2_Particles)
+MAKE_SAMPLE(Sample_10_3_TransformFeedback)
+MAKE_SAMPLE(Sample_10_4_GeometryShader)
 
-	ADD_EXECUTABLE(${APP_NAME} ${SRC_FILES} ${HEADER_FILES} ${MATERIAL_FILES})
-
-	TARGET_LINK_LIBRARIES(${APP_NAME} ${GLEW_LIBRARY} ${GLFW_LIBRARY} ${GLIMAGE_LIBRARY} ${ASSIMP_LIBRARY} ${ANTTWEAKBAR_LIBRARY})
-
-	IF(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} opengl32.lib)
-	ELSE(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} ${OPENGL_LIBRARIES} ${X11_Xxf86vm_LIB} ${X11_Xi_LIB} ${X11_Xrandr_LIB} ${PTHREAD_LIBRARY})
-	ENDIF(WIN32)
-
-	INSTALL(TARGETS ${APP_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-
-ENDIF(GLIMAGE_FOUND AND ASSIMP_FOUND AND ANTTWEAKBAR_FOUND)
+INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders10 DESTINATION ${CMAKE_INSTALL_PREFIX})

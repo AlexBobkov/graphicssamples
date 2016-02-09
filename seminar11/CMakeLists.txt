@@ -1,56 +1,37 @@
 SET(APP_NAME seminar11)
-SET(SHADERS_FOLDER shaders11)
 
-SET(SRC_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Navigation.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.cpp
+SET(SRC_FILES	
+	Application.cpp
+	Mesh.cpp
+	ShaderProgram.cpp
+	Texture.cpp
+	Framebuffer.cpp
 )
 
 SET(HEADER_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.h
+	Application.h
+	Mesh.h
+	ShaderProgram.h
+	Texture.h
+	Framebuffer.h
 )
 
-SET(MATERIAL_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/OculusDistortionShader.h
-	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/OculusDistortionShader.cpp	
+SET(SHADER_FILES
+	shaders11/oculus.vert	
+	shaders11/oculus2.vert	
+	shaders11/oculus.frag
 )
 
-SOURCE_GROUP("Materials" FILES
-	${MATERIAL_FILES}	
+SOURCE_GROUP("Shaders" FILES	
+	${SHADER_FILES}	
 )
 
-IF(GLIMAGE_FOUND AND ASSIMP_FOUND AND ANTTWEAKBAR_FOUND)
+MAKE_SAMPLE(Sample_11_1_HorizontalSplit)
 
-	ADD_EXECUTABLE(${APP_NAME} ${SRC_FILES} ${HEADER_FILES} ${MATERIAL_FILES})
+IF (OCULUS_SDK_LIBRARIES)
+	MAKE_SAMPLE(Sample_11_2_Oculus)
+		
+	TARGET_LINK_LIBRARIES(Sample_11_2_Oculus ${OCULUS_SDK_LIBRARIES})
+ENDIF ()
 
-	TARGET_LINK_LIBRARIES(${APP_NAME} ${GLEW_LIBRARY} ${GLFW_LIBRARY} ${GLIMAGE_LIBRARY} ${ASSIMP_LIBRARY} ${ANTTWEAKBAR_LIBRARY})
-	
-	IF(LIBOVR_FOUND)
-		TARGET_LINK_LIBRARIES(${APP_NAME} ${LIBOVR_LIBRARY} winmm.lib)	
-	ENDIF(LIBOVR_FOUND)
-
-	IF(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} opengl32.lib)
-	ELSE(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} ${OPENGL_LIBRARIES} ${X11_Xxf86vm_LIB} ${X11_Xi_LIB} ${X11_Xrandr_LIB} ${PTHREAD_LIBRARY})
-	ENDIF(WIN32)
-
-	INSTALL(TARGETS ${APP_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-
-ENDIF(GLIMAGE_FOUND AND ASSIMP_FOUND AND ANTTWEAKBAR_FOUND)
+INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders11 DESTINATION ${CMAKE_INSTALL_PREFIX})

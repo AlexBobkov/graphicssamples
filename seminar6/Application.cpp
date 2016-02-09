@@ -1,24 +1,53 @@
-#define _USE_MATH_DEFINES
-#include <math.h>
-
-#include <glimg/glimg.h>
-
 #include "Application.h"
-#include "Texture.h"
 
-int demoNum = 1;
-//1 - простая кубическая текстура
-//2 - 2 камеры
-//3 - 2 плоскости (z-fighting)
-//4 - face culling
-//5 - blending
-//6 - stencil test
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <cstdlib>
 
-//Функция обратного вызова для обработки нажатий на клавиатуре. Определена в файле Navigation.cpp
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+//======================================
+
+//Функция обратного вызова для обработки нажатий на клавиатуре
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	Application* app = (Application*)glfwGetWindowUserPointer(window);
+
+	app->handleKey(key, scancode, action, mods);
+}
+
+void windowSizeChangedCallback(GLFWwindow* window, int width, int height)
+{
+	TwWindowSize(width, height);
+}
+
+void mouseButtonPressedCallback(GLFWwindow* window, int button, int action, int mods)
+{
+	TwEventMouseButtonGLFW(button, action);
+}
+
+void mouseCursosPosCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	TwEventMousePosGLFW(xpos, ypos);
+}
+
+void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	TwEventMouseWheelGLFW(xoffset);
+}
+
+//======================================
 
 Application::Application():
-_oldTime(0.0f)
+_oldTime(0.0),
+	_rotateLeft(false),
+	_rotateRight(false),
+	_phiAng(0.0),
+	_rotateUp(false),
+	_rotateDown(false),
+	_thetaAng(0.0),
+	_radiusInc(false),
+	_radiusDec(false),
+	_r(5.0)
 {
 }
 
@@ -27,275 +56,209 @@ Application::~Application()
 	glfwTerminate();
 }
 
+void Application::start()
+{
+	initContext();
+	initGL();
+	initGUI();
+	makeScene();
+	run();
+}
+
 void Application::initContext()
 {
 	if (!glfwInit())
 	{
-		std::cerr << "ERROR: could not start GLFW3\n";		
+		std::cerr << "ERROR: could not start GLFW3\n";
 		exit(1);
-	} 
+	}
 
-	glfwWindowHint(GLFW_STENCIL_BITS, 8);
+#ifdef USE_CORE_PROFILE
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
-	_window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+	_window = glfwCreateWindow(640, 480, "MIPT OpenGL demos", NULL, NULL);
 	if (!_window)
 	{
-		std::cerr << "ERROR: could not open window with GLFW3\n";		
+		std::cerr << "ERROR: could not open window with GLFW3\n";
 		glfwTerminate();
 		exit(1);
 	}
 	glfwMakeContextCurrent(_window);
 
-	glfwSetWindowUserPointer(_window, &_mainCamera); //регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова
+	glfwSetWindowUserPointer(_window, this); //Регистрируем указатель на данный объект, чтобы потом использовать его в функциях обратного вызова}
+
+	glfwSetKeyCallback(_window, keyCallback); //Регистрирует функцию обратного вызова для обработки событий клавиатуры
+	glfwSetWindowSizeCallback(_window, windowSizeChangedCallback);
+	glfwSetMouseButtonCallback(_window, mouseButtonPressedCallback);
+	glfwSetCursorPosCallback(_window, mouseCursosPosCallback);
+	glfwSetScrollCallback(_window, scrollCallback);
 }
 
 void Application::initGL()
 {
 	glewExperimental = GL_TRUE;
-	glewInit ();
+	glewInit();
 
-	const GLubyte* renderer = glGetString(GL_RENDERER); // get renderer string
-	const GLubyte* version = glGetString(GL_VERSION); // version as a string
+	const GLubyte* renderer = glGetString(GL_RENDERER); //Получаем имя рендерера
+	const GLubyte* version = glGetString(GL_VERSION); //Получаем номер версии
 	std::cout << "Renderer: " << renderer << std::endl;
 	std::cout << "OpenGL version supported: " << version << std::endl;
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+	glDepthFunc(GL_LESS);	
+}
 
-	glEnable(GL_POLYGON_OFFSET_FILL);	
+void Application::initGUI()
+{
+	int width, height;
+	glfwGetFramebufferSize(_window, &width, &height);
+
+#ifdef USE_CORE_PROFILE
+	TwInit(TW_OPENGL_CORE, NULL);
+#else
+	TwInit(TW_OPENGL, NULL);	
+#endif
+
+	TwWindowSize(width, height);
+
+	_bar = TwNewBar("TweakBar");
+	TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
 }
 
 void Application::makeScene()
 {
-	makeSceneImplementation();
+	_camera.viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	_camera.projMatrix = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.f);
 }
 
 void Application::run()
 {
-	glfwSetKeyCallback(_window, keyCallback);
-
-	while (!glfwWindowShouldClose(_window))
+	while (!glfwWindowShouldClose(_window)) //Пока окно не закрыто
 	{
-		glfwPollEvents();
+		glfwPollEvents(); //Проверяем события ввода
 
-		update();
+		update(); //Обновляем сцену и положение виртуальной камеры
 
-		draw();
+		draw(); //Рисуем один кадр
+
+		TwDraw(); //Рисуем графический интерфейс пользователя
+
+		glfwSwapBuffers(_window); //Переключаем передний и задний буферы
+	}
+}
+
+void Application::handleKey(int key, int scancode, int action, int mods)
+{
+	if (action == GLFW_PRESS)
+	{
+		if (key == GLFW_KEY_ESCAPE)
+		{
+			glfwSetWindowShouldClose(_window, GL_TRUE);
+		}
+		else if (key == GLFW_KEY_A)
+		{
+			_rotateLeft = true;
+		}
+		else if (key == GLFW_KEY_D)
+		{
+			_rotateRight = true;
+		}
+		else if (key == GLFW_KEY_W)
+		{
+			_rotateUp = true;
+		}
+		else if (key == GLFW_KEY_S)
+		{
+			_rotateDown = true;
+		}
+		else if (key == GLFW_KEY_R)
+		{
+			_radiusInc = true;
+		}
+		else if (key == GLFW_KEY_F)
+		{
+			_radiusDec = true;
+		}
+	}
+	else if (action == GLFW_RELEASE)
+	{
+		if (key == GLFW_KEY_A)
+		{
+			_rotateLeft = false;
+		}
+		else if (key == GLFW_KEY_D)
+		{
+			_rotateRight = false;
+		}
+		else if (key == GLFW_KEY_W)
+		{
+			_rotateUp = false;
+		}
+		else if (key == GLFW_KEY_S)
+		{
+			_rotateDown = false;
+		}
+		else if (key == GLFW_KEY_R)
+		{
+			_radiusInc = false;
+		}
+		else if (key == GLFW_KEY_F)
+		{
+			_radiusDec = false;
+		}
 	}
 }
 
 void Application::update()
 {
-	_mainCamera.update();
-}
+	double dt = glfwGetTime() - _oldTime;
+	_oldTime = glfwGetTime();
 
-void Application::draw()
-{
-	//Настройки размеров (если пользователь изменил размеры окна)
+	double speed = 1.0;
+
+	if (_rotateLeft)
+	{
+		_phiAng -= speed * dt;
+	}
+	if (_rotateRight)
+	{
+		_phiAng += speed * dt;
+	}
+	if (_rotateUp)
+	{
+		_thetaAng += speed * dt;
+	}
+	if (_rotateDown)
+	{
+		_thetaAng -= speed * dt;
+	}
+	if (_radiusInc)
+	{
+		_r += _r * dt;
+	}
+	if (_radiusDec)
+	{
+		_r -= _r * dt;
+	}
+
+	_thetaAng = glm::clamp(_thetaAng, -glm::pi<double>() * 0.49, glm::pi<double>() * 0.49);
+
+	//Вычисляем положение виртуальной камеры в мировой системе координат по формуле сферических координат
+	glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng) + 0.5f) * (float)_r;
+
+	//Обновляем матрицу вида
+	_camera.viewMatrix = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+
+	//-----------------------------------------
+
 	int width, height;
-	glfwGetFramebufferSize(_window, &width, &height);
-	_mainCamera.setWindowSize(width, height);
+	glfwGetFramebufferSize(_window, &width, &height);	
 
-	glViewport(0, 0, width, height);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);	
-
-	drawBackground(_mainCamera);
-	drawScene(_mainCamera);
-
-	if (demoNum == 2)
-	{
-		glViewport(0, 0, 200, 200);
-		glClear(GL_DEPTH_BUFFER_BIT);	
-		drawScene(_secondCamera);
-	}
-
-	glfwSwapBuffers(_window);
-}
-
-void Application::makeSceneImplementation()
-{
-	//инициализация шейдеров
-	_commonMaterial.initialize();
-	_skyBoxMaterial.initialize();
-
-	//загрузка текстур
-	_worldTexId = Texture::loadTexture("images/earth_global.jpg");
-	_brickTexId = Texture::loadTexture("images/brick.jpg");
-	_grassTexId = Texture::loadTexture("images/grass.jpg");
-	_specularTexId = Texture::loadTexture("images/specular.dds");
-	_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
-	_myTexId = Texture::makeCustomTexture();
-	_cubeTexId = Texture::loadCubeTexture("images/cube");
-	_colorTexId = Texture::loadTexture("images/color.png");
-
-	//загрузка 3д-моделей
-	_sphere = Mesh::makeSphere(0.8f);
-	_plane = Mesh::makeYZPlane(0.8f);
-	_chess = Mesh::makeGroundPlane(100.0f, 100.0f);
-	_cube = Mesh::makeCube(10.0f);	
-
-	//Инициализация значений переменных освщения
-	_lightPos = glm::vec4(2.0f, 2.0f, 0.5f, 1.0f);
-	_ambientColor = glm::vec3(0.2, 0.2, 0.2);
-	_diffuseColor = glm::vec3(0.8, 0.8, 0.8);
-	_specularColor = glm::vec3(0.5, 0.5, 0.5);
-
-	//Инициализация сэмплера - объекта, который хранит параметры чтения из текстуры
-	glGenSamplers(1, &_sampler);
-	glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glGenSamplers(1, &_repeatSampler);	
-	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glSamplerParameterf(_repeatSampler, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
-	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);	
-
-	glGenSamplers(1, &_cubeSampler);	
-	glSamplerParameteri(_cubeSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(_cubeSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);	
-	glSamplerParameteri(_cubeSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	//инициализируем 2ю камеру для примера с 2мя камерами
-	glm::vec3 secondCameraPos = glm::vec3(0.0f, 4.0f, 4.0);
-	glm::mat4 secondViewMatrix = glm::lookAt(secondCameraPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-	glm::mat4 secondProjMatrix = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.f);
-
-	_secondCamera.setCameraPos(secondCameraPos);
-	_secondCamera.setViewMatrix(secondViewMatrix);
-	_secondCamera.setProjMatrix(secondProjMatrix);
-}
-
-void Application::drawBackground(Camera& camera)
-{
-	//====== Фоновый куб ======
-	glUseProgram(_skyBoxMaterial.getProgramId()); //Подключаем шейдер для фонового куба
-
-	_skyBoxMaterial.setCameraPos(camera.getCameraPos());
-	_skyBoxMaterial.setViewMatrix(camera.getViewMatrix());
-	_skyBoxMaterial.setProjectionMatrix(camera.getProjMatrix());	
-	_skyBoxMaterial.applyCommonUniforms();	
-	
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_CUBE_MAP, _cubeTexId);
-	glBindSampler(0, _cubeSampler);
-
-	_skyBoxMaterial.setTexUnit(0);  //текстурный юнит 0
-	_skyBoxMaterial.applyModelSpecificUniforms();
-
-	glDepthMask(GL_FALSE);
-
-	glBindVertexArray(_cube.getVao()); //Подключаем VertexArray для куба
-	glDrawArrays(GL_TRIANGLES, 0, _cube.getNumVertices()); //Рисуем куб
-
-	glDepthMask(GL_TRUE);
-}
-
-void Application::drawScene(Camera& camera)
-{
-	//====== Остальные объекты ======	
-	glUseProgram(_commonMaterial.getProgramId()); //Подключаем общий шейдер для всех объектов
-
-	_commonMaterial.setTime((float)glfwGetTime());
-	_commonMaterial.setViewMatrix(camera.getViewMatrix());
-	_commonMaterial.setProjectionMatrix(camera.getProjMatrix());
-
-	_commonMaterial.setLightPos(_lightPos);
-	_commonMaterial.setAmbientColor(_ambientColor);
-	_commonMaterial.setDiffuseColor(_diffuseColor);
-	_commonMaterial.setSpecularColor(_specularColor);
-
-	_commonMaterial.applyCommonUniforms();
-
-	if (demoNum == 4 || demoNum == 5)
-	{
-		glEnable(GL_CULL_FACE);    
-		glFrontFace(GL_CW);
-		glCullFace(GL_BACK);
-	}
-
-	if (demoNum == 5)
-	{
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
-
-	if (demoNum == 6)
-	{
-		glEnable(GL_STENCIL_TEST);
-
-		glStencilFunc(GL_ALWAYS, 1, 1);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-	}
-
-	//====== Сфера ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
-
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();
-	
-	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
-
-#if 0
-	glCullFace(GL_FRONT);
-	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу
-	glCullFace(GL_BACK);
-	glBindVertexArray(_sphere.getVao()); //Подключаем VertexArray для сферы
-	glDrawArrays(GL_TRIANGLES, 0, _sphere.getNumVertices()); //Рисуем сферу	
-#endif
-
-	if (demoNum == 6)
-	{
-		glStencilFunc(GL_NOTEQUAL, 1, 1);
-		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-	}
-
-	//====== Плоскость YZ ======
-	glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-	glBindTexture(GL_TEXTURE_2D, _brickTexId);
-	glBindSampler(0, _sampler);
-
-	_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-	_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	_commonMaterial.setShininess(100.0f);
-	_commonMaterial.applyModelSpecificUniforms();
-
-	glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
-	glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
-
-	if (demoNum == 3)
-	{
-		glActiveTexture(GL_TEXTURE0 + 0);  //текстурный юнит 0
-		glBindTexture(GL_TEXTURE_2D, _worldTexId);
-		glBindSampler(0, _sampler);
-
-		_commonMaterial.setDiffuseTexUnit(0); //текстурный юнит 0
-		_commonMaterial.setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0001f, -1.0f, 0.0f)));
-		_commonMaterial.setShininess(100.0f);
-		_commonMaterial.applyModelSpecificUniforms();
-
-		//glDisable(GL_DEPTH_TEST);
-		//glPolygonOffset(-1.0f, -1.0f);
-
-		glBindVertexArray(_plane.getVao()); //Подключаем VertexArray для плоскости
-		glDrawArrays(GL_TRIANGLES, 0, _plane.getNumVertices()); //Рисуем плоскость
-
-		//glPolygonOffset(0.0f, 0.0f);
-		//glEnable(GL_DEPTH_TEST);
-	}
-
-	glDisable(GL_STENCIL_TEST);
-	glDisable(GL_BLEND);
-	glDisable(GL_CULL_FACE);
+	//Обновляем матрицу проекции на случай, если размеры окна изменились
+	_camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 }

@@ -1,15 +1,14 @@
 #pragma once
 
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h> // GLFW helper library
-#include <iostream>
-#include <fstream>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include <string>
-#include <sstream>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Application
 {
@@ -17,38 +16,48 @@ public:
 	Application();
 	~Application();
 
-	//Инициализация графического контекста
+	/**
+	Запускает приложение
+	*/
+	void start();	
+		
+protected:
+	/**
+	Инициализирует графический контекст
+	*/
 	void initContext();
 
-	//Настройка некоторых параметров OpenGL
+	/**
+	Настраивает некоторые параметры OpenGL
+	*/
 	void initGL();
 
-	//Создание трехмерной сцены
-	void makeScene();
+	/**
+	Создает трехмерную сцену
+	*/
+	virtual void makeScene();
 
-	//Цикл рендеринга
+	/**
+	Запускает цикл рендеринга
+	*/
 	void run();
 
-	//Отрисовать один кадр
-	void draw();
+	/**
+	Отрисовывает один кадр
+	*/
+	virtual void draw() = 0;
 
-protected:	
-	GLFWwindow* _window;
-	GLuint _vao;
-	GLuint _shaderProgram;
-	GLuint _projMatrixUniform;
-	float _projMatrix[16];
+	/**
+	Вспомогательная функция для загрузки текста шейдера из файла и создания шейдерного объекта
+	*/
+	GLuint createShader(GLenum shaderType, const std::string& filename);
 
-	//Читает текст шейдера из файла и создает объект
-	GLuint createShader(GLenum shaderType, std::string filename);
+	/**
+	Вспомогательная функция для создания шейдерной программы из 2х шейдеров: вершинного и фрагментного
+	*/
+	GLuint createProgram(const std::string& vertFilename, const std::string& fragFilename);
+	
+	GLFWwindow* _window; //Графичекое окно
 
-	//Конкретные реализация для разных примеров на семинаре (треугольник, куб)
-	void makeSceneImplementation();
-	void makeSceneImplementation2();
-	void makeSceneImplementation3();
-	void makeSceneImplementation4();
-
-	void drawImplementation();
-	void drawImplementation3();
-	void drawImplementation4();
+	glm::mat4 _projMatrix;
 };

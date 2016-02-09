@@ -1,20 +1,14 @@
 #pragma once
 
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h> // GLFW helper library
-#include <iostream>
-#include <fstream>
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include <string>
-#include <sstream>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 class Application
 {
@@ -22,67 +16,67 @@ public:
 	Application();
 	~Application();
 
-	//Инициализация графического контекста
+	/**
+	Запускает приложение
+	*/
+	void start();	
+
+	/**
+	Обрабатывает нажатия кнопок на клавитуре.
+	См. сигнатуру GLFWkeyfun библиотеки GLFW
+	*/
+	virtual void handleKey(int key, int scancode, int action, int mods);
+
+protected:
+	/**
+	Инициализирует графический контекст
+	*/
 	void initContext();
 
-	//Настройка некоторых параметров OpenGL
+	/**
+	Настраивает некоторые параметры OpenGL
+	*/
 	void initGL();
 
-	//Создание трехмерной сцены
-	void makeScene();
+	/**
+	Создает трехмерную сцену
+	*/
+	virtual void makeScene();
 
-	//Цикл рендеринга
+	/**
+	Запускает цикл рендеринга
+	*/
 	void run();
 
-	//Отрисовать один кадр
-	void draw();
+	/**
+	Выполняет обновление сцены и виртуальной камеры
+	*/
+	virtual void update();
 
-	//Обновление
-	void update();
+	/**
+	Отрисовывает один кадр
+	*/
+	virtual void draw() = 0;	
 
-	void rotateLeft(bool b) { _rotateLeft = b; }
-	void rotateRight(bool b) { _rotateRight = b; }
+	//---------------------------------------------
 
-	void rotateUp(bool b) { _rotateUp = b; }
-	void rotateDown(bool b) { _rotateDown = b; }
-
-	void fovInc(bool b) { _fovInc = b; }
-	void fovDec(bool b) { _fovDec = b; }
-
-protected:	
-	GLFWwindow* _window;
-	GLuint _vao;
-	GLuint _shaderProgram;
-
-	GLuint _modelMatrixUniform;
-	GLuint _viewMatrixUniform;
-	GLuint _projMatrixUniform;
-
-	glm::mat4 _modelMatrix;
+	GLFWwindow* _window; //Графичекое окно
+	
 	glm::mat4 _viewMatrix;
-	glm::mat4 _projMatrix;
+	glm::mat4 _projMatrix;	
 
-	double _oldTime;
-
-	bool _rotateLeft;
-	bool _rotateRight;
+	//Положение виртуальный камеры задается в сферических координат
 	double _phiAng;
+	double _thetaAng;
+	double _r;
 
+	double _oldTime; //Время на предыдущем кадре
+
+	//Вспомогальные переменные для управления виртуальной камерой
+	bool _rotateLeft;
+	bool _rotateRight;	
 	bool _rotateUp;
 	bool _rotateDown;
-	double _thetaAng;
-
-	double _z;
-
-	bool _fovInc;
-	bool _fovDec;
-	float _fov;
-
-	//Читает текст шейдера из файла и создает объект
-	GLuint createShader(GLenum shaderType, std::string filename);
-
-	//Конкретные реализация для разных примеров на семинаре (треугольник, куб)
-	void makeSceneImplementation();
-
-	void drawImplementation();
+	bool _radiusInc;
+	bool _radiusDec;
 };

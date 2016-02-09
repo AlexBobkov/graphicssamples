@@ -1,22 +1,46 @@
 SET(APP_NAME seminar3)
 
-SET(SRC_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
+SET(SRC_FILES	
+	Application.cpp
+	Mesh.cpp
+	ShaderProgram.cpp
 )
 
 SET(HEADER_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
+	Application.h
+	Mesh.h
+	ShaderProgram.h
 )
 
-ADD_EXECUTABLE(${APP_NAME} ${SRC_FILES} ${HEADER_FILES})
+SET(SHADER_FILES
+	shaders3/shader.vert
+	shaders3/shader.frag	
+	shaders3/shaderDiscard.frag
+	shaders3/shaderLine.vert
+	shaders3/shaderPoint.vert
+	shaders3/shaderQuad.vert
+	shaders3/shaderQuad.frag
+	shaders3/shaderQuadMandelbrot.frag
+	shaders3/shaderTime.vert
+	shaders3/shaderTime.frag
+	shaders3/shaderTimeCoord.vert
+	shaders3/shaderTimeCoord.frag
+	shaders3/simple.vert
+	shaders3/simple.frag
+	shaders3/simpleMat.vert
+)
 
-TARGET_LINK_LIBRARIES(${APP_NAME} ${GLEW_LIBRARY} ${GLFW_LIBRARY})
+SOURCE_GROUP("Shaders" FILES	
+	${SHADER_FILES}	
+)
 
-IF(WIN32)
-	TARGET_LINK_LIBRARIES(${APP_NAME} opengl32.lib)
-ELSE(WIN32)
-	TARGET_LINK_LIBRARIES(${APP_NAME} ${OPENGL_LIBRARIES} ${X11_Xxf86vm_LIB} ${X11_Xi_LIB} ${X11_Xrandr_LIB} ${PTHREAD_LIBRARY})
-ENDIF(WIN32)
+MAKE_SAMPLE(Sample_3_1)
+MAKE_SAMPLE(Sample_3_2)
+MAKE_SAMPLE(Sample_3_3)
+MAKE_SAMPLE(Sample_3_4)
 
-INSTALL(TARGETS ${APP_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
+IF (USE_GLSL_130)
+	INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders3_130/ DESTINATION ${CMAKE_INSTALL_PREFIX}/shaders3)
+ELSE ()
+	INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders3 DESTINATION ${CMAKE_INSTALL_PREFIX})
+ENDIF ()

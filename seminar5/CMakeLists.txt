@@ -1,29 +1,34 @@
 SET(APP_NAME seminar5)
 
-SET(SRC_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Meshes.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Shaders.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Textures.cpp
+SET(SRC_FILES	
+	Application.cpp
+	Mesh.cpp
+	ShaderProgram.cpp
+	Texture.cpp
 )
 
 SET(HEADER_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
+	Application.h
+	Mesh.h
+	ShaderProgram.h
+	Texture.h
 )
 
-IF(GLIMAGE_FOUND)
+SET(SHADER_FILES
+	shaders5/texture.vert
+	shaders5/texture.frag
+	
+	shaders5/textureSpecular.vert
+	shaders5/textureSpecular.frag
+)
 
-	ADD_EXECUTABLE(${APP_NAME} ${SRC_FILES} ${HEADER_FILES})
+SOURCE_GROUP("Shaders" FILES	
+	${SHADER_FILES}	
+)
 
-	TARGET_LINK_LIBRARIES(${APP_NAME} ${GLEW_LIBRARY} ${GLFW_LIBRARY} ${GLIMAGE_LIBRARY})
+MAKE_SAMPLE(Sample_5_1)
+MAKE_SAMPLE(Sample_5_2)
+MAKE_SAMPLE(Sample_5_3)
+MAKE_SAMPLE(Sample_5_4)
 
-	IF(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} opengl32.lib)
-	ELSE(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} ${OPENGL_LIBRARIES} ${X11_Xxf86vm_LIB} ${X11_Xi_LIB} ${X11_Xrandr_LIB} ${PTHREAD_LIBRARY})
-	ENDIF(WIN32)
-
-	INSTALL(TARGETS ${APP_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-
-ENDIF(GLIMAGE_FOUND)
+INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders5 DESTINATION ${CMAKE_INSTALL_PREFIX})

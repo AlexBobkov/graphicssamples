@@ -1,33 +1,21 @@
 #pragma once
 
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h> // GLFW helper library
-#include <iostream>
-#include <fstream>
 #include <string>
-#include <sstream>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 #include <AntTweakBar.h>
 
-#include "ScreenAlignedQuadMaterial.h"
-#include "ColorMaterial.h"
-#include "CommonMaterial.h"
-#include "Camera.h"
-#include "Mesh.h"
-#include "Light.h"
-#include "ParticleMaterial.h"
-#include "TransformFeedbackShader.h"
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-class Particle
+struct CameraInfo
 {
-public:
-	glm::vec3 position;
-	glm::vec3 velocity;
-	float startTime;
+	glm::mat4 viewMatrix;
+	glm::mat4 projMatrix;
 };
 
 class Application
@@ -36,114 +24,73 @@ public:
 	Application();
 	~Application();
 
-	//Инициализация графического контекста
-	void initContext();
+	/**
+	Запускает приложение
+	*/
+	void start();	
 
-	//Настройка некоторых параметров OpenGL
-	void initGL();
-
-	void initOthers();
-
-	//Создание трехмерной сцены
-	void makeScene();
-		
-	//Цикл рендеринга
-	void run();
-
-	//Отрисовать один кадр
-	void draw();
-
-	//Обновление
-	void update();	
-
-	Camera& getMainCamera() { return _mainCamera; }
-
-	void setWindowSize(int width, int height);
+	/**
+	Обрабатывает нажатия кнопок на клавитуре.
+	См. сигнатуру GLFWkeyfun библиотеки GLFW
+	*/
+	virtual void handleKey(int key, int scancode, int action, int mods);
 
 protected:
-	GLFWwindow* _window;
+	/**
+	Инициализирует графический контекст
+	*/
+	void initContext();
+
+	/**
+	Настраивает некоторые параметры OpenGL
+	*/
+	void initGL();
+
+	/**
+	Инициализирует графический интерфейс пользователя
+	*/
+	virtual void initGUI();
+
+	/**
+	Создает трехмерную сцену
+	*/
+	virtual void makeScene();
+
+	/**
+	Запускает цикл рендеринга
+	*/
+	void run();
+
+	/**
+	Выполняет обновление сцены и виртуальной камеры
+	*/
+	virtual void update();
+
+	/**
+	Отрисовывает один кадр
+	*/
+	virtual void draw() = 0;	
+
+	//---------------------------------------------
+
+	GLFWwindow* _window; //Графичекое окно
 	
-	//Классы для загрузи шейдеров для разных материалов и эффектов
-	ColorMaterial _colorMaterial;	
-	CommonMaterial _commonMaterial;
-	ScreenAlignedQuadMaterial _screenAlignedMaterial;
-	ParticleMaterial _particleMaterial;
-	ParticleMaterial _particleTFMaterial;
-	ParticleMaterial _particleGeometryMaterial;
-	TransformFeedbackShader _tfShader;
+	CameraInfo _camera;
 
-	Camera _mainCamera;
-	Camera _lightCamera;
+	//Положение виртуальный камеры задается в сферических координат
+	double _phiAng;
+	double _thetaAng;
+	double _r;
 
-	//параметры освещения
-	float _lightTheta;
-	float _lightPhi;
-	float _lightR;
-	float _ambientIntensity;
-	float _diffuseIntensity;
-	float _specularIntensity;
-	Light _light;
+	double _oldTime; //Время на предыдущем кадре
 
-	//идентификаторы текстурных объектов
-	GLuint _worldTexId;
-	GLuint _brickTexId;
-	GLuint _grassTexId;
-	GLuint _colorTexId;
-	GLuint _rotateTexId;
-	GLuint _texBufferId;
-	GLuint _particleTexId;
+	//Вспомогальные переменные для управления виртуальной камерой
+	bool _rotateLeft;
+	bool _rotateRight;	
+	bool _rotateUp;
+	bool _rotateDown;
+	bool _radiusInc;
+	bool _radiusDec;
 
-	//================================================================
-
-	//параметры чтения из текстуры
-	GLuint _sampler; //линейная фильтрация
-	GLuint _pixelPreciseSampler; //фильтрация NEAREST
-	GLuint _repeatSampler;
-
-	//полигональные 3д-модели
-	Mesh _sphere;
-	Mesh _cube;
-	Mesh _backgroundCube;
-	Mesh _plane;
-	Mesh _ground;
-	Mesh _bunny;
-	Mesh _teapot;
-	Mesh _screenQuad;
-	Mesh _sphereMarker;
-	Mesh _sphereArray;
-
-	GLuint _particlePosVbo;
-	GLuint _particleTimeVbo;
-	GLuint _particleVao;
-	std::vector<float> _particlePositions;
-	std::vector<float> _particleVelocities;
-	std::vector<float> _particleTimes;
-	std::vector<Particle> _particles;
-
-	GLuint _particleVaoTF[2];
-	GLuint _particlePosVboTF[2];
-	GLuint _particleVelVboTF[2];
-	GLuint _particleTimeVboTF[2];
-	GLuint _TF[2];
-
-	int _tfIndex;
-	bool _firstTime;
-
-	std::vector<glm::vec3> _positions;
-
-	float _oldTime;
-	float _fps;
-	float _deltaTime;
-
-	int _width;
-	int _height;
-
-	TwBar* _bar;
-					
-	void makeSceneImplementation();
-
-	void drawScene(Camera& camera);
-	void drawParticles(Camera& camera);
-	void drawParticlesWithTransformFeedback(Camera& camera);
-	void drawGeometryShader(Camera& camera);
+	TwBar* _bar; //GUI
 };

@@ -1,33 +1,28 @@
 #pragma once
 
-#include <GL/glew.h> // include GLEW and new version of GL on Windows
-#include <GLFW/glfw3.h> // GLFW helper library
-#include <iostream>
-#include <fstream>
 #include <string>
-#include <sstream>
-#include <vector>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
+#include <GL/glew.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/type_ptr.hpp> // glm::value_ptr
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 /**
-Содержит cтатические методы для создания текстур
+Загружает текстуры с диска в оперативную и затем в видеопамять.
+Возвращает идентификатор текстурного объекта.
 */
 class Texture
 {
 public:
-	static GLuint loadTexture(std::string filename, bool withAlpha = false);
-	static GLuint loadTextureWithMipmaps(std::string filename);
-	static GLuint loadCubeTexture(std::string basefilename);
-	static GLuint makeCustomTexture();
-	static GLuint makeTextureBuffer(std::vector<glm::vec3>& positions);
+    static GLuint loadTexture(const std::string& filename, bool gamma = false, bool withAlpha = false);
 
-protected:
-	Texture() {}
+	static GLuint loadTextureWithMipmaps(const std::string& filename);
+
+	static GLuint loadCubeTexture(const std::string& basefilename);
+
+	static GLuint makeProceduralTexture();
+
+    static GLuint makeTextureBuffer(std::vector<glm::vec3>& positions);
 };

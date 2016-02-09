@@ -1,60 +1,39 @@
 SET(APP_NAME seminar8)
-SET(SHADERS_FOLDER shaders8)
 
-SET(SRC_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Navigation.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Program.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.cpp
+SET(SRC_FILES	
+	Application.cpp
+	Mesh.cpp
+	ShaderProgram.cpp
+	Texture.cpp
 )
 
 SET(HEADER_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Application.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Camera.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Light.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Mesh.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Texture.h
+	Application.h
+	Mesh.h
+	ShaderProgram.h
+	Texture.h
 )
 
-SET(MATERIAL_FILES
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ShadowMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToGBufferMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToShadowMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.h
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/DeferredRenderingMaterial.h
+SET(SHADER_FILES
+	shaders8/toshadow.vert	
+	shaders8/toshadow.frag
 	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/Material.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/CommonMaterial.cpp	
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ColorMaterial.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ShadowMaterial.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToGBufferMaterial.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/RenderToShadowMaterial.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/ScreenAlignedQuadMaterial.cpp
-	${DemoApplication_SOURCE_DIR}/${APP_NAME}/DeferredRenderingMaterial.cpp
+	shaders8/shadow.vert
+	shaders8/shadow.frag
+	shaders8/shadow2.frag
+	
+	shaders8/togbuffer.vert	
+	shaders8/togbuffer.frag
+	
+	shaders8/deferred.vert
+	shaders8/deferred.frag
 )
 
-SOURCE_GROUP("Materials" FILES
-	${MATERIAL_FILES}	
+SOURCE_GROUP("Shaders" FILES	
+	${SHADER_FILES}	
 )
 
-IF(GLIMAGE_FOUND AND ASSIMP_FOUND AND ANTTWEAKBAR_FOUND)
+MAKE_SAMPLE(Sample_8_1_Shadows)
+MAKE_SAMPLE(Sample_8_2_Deferred)
 
-	ADD_EXECUTABLE(${APP_NAME} ${SRC_FILES} ${HEADER_FILES} ${MATERIAL_FILES})
-
-	TARGET_LINK_LIBRARIES(${APP_NAME} ${GLEW_LIBRARY} ${GLFW_LIBRARY} ${GLIMAGE_LIBRARY} ${ASSIMP_LIBRARY} ${ANTTWEAKBAR_LIBRARY})
-
-	IF(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} opengl32.lib)
-	ELSE(WIN32)
-		TARGET_LINK_LIBRARIES(${APP_NAME} ${OPENGL_LIBRARIES} ${X11_Xxf86vm_LIB} ${X11_Xi_LIB} ${X11_Xrandr_LIB} ${PTHREAD_LIBRARY})
-	ENDIF(WIN32)
-
-	INSTALL(TARGETS ${APP_NAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
-
-ENDIF(GLIMAGE_FOUND AND ASSIMP_FOUND AND ANTTWEAKBAR_FOUND)
+INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders8 DESTINATION ${CMAKE_INSTALL_PREFIX})
