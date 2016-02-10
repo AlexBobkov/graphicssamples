@@ -2,19 +2,17 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
 PROJECT(GraphicsSamples VERSION 3.0)
 
-SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
+SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 SET_PROPERTY(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake Targets")
 
 INCLUDE(MacroUtils)
 
-#include(ExternalProject)
-#include(FindGLEW)
-
 set(DEPENDENCIES_ROOT CACHE PATH "Dependencies install path")
 if (DEPENDENCIES_ROOT)
 	include(${DEPENDENCIES_ROOT}/lib/cmake/glew/glew-config.cmake)
+	include(${DEPENDENCIES_ROOT}/lib/cmake/glm/glmConfig.cmake)
 else ()
 	message("Set DEPENDENCIES_ROOT variable")
 endif ()
@@ -47,8 +45,7 @@ OPTION(USE_GLSL_130 "Enable to use GLSL version 130" OFF)
 
 INCLUDE_DIRECTORIES(
 	${CMAKE_INCLUDE_PATH}
-	${OpenGL_INCLUDE_DIRS}		
-	${PROJECT_SOURCE_DIR}/3rdParty/glm-0.9.6.1	
+	${OpenGL_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/3rdParty/glimg-0.5.2/include
 	${GLFW_INCLUDE_DIRS}
 	${assimp_INCLUDE_DIRS}

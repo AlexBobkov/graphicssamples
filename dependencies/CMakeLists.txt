@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
  
 project(GraphicsDependencies)
- 
+
 include(ExternalProject)
 
 set_directory_properties(PROPERTIES EP_BASE ${CMAKE_BINARY_DIR}/External)
@@ -11,4 +11,15 @@ ExternalProject_Add(GLEW
 	CONFIGURE_COMMAND "${CMAKE_COMMAND}"
 		"${CMAKE_BINARY_DIR}/External/Source/GLEW/build/cmake"
 		"-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
-		"-DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}")
+		"-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
+)
+		
+ExternalProject_Add(GLM
+	URL https://github.com/g-truc/glm/archive/0.9.7.2.zip
+	#GIT_REPOSITORY https://github.com/g-truc/glm.git
+	#GIT_TAG        0.9.7.2
+	CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
+)
+	
+
+    
