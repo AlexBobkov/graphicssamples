@@ -11,13 +11,13 @@ INCLUDE(MacroUtils)
 
 set(DEPENDENCIES_ROOT CACHE PATH "Dependencies install path")
 if (DEPENDENCIES_ROOT)
-	include(${DEPENDENCIES_ROOT}/lib/cmake/glew/glew-config.cmake)
-	include(${DEPENDENCIES_ROOT}/lib/cmake/glm/glmConfig.cmake)
+	include(${DEPENDENCIES_ROOT}/lib/cmake/glew/glew-targets.cmake)
+	include(${DEPENDENCIES_ROOT}/lib/cmake/glfw/glfwTargets.cmake)
+	include(${DEPENDENCIES_ROOT}/lib/cmake/glm/glmTargets.cmake)
 else ()
 	message("Set DEPENDENCIES_ROOT variable")
 endif ()
 		
-FIND_PACKAGE(GLFW)
 FIND_PACKAGE(assimp)
 FIND_PACKAGE(AntTweakBar)
 FIND_PACKAGE(OculusSDK)
@@ -47,7 +47,6 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_INCLUDE_PATH}
 	${OpenGL_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/3rdParty/glimg-0.5.2/include
-	${GLFW_INCLUDE_DIRS}
 	${assimp_INCLUDE_DIRS}
 	${ANTTWEAKBAR_INCLUDE_DIRS}
 )
