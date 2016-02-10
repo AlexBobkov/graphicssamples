@@ -1,20 +1,23 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
 
-PROJECT(GraphicsSamples)
+PROJECT(GraphicsSamples VERSION 3.0)
 
 SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
 SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
 SET_PROPERTY(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake Targets")
 
-IF (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++0x")
-ENDIF()
-
 INCLUDE(MacroUtils)
 
-include(ExternalProject)
-include(FindGLEW)
+#include(ExternalProject)
+#include(FindGLEW)
+
+set(DEPENDENCIES_ROOT CACHE PATH "Dependencies install path")
+if (DEPENDENCIES_ROOT)
+	include(${DEPENDENCIES_ROOT}/lib/cmake/glew/glew-config.cmake)
+else ()
+	message("Set DEPENDENCIES_ROOT variable")
+endif ()
 		
 FIND_PACKAGE(GLFW)
 FIND_PACKAGE(assimp)
