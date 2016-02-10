@@ -4,14 +4,14 @@
 Для сборки проекта необходимы внешние библиотеки:
 
 * GLFW (<http://www.glfw.org/>)
-* Assimp (<http://assimp.sourceforge.net/>)
+* Assimp (<http://www.assimp.org/>)
 * AntTweakBar (<http://anttweakbar.sourceforge.net/doc/>)
 
 Некоторые библиотеки уже включены, и компилируются вместе с примерами:
 
 * GLEW (<http://sourceforge.net/projects/glew/>)
-* GLM (<http://glm.g-truc.net/0.9.5/index.html>)
-* GLIMG (<http://glsdk.sourceforge.net/docs/html/group__module__glimg.html>)
+* GLM (<http://glm.g-truc.net>)
+* GL Image (<http://glsdk.sourceforge.net/docs/html/group__module__glimg.html>)
 
 Подробная инструкция по сборке на сайте курса: <http://alexander-bobkov.ru/opengl/samples>
 
