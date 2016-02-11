@@ -38,8 +38,6 @@ if (USE_CORE_PROFILE)
 	add_definitions(-DUSE_CORE_PROFILE)
 endif (USE_CORE_PROFILE)
 
-option(USE_GLSL_130 "Enable to use GLSL version 130" OFF)
-
 include_directories(
 	${OpenGL_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/3rdParty/glimg-0.5.2/include
