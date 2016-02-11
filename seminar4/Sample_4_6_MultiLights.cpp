@@ -25,7 +25,7 @@ struct MaterialInfo
 const int LightNum = 3;
 
 /**
-Вариант с затуханием света с расстоянием
+Несколько источников света
 */
 class SampleApplication : public Application
 {

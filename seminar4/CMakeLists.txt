@@ -42,11 +42,11 @@ SOURCE_GROUP("Shaders" FILES
 	${SHADER_FILES}	
 )
 
-MAKE_SAMPLE(Sample_4_1)
-MAKE_SAMPLE(Sample_4_2)
-MAKE_SAMPLE(Sample_4_3)
-MAKE_SAMPLE(Sample_4_4)
-MAKE_SAMPLE(Sample_4_5)
-MAKE_SAMPLE(Sample_4_6)
+MAKE_SAMPLE(Sample_4_1_DirectionalLight)
+MAKE_SAMPLE(Sample_4_2_PointLight)
+MAKE_SAMPLE(Sample_4_3_PerFragment)
+MAKE_SAMPLE(Sample_4_4_Attenuation)
+MAKE_SAMPLE(Sample_4_5_CookTorrance)
+MAKE_SAMPLE(Sample_4_6_MultiLights)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})
