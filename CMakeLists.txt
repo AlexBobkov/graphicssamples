@@ -1,13 +1,13 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.0)
+cmake_minimum_required(VERSION 3.0)
 
-PROJECT(GraphicsSamples VERSION 3.0)
+project(GraphicsSamples VERSION 3.0)
 
-SET(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake;${CMAKE_MODULE_PATH}")
 
-SET_PROPERTY(GLOBAL PROPERTY USE_FOLDERS ON)
-SET_PROPERTY(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake Targets")
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake Targets")
 
-INCLUDE(MacroUtils)
+include(MacroUtils)
 
 set(DEPENDENCIES_ROOT CACHE PATH "Dependencies install path")
 if (DEPENDENCIES_ROOT)
@@ -19,66 +19,61 @@ else ()
 	message("Set DEPENDENCIES_ROOT variable")
 endif ()
 		
-FIND_PACKAGE(AntTweakBar)
-FIND_PACKAGE(OculusSDK)
+find_package(AntTweakBar)
+find_package(OculusSDK)
 
-IF (UNIX)
-	FIND_PACKAGE(X11 REQUIRED)
+if (UNIX)
+	find_package(X11 REQUIRED)
 
-	FIND_PACKAGE(OpenGL REQUIRED)
-	ADD_DEFINITIONS(${OpenGL_DEFINITIONS})
+	find_package(OpenGL REQUIRED)
+	add_definitions(${OpenGL_DEFINITIONS})
 
-	FIND_PACKAGE(Threads REQUIRED)
-ENDIF (UNIX)
+	find_package(Threads REQUIRED)
+endif (UNIX)
 
-SET(CMAKE_INCLUDE_PATH CACHE STRING "Put your include dir here...")
-SET(CMAKE_LIBRARY_PATH CACHE STRING "Put your lib dir here...")
+set(CMAKE_DEBUG_POSTFIX "d")
 
-SET(CMAKE_DEBUG_POSTFIX "d")
+option(USE_CORE_PROFILE "Enable to use core profile" OFF)
+if (USE_CORE_PROFILE)
+	add_definitions(-DUSE_CORE_PROFILE)
+endif (USE_CORE_PROFILE)
 
-OPTION(USE_CORE_PROFILE "Enable to use core profile" OFF)
-IF (USE_CORE_PROFILE)
-	ADD_DEFINITIONS(-DUSE_CORE_PROFILE)
-ENDIF (USE_CORE_PROFILE)
+option(USE_GLSL_130 "Enable to use GLSL version 130" OFF)
 
-OPTION(USE_GLSL_130 "Enable to use GLSL version 130" OFF)
-
-INCLUDE_DIRECTORIES(
-	${CMAKE_INCLUDE_PATH}
+include_directories(
 	${OpenGL_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/3rdParty/glimg-0.5.2/include
 	${ANTTWEAKBAR_INCLUDE_DIRS}
 )
 
-IF (OCULUS_SDK_LIBRARIES)
-	INCLUDE_DIRECTORIES(${INCLUDE_DIRECTORIES} ${OCULUS_SDK_INCLUDE_DIRS})
-ENDIF ()
+if (OCULUS_SDK_LIBRARIES)
+	include_directories(${INCLUDE_DIRECTORIES} ${OCULUS_SDK_INCLUDE_DIRS})
+endif ()
 
-LINK_DIRECTORIES(
-	${CMAKE_LIBRARY_PATH}
+link_directories(
 	${OpenGL_LIBRARY_DIRS}
 )
 
-ADD_SUBDIRECTORY(3rdParty/glimg-0.5.2)
-ADD_SUBDIRECTORY(seminar1)
-ADD_SUBDIRECTORY(seminar2)
-ADD_SUBDIRECTORY(seminar3)
-ADD_SUBDIRECTORY(seminar4)
-ADD_SUBDIRECTORY(seminar5)
-ADD_SUBDIRECTORY(seminar6)
-ADD_SUBDIRECTORY(seminar7)
-ADD_SUBDIRECTORY(seminar8)
-ADD_SUBDIRECTORY(seminar9)
-ADD_SUBDIRECTORY(seminar10)
-ADD_SUBDIRECTORY(seminar11)
+add_subdirectory(3rdParty/glimg-0.5.2)
+add_subdirectory(seminar1)
+add_subdirectory(seminar2)
+add_subdirectory(seminar3)
+add_subdirectory(seminar4)
+add_subdirectory(seminar5)
+add_subdirectory(seminar6)
+add_subdirectory(seminar7)
+add_subdirectory(seminar8)
+add_subdirectory(seminar9)
+add_subdirectory(seminar10)
+add_subdirectory(seminar11)
 
-FILE(GLOB STUDENTS students/*)
-FOREACH(STUDENT ${STUDENTS})
-	IF (IS_DIRECTORY ${STUDENT})
-		MESSAGE("Student task found " ${STUDENT})
-		ADD_SUBDIRECTORY("${STUDENT}")
-	ENDIF ()
-ENDFOREACH()
+file(GLOB STUDENTS students/*)
+foreach(STUDENT ${STUDENTS})
+	if (IS_DIRECTORY ${STUDENT})
+		message("Student task found " ${STUDENT})
+		add_subdirectory("${STUDENT}")
+	endif ()
+endforeach()
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/images/ DESTINATION ${CMAKE_INSTALL_PREFIX}/images)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/images/ DESTINATION ${CMAKE_INSTALL_PREFIX}/images)
 install(DIRECTORY ${DEPENDENCIES_ROOT}/bin/ DESTINATION ${CMAKE_INSTALL_PREFIX})
