@@ -1,20 +1,18 @@
-SET(APP_NAME seminar6)
-
-SET(SRC_FILES	
+set(SRC_FILES	
 	Application.cpp
-	Mesh.cpp
 	ShaderProgram.cpp
 	Texture.cpp
+	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	Application.h
-	Mesh.h
 	ShaderProgram.h
 	Texture.h
+	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 )
 
-SET(SHADER_FILES
+set(SHADER_FILES
 	shaders6/common.vert	
 	shaders6/common.frag
 	
@@ -22,7 +20,7 @@ SET(SHADER_FILES
 	shaders6/skybox.frag
 )
 
-SOURCE_GROUP("Shaders" FILES	
+source_group("Shaders" FILES	
 	${SHADER_FILES}	
 )
 
@@ -33,4 +31,4 @@ MAKE_SAMPLE(Sample_6_4_BackFaceCulling)
 MAKE_SAMPLE(Sample_6_5_Transparency)
 MAKE_SAMPLE(Sample_6_6_Stencil)
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders6 DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar6/shaders6 DESTINATION ${CMAKE_INSTALL_PREFIX})

@@ -1,20 +1,18 @@
-SET(APP_NAME seminar8)
-
-SET(SRC_FILES	
+set(SRC_FILES	
 	Application.cpp
-	Mesh.cpp
 	ShaderProgram.cpp
 	Texture.cpp
+	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	Application.h
-	Mesh.h
 	ShaderProgram.h
 	Texture.h
+	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 )
 
-SET(SHADER_FILES
+set(SHADER_FILES
 	shaders8/toshadow.vert	
 	shaders8/toshadow.frag
 	
@@ -29,11 +27,11 @@ SET(SHADER_FILES
 	shaders8/deferred.frag
 )
 
-SOURCE_GROUP("Shaders" FILES	
+source_group("Shaders" FILES	
 	${SHADER_FILES}	
 )
 
 MAKE_SAMPLE(Sample_8_1_Shadows)
 MAKE_SAMPLE(Sample_8_2_Deferred)
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders8 DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar8/shaders8 DESTINATION ${CMAKE_INSTALL_PREFIX})

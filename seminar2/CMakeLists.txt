@@ -1,26 +1,24 @@
-SET(APP_NAME seminar2)
-
-SET(SRC_FILES	
+set(SRC_FILES	
 	Application.cpp
-	Mesh.cpp
 	ShaderProgram.cpp
+	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	Application.h
-	Mesh.h
 	ShaderProgram.h
+	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 )
 
-SET(SHADER_FILES
+set(SHADER_FILES
 	shaders2/shader.vert
 	shaders2/shader.frag
 )
 
-SOURCE_GROUP("Shaders" FILES	
+source_group("Shaders" FILES	
 	${SHADER_FILES}	
 )
 
 MAKE_SAMPLE(Sample_2_1_Transformation)
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders2 DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar2/shaders2 DESTINATION ${CMAKE_INSTALL_PREFIX})

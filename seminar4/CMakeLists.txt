@@ -1,18 +1,16 @@
-SET(APP_NAME seminar4)
-
-SET(SRC_FILES	
+set(SRC_FILES	
 	Application.cpp
-	Mesh.cpp
 	ShaderProgram.cpp
+	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	Application.h
-	Mesh.h
 	ShaderProgram.h
+	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 )
 
-SET(SHADER_FILES
+set(SHADER_FILES
 	shaders4/diffuseDirectionalLight.vert
 	shaders4/diffuseDirectionalLight.frag
 	
@@ -38,7 +36,7 @@ SET(SHADER_FILES
 	shaders4/marker.frag
 )
 
-SOURCE_GROUP("Shaders" FILES	
+source_group("Shaders" FILES	
 	${SHADER_FILES}	
 )
 
@@ -49,4 +47,4 @@ MAKE_SAMPLE(Sample_4_4_Attenuation)
 MAKE_SAMPLE(Sample_4_5_CookTorrance)
 MAKE_SAMPLE(Sample_4_6_MultiLights)
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar4/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})

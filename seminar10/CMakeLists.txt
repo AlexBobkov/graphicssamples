@@ -1,22 +1,20 @@
-SET(APP_NAME seminar10)
-
-SET(SRC_FILES	
+set(SRC_FILES	
 	Application.cpp
-	Mesh.cpp
 	ShaderProgram.cpp
 	Texture.cpp
 	Framebuffer.cpp
+	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	Application.h
-	Mesh.h
 	ShaderProgram.h
 	Texture.h
 	Framebuffer.h
+	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 )
 
-SET(SHADER_FILES
+set(SHADER_FILES
 	shaders10/instancingNoMatrix.vert	
 	shaders10/instancingUniform.vert	
 	shaders10/instancingTexture.vert	
@@ -33,7 +31,7 @@ SET(SHADER_FILES
 	shaders10/particleWithGeomShader.frag
 )
 
-SOURCE_GROUP("Shaders" FILES	
+source_group("Shaders" FILES	
 	${SHADER_FILES}	
 )
 
@@ -42,4 +40,4 @@ MAKE_SAMPLE(Sample_10_2_Particles)
 MAKE_SAMPLE(Sample_10_3_TransformFeedback)
 MAKE_SAMPLE(Sample_10_4_GeometryShader)
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders10 DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar10/shaders10 DESTINATION ${CMAKE_INSTALL_PREFIX})

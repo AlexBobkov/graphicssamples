@@ -1,22 +1,20 @@
-SET(APP_NAME seminar9)
-
-SET(SRC_FILES	
+set(SRC_FILES	
 	Application.cpp
-	Mesh.cpp
 	ShaderProgram.cpp
 	Texture.cpp
 	Framebuffer.cpp
+	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	Application.h
-	Mesh.h
 	ShaderProgram.h
 	Texture.h
 	Framebuffer.h
+	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 )
 
-SET(SHADER_FILES
+set(SHADER_FILES
 	shaders9/deferred.vert	
 	shaders9/deferred.frag
 	
@@ -36,7 +34,7 @@ SET(SHADER_FILES
 	shaders9/dof.frag
 )
 
-SOURCE_GROUP("Shaders" FILES	
+source_group("Shaders" FILES	
 	${SHADER_FILES}	
 )
 
@@ -46,4 +44,4 @@ MAKE_SAMPLE(Sample_9_3_HDR)
 MAKE_SAMPLE(Sample_9_4_SSAO)
 MAKE_SAMPLE(Sample_9_5_DoF)
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders9 DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar9/shaders9 DESTINATION ${CMAKE_INSTALL_PREFIX})

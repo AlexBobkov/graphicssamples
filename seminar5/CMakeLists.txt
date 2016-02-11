@@ -1,20 +1,18 @@
-SET(APP_NAME seminar5)
-
-SET(SRC_FILES	
+set(SRC_FILES	
 	Application.cpp
-	Mesh.cpp
 	ShaderProgram.cpp
 	Texture.cpp
+	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	Application.h
-	Mesh.h
 	ShaderProgram.h
 	Texture.h
+	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 )
 
-SET(SHADER_FILES
+set(SHADER_FILES
 	shaders5/texture.vert
 	shaders5/texture.frag
 	
@@ -22,7 +20,7 @@ SET(SHADER_FILES
 	shaders5/textureSpecular.frag
 )
 
-SOURCE_GROUP("Shaders" FILES	
+source_group("Shaders" FILES	
 	${SHADER_FILES}	
 )
 
@@ -31,4 +29,4 @@ MAKE_SAMPLE(Sample_5_2_Magnification)
 MAKE_SAMPLE(Sample_5_3_Minification)
 MAKE_SAMPLE(Sample_5_4_Specular)
 
-INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders5 DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar5/shaders5 DESTINATION ${CMAKE_INSTALL_PREFIX})
