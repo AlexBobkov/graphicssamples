@@ -14,11 +14,11 @@ if (DEPENDENCIES_ROOT)
 	include(${DEPENDENCIES_ROOT}/lib/cmake/glew/glew-targets.cmake)
 	include(${DEPENDENCIES_ROOT}/lib/cmake/glfw/glfwTargets.cmake)
 	include(${DEPENDENCIES_ROOT}/lib/cmake/glm/glmTargets.cmake)
+	include(${DEPENDENCIES_ROOT}/lib/cmake/assimp-3.2/assimpTargets.cmake)
 else ()
 	message("Set DEPENDENCIES_ROOT variable")
 endif ()
 		
-FIND_PACKAGE(assimp)
 FIND_PACKAGE(AntTweakBar)
 FIND_PACKAGE(OculusSDK)
 
@@ -47,7 +47,6 @@ INCLUDE_DIRECTORIES(
 	${CMAKE_INCLUDE_PATH}
 	${OpenGL_INCLUDE_DIRS}
 	${PROJECT_SOURCE_DIR}/3rdParty/glimg-0.5.2/include
-	${assimp_INCLUDE_DIRS}
 	${ANTTWEAKBAR_INCLUDE_DIRS}
 )
 
@@ -82,3 +81,4 @@ FOREACH(STUDENT ${STUDENTS})
 ENDFOREACH()
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/images/ DESTINATION ${CMAKE_INSTALL_PREFIX}/images)
+install(DIRECTORY ${DEPENDENCIES_ROOT}/bin/ DESTINATION ${CMAKE_INSTALL_PREFIX})
