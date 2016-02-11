@@ -54,6 +54,10 @@ link_directories(
 	${OpenGL_LIBRARY_DIRS}
 )
 
+if (UNIX)
+	set(CMAKE_INSTALL_RPATH "${DEPENDENCIES_ROOT}/lib")	
+endif ()
+
 add_subdirectory(3rdParty/glimg-0.5.2)
 add_subdirectory(seminar1)
 add_subdirectory(seminar2)
@@ -107,7 +111,3 @@ if (WIN32)
 		message("ASSIMP_LOCATION_RELEASE is empty")
 	endif ()
 endif (WIN32)
-
-if (UNIX)
-	set(CMAKE_INSTALL_RPATH "${DEPENDENCIES_ROOT}/lib")
-endif ()
