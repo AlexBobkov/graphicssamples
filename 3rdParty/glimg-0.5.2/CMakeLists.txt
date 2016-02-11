@@ -1,6 +1,4 @@
-SET(LIB_NAME glimg)
-
-SET(SRC_FILES
+set(SRC_FILES
 	source/DdsLoader.cpp
 	source/DdsLoaderInt.h
 	source/ImageCreator.cpp
@@ -17,7 +15,7 @@ SET(SRC_FILES
 	source/Util.h
 )
 
-SET(HEADER_FILES
+set(HEADER_FILES
 	include/glimg/DdsLoader.h
 	include/glimg/glimg.h
 	include/glimg/ImageCreator.h
@@ -29,4 +27,8 @@ SET(HEADER_FILES
 	include/glimg/TestLoader.h
 )
 
-ADD_LIBRARY(${LIB_NAME} STATIC ${SRC_FILES} ${HEADER_FILES})
+add_library(glimg STATIC ${SRC_FILES} ${HEADER_FILES})
+
+if (CMAKE_COMPILER_IS_GNUCC)
+	target_compile_options(glimg PUBLIC -std=c++11)
+endif ()
