@@ -1,7 +1,7 @@
 #include "Application.h"
-#include "ShaderProgram.h"
 
 #include <Mesh.hpp>
+#include <ShaderProgram.hpp>
 
 #include <iostream>
 #include <vector>
@@ -74,7 +74,9 @@ public:
 			fragFilename = "shaders3/shaderDiscard.frag";
 		}
 
-		_shaderProgram = ShaderProgram::createProgram(vertFilename, fragFilename);
+        ShaderProgram sp;
+        sp.createProgram(vertFilename, fragFilename);
+        _shaderProgram = sp.id();
 
 		_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
 		_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");

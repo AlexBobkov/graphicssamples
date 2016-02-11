@@ -1,7 +1,7 @@
 #include "Application.h"
-#include "ShaderProgram.h"
 
 #include <Mesh.hpp>
+#include <ShaderProgram.hpp>
 
 #include <iostream>
 #include <vector>

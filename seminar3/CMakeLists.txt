@@ -1,13 +1,13 @@
 set(SRC_FILES	
 	Application.cpp
-	ShaderProgram.cpp
 	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
+	${PROJECT_SOURCE_DIR}/common/ShaderProgram.cpp
 )
 
 set(HEADER_FILES
 	Application.h
-	ShaderProgram.h
 	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
+	${PROJECT_SOURCE_DIR}/common/ShaderProgram.hpp
 )
 
 set(SHADER_FILES

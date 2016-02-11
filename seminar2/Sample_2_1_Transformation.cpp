@@ -1,7 +1,7 @@
 #include "Application.h"
-#include "ShaderProgram.h"
 
 #include <Mesh.hpp>
+#include <ShaderProgram.hpp>
 
 #include <iostream>
 #include <vector>
@@ -15,7 +15,7 @@ public:
 	Mesh cube;
 	Mesh bunny;
 
-	GLuint _shaderProgram;
+    GLuint _shaderProgram;
 	GLuint _modelMatrixUniform;	
 	GLuint _viewMatrixUniform;
 	GLuint _projMatrixUniform;
@@ -34,7 +34,9 @@ public:
 
 		//=========================================================
 
-		_shaderProgram = ShaderProgram::createProgram("shaders2/shader.vert", "shaders2/shader.frag");		
+        ShaderProgram sp;
+        sp.createProgram("shaders2/shader.vert", "shaders2/shader.frag");
+        _shaderProgram = sp.id();
 
 		_modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
 		_viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
