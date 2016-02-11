@@ -1,11 +1,7 @@
-#define _USE_MATH_DEFINES
-#include <math.h>
+#include <Framebuffer.hpp>
 
 #include <iostream>
 #include <vector>
-#include <fstream>
-
-#include "Framebuffer.h"
 
 GLuint Framebuffer::addBuffer(GLint internalFormat, GLenum attachment)
 {
@@ -23,7 +19,7 @@ GLuint Framebuffer::addBuffer(GLint internalFormat, GLenum attachment)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0); //GL_RGB и GL_UNSIGNED_BYTE игнорируются, т.к. мы не копируем данные из оперативной памяти
         glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texId, 0);
-    }    
+    }
 
     _texIdToFormat[texId] = internalFormat;
     _texIdToAttachment[texId] = attachment;
@@ -36,8 +32,8 @@ void Framebuffer::initDrawBuffers()
     std::vector<GLenum> attachments;
 
     for (std::map<GLuint, GLenum>::iterator itr = _texIdToAttachment.begin();
-        itr != _texIdToAttachment.end();
-        ++itr)
+         itr != _texIdToAttachment.end();
+         ++itr)
     {
         if (itr->second != GL_DEPTH_ATTACHMENT)
         {
@@ -64,8 +60,8 @@ void Framebuffer::resize(unsigned int width, unsigned int height)
     glBindFramebuffer(GL_FRAMEBUFFER, _fboId);
 
     for (std::map<GLuint, GLint>::iterator itr = _texIdToFormat.begin();
-        itr != _texIdToFormat.end();
-        ++itr)
+         itr != _texIdToFormat.end();
+         ++itr)
     {
         glBindTexture(GL_TEXTURE_2D, itr->first);
 

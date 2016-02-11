@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "Texture.h"
-#include "Framebuffer.h"
 
+#include <Framebuffer.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 

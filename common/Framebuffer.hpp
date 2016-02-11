@@ -1,10 +1,10 @@
 #pragma once
 
+#include <GL/glew.h>
+
 #include <string>
 #include <vector>
 #include <map>
-
-#include <GL/glew.h>
 
 /**
 Создает и инициализирует Frame Buffer Object
@@ -12,11 +12,11 @@
 class Framebuffer
 {
 public:
-    Framebuffer():
+    Framebuffer() :
         _fboId(0),
         _width(1024),
         _height(1024)
-    {        
+    {
     }
 
     ~Framebuffer()
@@ -51,7 +51,7 @@ public:
     void setSize(unsigned int width, unsigned int height) { _width = width; _height = height; }
 
     /**
-    Изменяет размер текстур    
+    Изменяет размер текстур
     */
     void resize(unsigned int width, unsigned int height);
 
@@ -61,7 +61,7 @@ public:
     GLuint addBuffer(GLint internalFormat, GLenum attachment);
 
     /**
-    Устанавливает буферы, куда осуществлять рендеринг 
+    Устанавливает буферы, куда осуществлять рендеринг
     */
     void initDrawBuffers();
 
@@ -69,13 +69,13 @@ public:
     Проверят, настроен ли фреймбуфер корректно
     */
     bool valid() const { return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE; }
-        	
+
 protected:
-	GLuint _fboId;
+    GLuint _fboId;
 
     unsigned int _width;
     unsigned int _height;
-    
+
     std::map<GLuint, GLint> _texIdToFormat;
     std::map<GLuint, GLenum> _texIdToAttachment;
 };
