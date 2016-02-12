@@ -1,5 +1,4 @@
-#include "Application.h"
-
+#include <Application.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 
@@ -54,8 +53,8 @@ public:
 
 		glUseProgram(_shaderProgram); //Устанавливаем шейдер
 
-		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix)); //Загружаем на видеокарту матрицу проекции
-		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix)); //Загружаем на видеокарту матрицу вида
+		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_camera.projMatrix)); //Загружаем на видеокарту матрицу проекции
+		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_camera.viewMatrix)); //Загружаем на видеокарту матрицу вида
 
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(cube.modelMatrix())); //Загружаем на видеокарту матрицу модели первого меша
 		cube.draw(); //Рисуем первый меш
@@ -66,6 +65,11 @@ public:
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(bunny.modelMatrix())); //Загружаем на видеокарту матрицу модели второго меша
 		bunny.draw(); //Рисуем второй меш
 	}
+
+    //В этом примере нет ГУИ
+    void initGUI() override { }
+    void updateGUI() override { }
+    void drawGUI() override { }
 };
 
 int main()

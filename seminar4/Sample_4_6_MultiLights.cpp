@@ -1,5 +1,4 @@
-#include "Application.h"
-
+#include <Application.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 
@@ -132,8 +131,8 @@ public:
 		_shader.use();
 
 		//«агружаем на видеокарту значени€ юниформ-переменных
-		_shader.setMat4Uniform("viewMatrix", _viewMatrix);
-		_shader.setMat4Uniform("projectionMatrix", _projMatrix);
+		_shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
+		_shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
 		_light[0].position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
 		
@@ -142,7 +141,7 @@ public:
 			std::ostringstream str;
 			str << "light[" << i << "]";
 
-			glm::vec3 lightPosCamSpace = glm::vec3(_viewMatrix * glm::vec4(_light[i].position, 1.0));
+			glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light[i].position, 1.0));
 
 			_shader.setVec3Uniform(str.str() + ".pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
 			_shader.setVec3Uniform(str.str() + ".La", _light[i].ambient);
@@ -153,7 +152,7 @@ public:
 		//«агружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		{
 			_shader.setMat4Uniform("modelMatrix", cube.modelMatrix());
-			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * cube.modelMatrix()))));
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * cube.modelMatrix()))));
 
 			_shader.setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
 			_shader.setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
@@ -165,7 +164,7 @@ public:
 
 		{
 			_shader.setMat4Uniform("modelMatrix", sphere.modelMatrix());
-			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * sphere.modelMatrix()))));
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * sphere.modelMatrix()))));
 
 			_shader.setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
 			_shader.setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
@@ -177,7 +176,7 @@ public:
 
 		{
 			_shader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
-			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_viewMatrix * bunny.modelMatrix()))));
+			_shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * bunny.modelMatrix()))));
 
 			_shader.setVec3Uniform("material.Ka", _material.ambient);
 			_shader.setVec3Uniform("material.Kd", _material.diffuse);
@@ -193,7 +192,7 @@ public:
 
 			for (unsigned int i = 0; i < LightNum; i++)
 			{
-				_markerShader.setMat4Uniform("mvpMatrix", _projMatrix * _viewMatrix * glm::translate(glm::mat4(1.0f), _light[i].position));
+				_markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light[i].position));
                 _markerShader.setVec4Uniform("color", glm::vec4(_light[i].diffuse, 1.0f));
 				marker.draw();
 			}

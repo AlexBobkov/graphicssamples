@@ -1,5 +1,4 @@
-#include "Application.h"
-
+#include <Application.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 
@@ -64,6 +63,11 @@ public:
 		//Рисуем квад
 		quad.draw();
 	}
+
+    //В этом примере нет ГУИ
+    void initGUI() override { }
+    void updateGUI() override { }
+    void drawGUI() override { }
 };
 
 int main()

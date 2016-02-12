@@ -1,5 +1,4 @@
-#include "Application.h"
-
+#include <Application.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 
@@ -74,8 +73,8 @@ public:
 		//Загружаем на видеокарту значения юниформ-переменные: время и матрицы
 		glUniform1f(_timeUniform, (float)glfwGetTime()); //передаем время в шейдер	
 
-		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
-		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_viewMatrix));
+		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_camera.projMatrix));
+		glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_camera.viewMatrix));
 
 		//Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
 		glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)));
@@ -84,6 +83,11 @@ public:
 		glBindVertexArray(_vao);
 		glDrawArrays(GL_LINE_STRIP, 0, _numVertices);
 	}
+
+    //В этом примере нет ГУИ
+    void initGUI() override { }
+    void updateGUI() override { }
+    void drawGUI() override { }
 };
 
 int main()

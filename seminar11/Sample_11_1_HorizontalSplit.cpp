@@ -159,11 +159,6 @@ public:
         glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
     }
 
-    void initGUI() override
-    {
-        //В этом примере нет ГУИ
-    }
-
     void handleKey(int key, int scancode, int action, int mods) override
     {
         Application::handleKey(key, scancode, action, mods);
@@ -207,11 +202,6 @@ public:
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
         computeFPS();
-    }
-
-    void updateGUI() override
-    {
-        //В этом примере нет ГУИ
     }
 
     void draw() override
@@ -315,10 +305,10 @@ public:
         }
     }
 
-    void drawGUI() override
-    {
-        //В этом примере нет ГУИ
-    }
+    //В этом примере нет ГУИ
+    void initGUI() override { }
+    void updateGUI() override { }
+    void drawGUI() override { }
 };
 
 int main()
