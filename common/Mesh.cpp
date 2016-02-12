@@ -41,10 +41,22 @@ public:
 //=========================================================
 
 Mesh::Mesh() :
-_primitiveType(GL_TRIANGLES),
 _vao(0),
-_numVertices(0)
+_primitiveType(GL_TRIANGLES),
+_vertexCount(0)
 {
+}
+
+Mesh::Mesh(GLuint primitiveType, unsigned int vertexCount):
+_vao(0),
+_primitiveType(primitiveType),
+_vertexCount(vertexCount)
+{
+}
+
+Mesh::~Mesh()
+{
+    glDeleteVertexArrays(1, &_vao);
 }
 
 void Mesh::makeSphere(float radius, int N)
@@ -77,7 +89,7 @@ void Mesh::makeSphere(float radius, int N)
             texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)i / M);
             texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
 
-            _numVertices += 3;
+            _vertexCount += 3;
 
             //Второй треугольник, образующий квад
             vertices.addVec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
@@ -92,7 +104,7 @@ void Mesh::makeSphere(float radius, int N)
             texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
             texcoords.addVec2((float)j / N, 1.0f - (float)(i + 1) / M);
 
-            _numVertices += 3;
+            _vertexCount += 3;
         }
     }
 
@@ -112,8 +124,8 @@ void Mesh::makeSphere(float radius, int N)
     glEnableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4 * 2));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4 * 2));
 
     glBindVertexArray(0);
 }
@@ -283,7 +295,7 @@ void Mesh::makeCube(float size)
     vertices.insert(vertices.end(), normals.begin(), normals.end());
     vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-    _numVertices = 36;
+    _vertexCount = 36;
 
     GLuint vbo = 0;
     glGenBuffers(1, &vbo);
@@ -298,8 +310,8 @@ void Mesh::makeCube(float size)
     glEnableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4 * 2));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4 * 2));
 
     glBindVertexArray(0);
 }
@@ -318,7 +330,7 @@ void Mesh::makeScreenAlignedQuad()
     vertices.addVec3(1.0, -1.0, 0.0);
     vertices.addVec3(-1.0, -1.0, 0.0);
 
-    _numVertices = 6;
+    _vertexCount = 6;
 
     GLuint vbo = 0;
     glGenBuffers(1, &vbo);
@@ -370,7 +382,7 @@ void Mesh::makeGroundPlane(float size, float numTiles)
     vertices.insert(vertices.end(), normals.begin(), normals.end());
     vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
 
-    _numVertices = 6;
+    _vertexCount = 6;
 
     GLuint vbo = 0;
     glGenBuffers(1, &vbo);
@@ -385,8 +397,8 @@ void Mesh::makeGroundPlane(float size, float numTiles)
     glEnableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4 * 2));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4 * 2));
 
     glBindVertexArray(0);
 }
@@ -428,13 +440,13 @@ void Mesh::loadFromFile(const std::string& filename)
         return;
     }
 
-    _numVertices = mesh->mNumVertices;
+    _vertexCount = mesh->mNumVertices;
 
-    std::vector<float> vertices(_numVertices * 3);
-    std::vector<float> normals(_numVertices * 3);
-    std::vector<float> texcoords(_numVertices * 2);
+    std::vector<float> vertices(_vertexCount * 3);
+    std::vector<float> normals(_vertexCount * 3);
+    std::vector<float> texcoords(_vertexCount * 2);
 
-    for (unsigned int i = 0; i < _numVertices; i++)
+    for (unsigned int i = 0; i < _vertexCount; i++)
     {
         const aiVector3D* vp = &(mesh->mVertices[i]);
 
@@ -472,13 +484,13 @@ void Mesh::loadFromFile(const std::string& filename)
     glEnableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4 * 2));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4 * 2));
 
     glBindVertexArray(0);
 }
 
-void Mesh::loadFromFileArray(const std::string& filename, std::vector<glm::vec3>& positions)
+void Mesh::loadFromFileArray(const std::string& filename, const std::vector<glm::vec3>& positions)
 {
     const struct aiScene* scene = aiImportFile(filename.c_str(), aiProcess_Triangulate);
 
@@ -514,11 +526,11 @@ void Mesh::loadFromFileArray(const std::string& filename, std::vector<glm::vec3>
         return;
     }
 
-    _numVertices = mesh->mNumVertices * positions.size();
+    _vertexCount = mesh->mNumVertices * positions.size();
 
-    std::vector<float> vertices(_numVertices * 3);
-    std::vector<float> normals(_numVertices * 3);
-    std::vector<float> texcoords(_numVertices * 2);
+    std::vector<float> vertices(_vertexCount * 3);
+    std::vector<float> normals(_vertexCount * 3);
+    std::vector<float> texcoords(_vertexCount * 2);
 
     for (unsigned int k = 0; k < positions.size(); k++)
     {
@@ -561,13 +573,13 @@ void Mesh::loadFromFileArray(const std::string& filename, std::vector<glm::vec3>
     glEnableVertexAttribArray(2);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_numVertices * 3 * 4 * 2));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4 * 2));
 
     glBindVertexArray(0);
 }
 
-void Mesh::addInstancedData(int attrNum, std::vector<glm::vec3>& positions)
+void Mesh::addInstancedData(int attrNum, const std::vector<glm::vec3>& positions)
 {
     std::vector<float> data;
     for (unsigned int i = 0; i < positions.size(); i++)
@@ -594,11 +606,325 @@ void Mesh::addInstancedData(int attrNum, std::vector<glm::vec3>& positions)
 void Mesh::draw()
 {
     glBindVertexArray(_vao);
-    glDrawArrays(_primitiveType, 0, _numVertices);
+    glDrawArrays(_primitiveType, 0, _vertexCount);
 }
 
 void Mesh::drawInstanced(unsigned int N)
 {
     glBindVertexArray(_vao);
-    glDrawArraysInstanced(_primitiveType, 0, _numVertices, N);
+    glDrawArraysInstanced(_primitiveType, 0, _vertexCount, N);
+}
+
+//==========================================
+
+//CubeMesh::CubeMesh(float size):
+//Mesh(GL_TRIANGLES, 36),
+//_vbo(0)
+//{
+//    Buffer<float> vertices;
+//    Buffer<float> normals;
+//    Buffer<float> texcoords;
+//
+//    //front 1
+//    vertices.addVec3(size, -size, size);
+//    vertices.addVec3(size, size, size);
+//    vertices.addVec3(size, size, -size);
+//
+//    normals.addVec3(1.0, 0.0, 0.0);
+//    normals.addVec3(1.0, 0.0, 0.0);
+//    normals.addVec3(1.0, 0.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//
+//    //front 2
+//    vertices.addVec3(size, -size, size);
+//    vertices.addVec3(size, size, -size);
+//    vertices.addVec3(size, -size, -size);
+//
+//    normals.addVec3(1.0, 0.0, 0.0);
+//    normals.addVec3(1.0, 0.0, 0.0);
+//    normals.addVec3(1.0, 0.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//    texcoords.addVec2(0.0, 0.0);
+//
+//    //left 1
+//    vertices.addVec3(-size, -size, size);
+//    vertices.addVec3(size, -size, size);
+//    vertices.addVec3(size, -size, -size);
+//
+//    normals.addVec3(0.0, -1.0, 0.0);
+//    normals.addVec3(0.0, -1.0, 0.0);
+//    normals.addVec3(0.0, -1.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//
+//    //left 2
+//    vertices.addVec3(-size, -size, size);
+//    vertices.addVec3(size, -size, -size);
+//    vertices.addVec3(-size, -size, -size);
+//
+//    normals.addVec3(0.0, -1.0, 0.0);
+//    normals.addVec3(0.0, -1.0, 0.0);
+//    normals.addVec3(0.0, -1.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//    texcoords.addVec2(0.0, 0.0);
+//
+//    //top 1
+//    vertices.addVec3(-size, size, size);
+//    vertices.addVec3(size, size, size);
+//    vertices.addVec3(size, -size, size);
+//
+//    normals.addVec3(0.0, 0.0, 1.0);
+//    normals.addVec3(0.0, 0.0, 1.0);
+//    normals.addVec3(0.0, 0.0, 1.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//
+//    //top 2
+//    vertices.addVec3(-size, size, size);
+//    vertices.addVec3(size, -size, size);
+//    vertices.addVec3(-size, -size, size);
+//
+//    normals.addVec3(0.0, 0.0, 1.0);
+//    normals.addVec3(0.0, 0.0, 1.0);
+//    normals.addVec3(0.0, 0.0, 1.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//    texcoords.addVec2(0.0, 0.0);
+//
+//    //back 1
+//    vertices.addVec3(-size, -size, size);
+//    vertices.addVec3(-size, size, -size);
+//    vertices.addVec3(-size, size, size);
+//
+//    normals.addVec3(-1.0, 0.0, 0.0);
+//    normals.addVec3(-1.0, 0.0, 0.0);
+//    normals.addVec3(-1.0, 0.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//    texcoords.addVec2(1.0, 1.0);
+//
+//    //back 2
+//    vertices.addVec3(-size, -size, size);
+//    vertices.addVec3(-size, -size, -size);
+//    vertices.addVec3(-size, size, -size);
+//
+//    normals.addVec3(-1.0, 0.0, 0.0);
+//    normals.addVec3(-1.0, 0.0, 0.0);
+//    normals.addVec3(-1.0, 0.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(0.0, 0.0);
+//    texcoords.addVec2(1.0, 0.0);
+//
+//    //right 1
+//    vertices.addVec3(-size, size, size);
+//    vertices.addVec3(size, size, -size);
+//    vertices.addVec3(size, size, size);
+//
+//    normals.addVec3(0.0, 1.0, 0.0);
+//    normals.addVec3(0.0, 1.0, 0.0);
+//    normals.addVec3(0.0, 1.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//    texcoords.addVec2(1.0, 1.0);
+//
+//    //right 2
+//    vertices.addVec3(-size, size, size);
+//    vertices.addVec3(-size, size, -size);
+//    vertices.addVec3(+size, size, -size);
+//
+//    normals.addVec3(0.0, 1.0, 0.0);
+//    normals.addVec3(0.0, 1.0, 0.0);
+//    normals.addVec3(0.0, 1.0, 0.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(0.0, 0.0);
+//    texcoords.addVec2(1.0, 0.0);
+//
+//    //bottom 1
+//    vertices.addVec3(-size, size, -size);
+//    vertices.addVec3(size, -size, -size);
+//    vertices.addVec3(size, size, -size);
+//
+//    normals.addVec3(0.0, 0.0, -1.0);
+//    normals.addVec3(0.0, 0.0, -1.0);
+//    normals.addVec3(0.0, 0.0, -1.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(1.0, 0.0);
+//    texcoords.addVec2(1.0, 1.0);
+//
+//    //bottom 2
+//    vertices.addVec3(-size, size, -size);
+//    vertices.addVec3(-size, -size, -size);
+//    vertices.addVec3(size, -size, -size);
+//
+//    normals.addVec3(0.0, 0.0, -1.0);
+//    normals.addVec3(0.0, 0.0, -1.0);
+//    normals.addVec3(0.0, 0.0, -1.0);
+//
+//    texcoords.addVec2(0.0, 1.0);
+//    texcoords.addVec2(0.0, 0.0);
+//    texcoords.addVec2(1.0, 0.0);
+//
+//    vertices.insert(vertices.end(), normals.begin(), normals.end());
+//    vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
+//        
+//    glGenBuffers(1, &_vbo);
+//
+//    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+//    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+//    glBindBuffer(GL_ARRAY_BUFFER, 0);
+//
+//    glGenVertexArrays(1, &_vao); //Перенести в конструктор
+//
+//    glBindVertexArray(_vao);
+//    glEnableVertexAttribArray(0);
+//    glEnableVertexAttribArray(1);
+//    glEnableVertexAttribArray(2);
+//    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
+//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4 * 2));
+//    glBindVertexArray(0);
+//}
+//
+//CubeMesh::~CubeMesh()
+//{
+//    glDeleteBuffers(1, &_vbo);
+//}
+
+//==================================
+
+VertexBuffer::VertexBuffer()
+{
+    glGenBuffers(1, &_vbo);
+}
+
+VertexBuffer::~VertexBuffer()
+{
+    glDeleteBuffers(1, &_vbo);
+}
+
+void VertexBuffer::setData(GLsizeiptr size, const GLvoid* data)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+//==================================
+
+StrongMesh::StrongMesh()
+{
+    glGenVertexArrays(1, &_vao);
+}
+
+StrongMesh::~StrongMesh()
+{
+    glDeleteVertexArrays(1, &_vao);
+}
+
+void StrongMesh::setAttribute(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLuint offset, const VertexBufferPtr& buffer)
+{
+    _buffers.insert(buffer);
+
+    glBindVertexArray(_vao);
+    
+    buffer->bind();
+    glEnableVertexAttribArray(index);
+    glVertexAttribPointer(index, size, type, normalized, stride, reinterpret_cast<void*>(offset));
+    buffer->unbind();
+
+    glBindVertexArray(0);
+}
+
+void StrongMesh::draw()
+{
+    glBindVertexArray(_vao);
+    glDrawArrays(_primitiveType, 0, _vertexCount);
+}
+
+MeshPtr makeSphere(float radius, unsigned int N)
+{
+    int M = N / 2;
+
+    GLuint vertexCount = 0;
+
+    Buffer<float> vertices;
+    Buffer<float> normals;
+    Buffer<float> texcoords;
+    for (int i = 0; i < M; i++)
+    {
+        float theta = (float)M_PI * i / M;
+        float theta1 = (float)M_PI * (i + 1) / M;
+
+        for (int j = 0; j < N; j++)
+        {
+            float phi = 2.0f * (float)M_PI * j / N + (float)M_PI;
+            float phi1 = 2.0f * (float)M_PI * (j + 1) / N + (float)M_PI;
+
+            //Первый треугольник, образующий квад
+            vertices.addVec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
+            vertices.addVec3(cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius);
+            vertices.addVec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
+
+            normals.addVec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
+            normals.addVec3(cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta));
+            normals.addVec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
+
+            texcoords.addVec2((float)j / N, 1.0f - (float)i / M);
+            texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)i / M);
+            texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
+
+            vertexCount += 3;
+
+            //Второй треугольник, образующий квад
+            vertices.addVec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
+            vertices.addVec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
+            vertices.addVec3(cos(phi) * sin(theta1) * radius, sin(phi) * sin(theta1) * radius, cos(theta1) * radius);
+
+            normals.addVec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
+            normals.addVec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
+            normals.addVec3(cos(phi) * sin(theta1), sin(phi) * sin(theta1), cos(theta1));
+
+            texcoords.addVec2((float)j / N, 1.0f - (float)i / M);
+            texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
+            texcoords.addVec2((float)j / N, 1.0f - (float)(i + 1) / M);
+
+            vertexCount += 3;
+        }
+    }
+        
+    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    buf0->setData(vertices.size() * sizeof(float), vertices.data());
+
+    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    buf1->setData(normals.size() * sizeof(float), normals.data());
+
+    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    buf2->setData(texcoords.size() * sizeof(float), texcoords.data());
+
+    MeshPtr mesh = std::make_shared<StrongMesh>();
+    mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
+    mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
+    mesh->setAttribute(1, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
+    mesh->setPrimitiveType(GL_TRIANGLES);
+    mesh->setVertexCount(vertexCount);
+
+    return mesh;
 }

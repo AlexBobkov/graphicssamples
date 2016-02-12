@@ -9,6 +9,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <memory>
 
 /**
@@ -22,6 +23,7 @@ class Mesh
 {
 public:
     Mesh();
+    virtual ~Mesh();
 
     GLuint& primitiveType() { return _primitiveType; }
 
@@ -66,18 +68,114 @@ public:
     void loadFromFile(const std::string& filename);
 
     /**
-    Для примера с инстансингом. Загружает меш из внешнего файла и разножает его _positions.size() раз.
+    Для примера с инстансингом. Загружает меш из внешнего файла и размножает его _positions.size() раз.
     */
-    void loadFromFileArray(const std::string& filename, std::vector<glm::vec3>& positions);
+    void loadFromFileArray(const std::string& filename, const std::vector<glm::vec3>& positions);
 
     /**
     Для примера с инстансингом. Добавляет ещё один вершинный атрибут с разделителем (divisor)
     */
-    void addInstancedData(int attrNum, std::vector<glm::vec3>& positions);
+    void addInstancedData(int attrNum, const std::vector<glm::vec3>& positions);
 
 protected:
-    GLuint _primitiveType;
+    Mesh(GLuint primitiveType, unsigned int vertexCount);
+
+    Mesh(const Mesh&) = delete;
+    void operator=(const Mesh&) = delete;
+
     GLuint _vao;
-    unsigned int _numVertices;
+    GLuint _primitiveType;
+    unsigned int _vertexCount;
+
     glm::mat4 _modelMatrix;
 };
+
+//typedef std::shared_ptr<Mesh> MeshPtr;
+
+//=========== Функции для создания тестовых мешей
+
+/**
+Создает модель куба
+*/
+//class CubeMesh : public Mesh
+//{
+//public:
+//    CubeMesh(float size);
+//    ~CubeMesh() override;
+//
+//protected:
+//    GLuint _vbo;
+//};
+
+/**
+Абстракция буфера с данными
+*/
+class VertexBuffer
+{
+public:
+    VertexBuffer();
+    ~VertexBuffer();
+
+    void setData(GLsizeiptr size, const GLvoid* data);
+
+    void bind() const
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+    }
+
+    void unbind() const
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+protected:
+    VertexBuffer(const VertexBuffer&) = delete;
+    void operator=(const VertexBuffer&) = delete;
+
+    GLuint _vbo;
+};
+
+typedef std::shared_ptr<VertexBuffer> VertexBufferPtr;
+
+/**
+Абстракция полигональной модели
+Инкапсулирует:
+- управляющий объект VertexArrayObject
+- буферы с вершинными атрибутами VertexBufferObject (один буфер может содержать данные для нескольких атрибутов)
+- тип рисуемых примитивов
+- количество вершин в модели
+- матрицу модели
+*/
+class StrongMesh
+{
+public:
+    StrongMesh();
+    ~StrongMesh();
+
+    void setAttribute(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLuint offset, const VertexBufferPtr& buffer);
+
+    void setPrimitiveType(GLuint type) { _primitiveType = type; }
+    void setVertexCount(GLuint count) { _vertexCount = count; }
+
+    glm::mat4 modelMatrix() const { return _modelMatrix; }
+    void setModelMatrix(const glm::mat4& m) { _modelMatrix = m; }
+
+    void draw();
+
+protected:
+    StrongMesh(const StrongMesh&) = delete;
+    void operator=(const StrongMesh&) = delete;
+
+    GLuint _vao;
+
+    std::set<VertexBufferPtr> _buffers;
+
+    GLuint _primitiveType;
+    GLuint _vertexCount;
+
+    glm::mat4 _modelMatrix;
+};
+
+typedef std::shared_ptr<StrongMesh> MeshPtr;
+
+MeshPtr makeSphere(float radius, unsigned int N);
