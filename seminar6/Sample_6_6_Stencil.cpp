@@ -1,5 +1,4 @@
-#include "Application.h"
-
+#include <Application.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
