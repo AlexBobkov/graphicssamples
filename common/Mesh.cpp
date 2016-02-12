@@ -861,70 +861,65 @@ void StrongMesh::draw()
 
 MeshPtr makeSphere(float radius, unsigned int N)
 {
-    int M = N / 2;
-
-    GLuint vertexCount = 0;
-
-    Buffer<float> vertices;
-    Buffer<float> normals;
-    Buffer<float> texcoords;
-    for (int i = 0; i < M; i++)
+    unsigned int M = N / 2;
+       
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> texcoords;
+    
+    for (unsigned int i = 0; i < M; i++)
     {
         float theta = (float)M_PI * i / M;
         float theta1 = (float)M_PI * (i + 1) / M;
 
-        for (int j = 0; j < N; j++)
+        for (unsigned int j = 0; j < N; j++)
         {
             float phi = 2.0f * (float)M_PI * j / N + (float)M_PI;
             float phi1 = 2.0f * (float)M_PI * (j + 1) / N + (float)M_PI;
 
             //Первый треугольник, образующий квад
-            vertices.addVec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
-            vertices.addVec3(cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius);
-            vertices.addVec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
+            vertices.push_back(glm::vec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius));
+            vertices.push_back(glm::vec3(cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius));
+            vertices.push_back(glm::vec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius));
 
-            normals.addVec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
-            normals.addVec3(cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta));
-            normals.addVec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
+            normals.push_back(glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)));
+            normals.push_back(glm::vec3(cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta)));
+            normals.push_back(glm::vec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)));
 
-            texcoords.addVec2((float)j / N, 1.0f - (float)i / M);
-            texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)i / M);
-            texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
-
-            vertexCount += 3;
+            texcoords.push_back(glm::vec2((float)j / N, 1.0f - (float)i / M));
+            texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)i / M));
+            texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M));
 
             //Второй треугольник, образующий квад
-            vertices.addVec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius);
-            vertices.addVec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius);
-            vertices.addVec3(cos(phi) * sin(theta1) * radius, sin(phi) * sin(theta1) * radius, cos(theta1) * radius);
+            vertices.push_back(glm::vec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius));
+            vertices.push_back(glm::vec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius));
+            vertices.push_back(glm::vec3(cos(phi) * sin(theta1) * radius, sin(phi) * sin(theta1) * radius, cos(theta1) * radius));
 
-            normals.addVec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta));
-            normals.addVec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1));
-            normals.addVec3(cos(phi) * sin(theta1), sin(phi) * sin(theta1), cos(theta1));
+            normals.push_back(glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)));
+            normals.push_back(glm::vec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)));
+            normals.push_back(glm::vec3(cos(phi) * sin(theta1), sin(phi) * sin(theta1), cos(theta1)));
 
-            texcoords.addVec2((float)j / N, 1.0f - (float)i / M);
-            texcoords.addVec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M);
-            texcoords.addVec2((float)j / N, 1.0f - (float)(i + 1) / M);
-
-            vertexCount += 3;
+            texcoords.push_back(glm::vec2((float)j / N, 1.0f - (float)i / M));
+            texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M));
+            texcoords.push_back(glm::vec2((float)j / N, 1.0f - (float)(i + 1) / M));
         }
     }
         
     VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
-    buf0->setData(vertices.size() * sizeof(float), vertices.data());
+    buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
     VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
-    buf1->setData(normals.size() * sizeof(float), normals.data());
+    buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
     VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
-    buf2->setData(texcoords.size() * sizeof(float), texcoords.data());
+    buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<StrongMesh>();
     mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
     mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
-    mesh->setAttribute(1, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
+    mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
     mesh->setPrimitiveType(GL_TRIANGLES);
-    mesh->setVertexCount(vertexCount);
+    mesh->setVertexCount(vertices.size());
 
     return mesh;
 }
