@@ -1,5 +1,4 @@
-#include "Application.h"
-
+#include <Application.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -74,7 +73,7 @@ public:
     float _fps;
     std::deque<float> _fpsData;
 
-    virtual void makeScene()
+    void makeScene() override
     {
         Application::makeScene();
 
@@ -160,20 +159,12 @@ public:
         glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
     }
 
-    virtual void initGUI()
+    void initGUI() override
     {
-        Application::initGUI();
-
-        TwAddVarRO(_bar, "FPS", TW_TYPE_FLOAT, &_fps, "");
-        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
-        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
-        TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
+        //В этом примере нет ГУИ
     }
 
-    virtual void handleKey(int key, int scancode, int action, int mods)
+    void handleKey(int key, int scancode, int action, int mods) override
     {
         Application::handleKey(key, scancode, action, mods);
 
@@ -218,7 +209,12 @@ public:
         computeFPS();
     }
 
-    virtual void draw()
+    void updateGUI() override
+    {
+        //В этом примере нет ГУИ
+    }
+
+    void draw() override
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -317,6 +313,11 @@ public:
 
             ground.draw();
         }
+    }
+
+    void drawGUI() override
+    {
+        //В этом примере нет ГУИ
     }
 };
 

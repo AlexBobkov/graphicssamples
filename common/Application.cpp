@@ -79,7 +79,18 @@ void Application::initContext()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
-    _window = glfwCreateWindow(640, 480, "MIPT OpenGL demos", NULL, NULL);
+    int count;
+    GLFWmonitor** monitors = glfwGetMonitors(&count);
+
+    if (count == 2)
+    {
+        //Если 2 монитора, то запускаем приложение в полноэкранном режиме на 2м мониторе                
+        _window = glfwCreateWindow(1920, 1080, "MIPT OpenGL demos", monitors[1], NULL);
+    }
+    else
+    {
+        _window = glfwCreateWindow(640, 480, "MIPT OpenGL demos", NULL, NULL);
+    }
     if (!_window)
     {
         std::cerr << "ERROR: could not open window with GLFW3\n";
@@ -146,10 +157,15 @@ void Application::run()
 
         draw(); //Рисуем один кадр
 
-        TwDraw(); //Рисуем графический интерфейс пользователя
+        drawGUI();
 
         glfwSwapBuffers(_window); //Переключаем передний и задний буферы
     }
+}
+
+void Application::drawGUI()
+{
+    TwDraw(); //Рисуем графический интерфейс пользователя
 }
 
 void Application::handleKey(int key, int scancode, int action, int mods)
@@ -254,7 +270,6 @@ void Application::update()
     //Обновляем матрицу вида
     _camera.viewMatrix = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-
     //-----------------------------------------
 
     int width, height;
@@ -263,5 +278,10 @@ void Application::update()
     //Обновляем матрицу проекции на случай, если размеры окна изменились
     _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 
+    updateGUI();
+}
+
+void Application::updateGUI()
+{
     TwRefreshBar(_bar);
 }
