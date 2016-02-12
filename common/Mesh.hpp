@@ -90,23 +90,6 @@ protected:
     glm::mat4 _modelMatrix;
 };
 
-//typedef std::shared_ptr<Mesh> MeshPtr;
-
-//=========== Функции для создания тестовых мешей
-
-/**
-Создает модель куба
-*/
-//class CubeMesh : public Mesh
-//{
-//public:
-//    CubeMesh(float size);
-//    ~CubeMesh() override;
-//
-//protected:
-//    GLuint _vbo;
-//};
-
 /**
 Абстракция буфера с данными
 */
@@ -178,4 +161,14 @@ protected:
 
 typedef std::shared_ptr<StrongMesh> MeshPtr;
 
+//=========== Функции для создания тестовых мешей
+
 MeshPtr makeSphere(float radius, unsigned int N);
+
+MeshPtr makeCube(float size);
+
+MeshPtr makeScreenAlignedQuad();
+
+MeshPtr makeGroundPlane(float size, float numTiles);
+
+MeshPtr loadFromFile(const std::string& filename);

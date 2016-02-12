@@ -617,199 +617,6 @@ void Mesh::drawInstanced(unsigned int N)
 
 //==========================================
 
-//CubeMesh::CubeMesh(float size):
-//Mesh(GL_TRIANGLES, 36),
-//_vbo(0)
-//{
-//    Buffer<float> vertices;
-//    Buffer<float> normals;
-//    Buffer<float> texcoords;
-//
-//    //front 1
-//    vertices.addVec3(size, -size, size);
-//    vertices.addVec3(size, size, size);
-//    vertices.addVec3(size, size, -size);
-//
-//    normals.addVec3(1.0, 0.0, 0.0);
-//    normals.addVec3(1.0, 0.0, 0.0);
-//    normals.addVec3(1.0, 0.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//
-//    //front 2
-//    vertices.addVec3(size, -size, size);
-//    vertices.addVec3(size, size, -size);
-//    vertices.addVec3(size, -size, -size);
-//
-//    normals.addVec3(1.0, 0.0, 0.0);
-//    normals.addVec3(1.0, 0.0, 0.0);
-//    normals.addVec3(1.0, 0.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//    texcoords.addVec2(0.0, 0.0);
-//
-//    //left 1
-//    vertices.addVec3(-size, -size, size);
-//    vertices.addVec3(size, -size, size);
-//    vertices.addVec3(size, -size, -size);
-//
-//    normals.addVec3(0.0, -1.0, 0.0);
-//    normals.addVec3(0.0, -1.0, 0.0);
-//    normals.addVec3(0.0, -1.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//
-//    //left 2
-//    vertices.addVec3(-size, -size, size);
-//    vertices.addVec3(size, -size, -size);
-//    vertices.addVec3(-size, -size, -size);
-//
-//    normals.addVec3(0.0, -1.0, 0.0);
-//    normals.addVec3(0.0, -1.0, 0.0);
-//    normals.addVec3(0.0, -1.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//    texcoords.addVec2(0.0, 0.0);
-//
-//    //top 1
-//    vertices.addVec3(-size, size, size);
-//    vertices.addVec3(size, size, size);
-//    vertices.addVec3(size, -size, size);
-//
-//    normals.addVec3(0.0, 0.0, 1.0);
-//    normals.addVec3(0.0, 0.0, 1.0);
-//    normals.addVec3(0.0, 0.0, 1.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//
-//    //top 2
-//    vertices.addVec3(-size, size, size);
-//    vertices.addVec3(size, -size, size);
-//    vertices.addVec3(-size, -size, size);
-//
-//    normals.addVec3(0.0, 0.0, 1.0);
-//    normals.addVec3(0.0, 0.0, 1.0);
-//    normals.addVec3(0.0, 0.0, 1.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//    texcoords.addVec2(0.0, 0.0);
-//
-//    //back 1
-//    vertices.addVec3(-size, -size, size);
-//    vertices.addVec3(-size, size, -size);
-//    vertices.addVec3(-size, size, size);
-//
-//    normals.addVec3(-1.0, 0.0, 0.0);
-//    normals.addVec3(-1.0, 0.0, 0.0);
-//    normals.addVec3(-1.0, 0.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//    texcoords.addVec2(1.0, 1.0);
-//
-//    //back 2
-//    vertices.addVec3(-size, -size, size);
-//    vertices.addVec3(-size, -size, -size);
-//    vertices.addVec3(-size, size, -size);
-//
-//    normals.addVec3(-1.0, 0.0, 0.0);
-//    normals.addVec3(-1.0, 0.0, 0.0);
-//    normals.addVec3(-1.0, 0.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(0.0, 0.0);
-//    texcoords.addVec2(1.0, 0.0);
-//
-//    //right 1
-//    vertices.addVec3(-size, size, size);
-//    vertices.addVec3(size, size, -size);
-//    vertices.addVec3(size, size, size);
-//
-//    normals.addVec3(0.0, 1.0, 0.0);
-//    normals.addVec3(0.0, 1.0, 0.0);
-//    normals.addVec3(0.0, 1.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//    texcoords.addVec2(1.0, 1.0);
-//
-//    //right 2
-//    vertices.addVec3(-size, size, size);
-//    vertices.addVec3(-size, size, -size);
-//    vertices.addVec3(+size, size, -size);
-//
-//    normals.addVec3(0.0, 1.0, 0.0);
-//    normals.addVec3(0.0, 1.0, 0.0);
-//    normals.addVec3(0.0, 1.0, 0.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(0.0, 0.0);
-//    texcoords.addVec2(1.0, 0.0);
-//
-//    //bottom 1
-//    vertices.addVec3(-size, size, -size);
-//    vertices.addVec3(size, -size, -size);
-//    vertices.addVec3(size, size, -size);
-//
-//    normals.addVec3(0.0, 0.0, -1.0);
-//    normals.addVec3(0.0, 0.0, -1.0);
-//    normals.addVec3(0.0, 0.0, -1.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(1.0, 0.0);
-//    texcoords.addVec2(1.0, 1.0);
-//
-//    //bottom 2
-//    vertices.addVec3(-size, size, -size);
-//    vertices.addVec3(-size, -size, -size);
-//    vertices.addVec3(size, -size, -size);
-//
-//    normals.addVec3(0.0, 0.0, -1.0);
-//    normals.addVec3(0.0, 0.0, -1.0);
-//    normals.addVec3(0.0, 0.0, -1.0);
-//
-//    texcoords.addVec2(0.0, 1.0);
-//    texcoords.addVec2(0.0, 0.0);
-//    texcoords.addVec2(1.0, 0.0);
-//
-//    vertices.insert(vertices.end(), normals.begin(), normals.end());
-//    vertices.insert(vertices.end(), texcoords.begin(), texcoords.end());
-//        
-//    glGenBuffers(1, &_vbo);
-//
-//    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-//    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
-//    glBindBuffer(GL_ARRAY_BUFFER, 0);
-//
-//    glGenVertexArrays(1, &_vao); //Перенести в конструктор
-//
-//    glBindVertexArray(_vao);
-//    glEnableVertexAttribArray(0);
-//    glEnableVertexAttribArray(1);
-//    glEnableVertexAttribArray(2);
-//    glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-//    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4)); //сдвиг = число вершин * число компонентов (x, y, z) * размер одного компонента (float 4 байта)
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)(_vertexCount * 3 * 4 * 2));
-//    glBindVertexArray(0);
-//}
-//
-//CubeMesh::~CubeMesh()
-//{
-//    glDeleteBuffers(1, &_vbo);
-//}
-
-//==================================
-
 VertexBuffer::VertexBuffer()
 {
     glGenBuffers(1, &_vbo);
@@ -829,7 +636,9 @@ void VertexBuffer::setData(GLsizeiptr size, const GLvoid* data)
 
 //==================================
 
-StrongMesh::StrongMesh()
+StrongMesh::StrongMesh():
+_primitiveType(GL_TRIANGLES),
+_vertexCount(0)
 {
     glGenVertexArrays(1, &_vao);
 }
@@ -904,6 +713,8 @@ MeshPtr makeSphere(float radius, unsigned int N)
             texcoords.push_back(glm::vec2((float)j / N, 1.0f - (float)(i + 1) / M));
         }
     }
+
+    //----------------------------------------
         
     VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
@@ -920,6 +731,326 @@ MeshPtr makeSphere(float radius, unsigned int N)
     mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
     mesh->setPrimitiveType(GL_TRIANGLES);
     mesh->setVertexCount(vertices.size());
+
+    return mesh;
+}
+
+MeshPtr makeCube(float size)
+{
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> texcoords;
+
+    //front 1
+    vertices.push_back(glm::vec3(size, -size, size));
+    vertices.push_back(glm::vec3(size, size, size));
+    vertices.push_back(glm::vec3(size, size, -size));
+
+    normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+
+    //front 2
+    vertices.push_back(glm::vec3(size, -size, size));
+    vertices.push_back(glm::vec3(size, size, -size));
+    vertices.push_back(glm::vec3(size, -size, -size));
+
+    normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(1.0, 0.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));
+
+    //left 1
+    vertices.push_back(glm::vec3(-size, -size, size));
+    vertices.push_back(glm::vec3(size, -size, size));
+    vertices.push_back(glm::vec3(size, -size, -size));
+
+    normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+
+    //left 2
+    vertices.push_back(glm::vec3(-size, -size, size));
+    vertices.push_back(glm::vec3(size, -size, -size));
+    vertices.push_back(glm::vec3(-size, -size, -size));
+
+    normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, -1.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));
+
+    //top 1
+    vertices.push_back(glm::vec3(-size, size, size));
+    vertices.push_back(glm::vec3(size, size, size));
+    vertices.push_back(glm::vec3(size, -size, size));
+
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+
+    //top 2
+    vertices.push_back(glm::vec3(-size, size, size));
+    vertices.push_back(glm::vec3(size, -size, size));
+    vertices.push_back(glm::vec3(-size, -size, size));
+
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));
+
+    //back 1
+    vertices.push_back(glm::vec3(-size, -size, size));
+    vertices.push_back(glm::vec3(-size, size, -size));
+    vertices.push_back(glm::vec3(-size, size, size));
+
+    normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));
+
+    //back 2
+    vertices.push_back(glm::vec3(-size, -size, size));
+    vertices.push_back(glm::vec3(-size, -size, -size));
+    vertices.push_back(glm::vec3(-size, size, -size));
+
+    normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+    normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+
+    //right 1
+    vertices.push_back(glm::vec3(-size, size, size));
+    vertices.push_back(glm::vec3(size, size, -size));
+    vertices.push_back(glm::vec3(size, size, size));
+
+    normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));
+
+    //right 2
+    vertices.push_back(glm::vec3(-size, size, size));
+    vertices.push_back(glm::vec3(-size, size, -size));
+    vertices.push_back(glm::vec3(+size, size, -size));
+
+    normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+    normals.push_back(glm::vec3(0.0, 1.0, 0.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+
+    //bottom 1
+    vertices.push_back(glm::vec3(-size, size, -size));
+    vertices.push_back(glm::vec3(size, -size, -size));
+    vertices.push_back(glm::vec3(size, size, -size));
+
+    normals.push_back(glm::vec3(0.0, 0.0, -1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, -1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, -1.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));
+
+    //bottom 2
+    vertices.push_back(glm::vec3(-size, size, -size));
+    vertices.push_back(glm::vec3(-size, -size, -size));
+    vertices.push_back(glm::vec3(size, -size, -size));
+
+    normals.push_back(glm::vec3(0.0, 0.0, -1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, -1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, -1.0));
+
+    texcoords.push_back(glm::vec2(0.0, 1.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
+
+    //----------------------------------------
+
+    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
+
+    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
+
+    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
+
+    MeshPtr mesh = std::make_shared<StrongMesh>();
+    mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
+    mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
+    mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
+    mesh->setPrimitiveType(GL_TRIANGLES);
+    mesh->setVertexCount(vertices.size());
+
+    return mesh;
+}
+
+MeshPtr makeScreenAlignedQuad()
+{
+    std::vector<glm::vec3> vertices;
+
+    //front 1
+    vertices.push_back(glm::vec3(-1.0, 1.0, 0.0));
+    vertices.push_back(glm::vec3(1.0, 1.0, 0.0));
+    vertices.push_back(glm::vec3(1.0, -1.0, 0.0));
+
+    //front 2
+    vertices.push_back(glm::vec3(-1.0, 1.0, 0.0));
+    vertices.push_back(glm::vec3(1.0, -1.0, 0.0));
+    vertices.push_back(glm::vec3(-1.0, -1.0, 0.0));
+
+    //----------------------------------------
+
+    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
+
+    MeshPtr mesh = std::make_shared<StrongMesh>();
+    mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
+    mesh->setPrimitiveType(GL_TRIANGLES);
+    mesh->setVertexCount(vertices.size());
+
+    return mesh;
+}
+
+MeshPtr makeGroundPlane(float size, float numTiles)
+{
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec2> texcoords;
+
+    //front 1
+    vertices.push_back(glm::vec3(-size, size, 0.0));
+    vertices.push_back(glm::vec3(size, size, 0.0));
+    vertices.push_back(glm::vec3(size, -size, 0.0));
+
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+
+    texcoords.push_back(glm::vec2(-numTiles, numTiles));
+    texcoords.push_back(glm::vec2(numTiles, numTiles));
+    texcoords.push_back(glm::vec2(numTiles, -numTiles));
+
+    //front 2
+    vertices.push_back(glm::vec3(-size, size, 0.0));
+    vertices.push_back(glm::vec3(size, -size, 0.0));
+    vertices.push_back(glm::vec3(-size, -size, 0.0));
+
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+    normals.push_back(glm::vec3(0.0, 0.0, 1.0));
+
+    texcoords.push_back(glm::vec2(-numTiles, numTiles));
+    texcoords.push_back(glm::vec2(numTiles, -numTiles));
+    texcoords.push_back(glm::vec2(-numTiles, -numTiles));
+
+    //----------------------------------------
+
+    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
+
+    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
+
+    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
+
+    MeshPtr mesh = std::make_shared<StrongMesh>();
+    mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
+    mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
+    mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
+    mesh->setPrimitiveType(GL_TRIANGLES);
+    mesh->setVertexCount(vertices.size());
+    
+    return mesh;
+}
+
+MeshPtr loadFromFile(const std::string& filename)
+{
+    const struct aiScene* assimpScene = aiImportFile(filename.c_str(), aiProcess_Triangulate);
+
+    if (!assimpScene)
+    {
+        std::cerr << aiGetErrorString() << std::endl;
+        return std::make_shared<StrongMesh>();
+    }
+
+    if (assimpScene->mNumMeshes == 0)
+    {
+        std::cerr << "There is no meshes in file " << filename << std::endl;
+        return std::make_shared<StrongMesh>();
+    }
+
+    const struct aiMesh* assimpMesh = assimpScene->mMeshes[0];
+
+    if (!assimpMesh->HasPositions())
+    {
+        std::cerr << "This demo does not support meshes without positions\n";
+        return std::make_shared<StrongMesh>();
+    }
+
+    if (!assimpMesh->HasNormals())
+    {
+        std::cerr << "This demo does not support meshes without normals\n";
+        return std::make_shared<StrongMesh>();
+    }
+
+    if (!assimpMesh->HasTextureCoords(0))
+    {
+        std::cerr << "This demo does not support meshes without texcoords for texture unit 0\n";
+        return std::make_shared<StrongMesh>();
+    }
+
+    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    buf0->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mVertices);
+
+    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    buf1->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mNormals);
+
+    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    buf2->setData(assimpMesh->mNumVertices * sizeof(float) * 2, assimpMesh->mTextureCoords[0]);
+
+    MeshPtr mesh = std::make_shared<StrongMesh>();
+    mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
+    mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
+    mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
+    mesh->setPrimitiveType(GL_TRIANGLES);
+    mesh->setVertexCount(assimpMesh->mNumVertices);
+
+    aiReleaseImport(assimpScene);
 
     return mesh;
 }
