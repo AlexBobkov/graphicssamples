@@ -1,17 +1,17 @@
 set(SRC_FILES	
-	Application.cpp		
-	Texture.cpp
+	Application.cpp
 	${PROJECT_SOURCE_DIR}/common/Framebuffer.cpp
 	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 	${PROJECT_SOURCE_DIR}/common/ShaderProgram.cpp
+	${PROJECT_SOURCE_DIR}/common/Texture.cpp
 )
 
 set(HEADER_FILES
-	Application.h		
-	Texture.h
+	Application.h	
 	${PROJECT_SOURCE_DIR}/common/Framebuffer.hpp
 	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 	${PROJECT_SOURCE_DIR}/common/ShaderProgram.hpp
+	${PROJECT_SOURCE_DIR}/common/Texture.hpp
 )
 
 set(SHADER_FILES

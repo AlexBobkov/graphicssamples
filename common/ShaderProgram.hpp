@@ -1,14 +1,14 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
-#include <GL/glew.h>
-
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include <GL/glew.h>
+
+#include <string>
+#include <vector>
 
 /**
 Создает шейдерную программу из 2х файлов: с вершинным и фрагментым шейдерами

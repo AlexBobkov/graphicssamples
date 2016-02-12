@@ -1,9 +1,9 @@
 #include "Application.h"
-#include "Texture.h"
 
 #include <Framebuffer.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
+#include <Texture.hpp>
 
 #include <iostream>
 #include <sstream>
