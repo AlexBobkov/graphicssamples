@@ -25,85 +25,8 @@ namespace
                 ++index2;
             }
         }
-    }    
-}
-
-GLuint Texture::loadTexture(const std::string& filename, bool gamma, bool withAlpha)
-{
-    GLint internalFormat = gamma ? GL_SRGB8 : (withAlpha ? GL_RGBA8 : GL_RGB8);
-    GLint format = withAlpha ? GL_RGBA : GL_RGB;
-
-    GLuint texId;
-    glGenTextures(1, &texId);
-
-    int width, height, channels;
-    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, withAlpha ? SOIL_LOAD_RGBA : SOIL_LOAD_RGB);
-    if (!image)
-    {
-        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
-        return 0;
     }
-
-    invertY(image, width, height, withAlpha ? 4 : 3);
-
-    glBindTexture(GL_TEXTURE_2D, texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    SOIL_free_image_data(image);
-
-    return texId;
 }
-
-GLuint Texture::loadTextureDDS(const std::string& filename)
-{
-    GLuint texId = SOIL_load_OGL_texture(filename.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_DDS_LOAD_DIRECT);
-    if (texId == 0)
-    {
-        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
-        return 0;
-    }
-
-    return texId;
-}
-
-void loadCubeTextureFace(std::string filename, GLenum target)
-{
-    int width, height, channels;
-    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, SOIL_LOAD_RGB);
-    if (!image)
-    {
-        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
-        return;
-    }
-
-    invertY(image, width, height, 3);
-
-    glTexImage2D(target, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-
-    SOIL_free_image_data(image);
-}
-
-GLuint Texture::loadCubeTexture(const std::string& basefilename)
-{
-    GLuint texId;
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, texId);
-
-    loadCubeTextureFace(basefilename + "/negx.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_X);
-    loadCubeTextureFace(basefilename + "/posx.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_X);
-    loadCubeTextureFace(basefilename + "/negy.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Y);
-    loadCubeTextureFace(basefilename + "/posy.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Y);
-    loadCubeTextureFace(basefilename + "/negz.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
-    loadCubeTextureFace(basefilename + "/posz.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
-
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
-
-    return texId;
-}
-
-//======================================================
 
 TexturePtr loadTexture(const std::string& filename, bool gamma, bool withAlpha)
 {
@@ -194,7 +117,7 @@ TexturePtr makeProceduralTexture()
             data.push_back((unsigned char)(255 * color.b));
         }
     }
-        
+
     TexturePtr texture = std::make_shared<Texture2>(GL_TEXTURE_2D);
     texture->setTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, GL_RGB, GL_UNSIGNED_BYTE, data.data());
 

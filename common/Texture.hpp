@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Mesh.hpp>
-
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,20 +10,6 @@
 #include <string>
 #include <vector>
 #include <memory>
-
-/**
-Загружает текстуры с диска в оперативную и затем в видеопамять.
-Возвращает идентификатор текстурного объекта.
-*/
-class Texture
-{
-public:
-    static GLuint loadTexture(const std::string& filename, bool gamma = false, bool withAlpha = false);
-
-    static GLuint loadTextureDDS(const std::string& filename);
-
-    static GLuint loadCubeTexture(const std::string& basefilename);
-};
 
 /**
 Абстракция буфера с данными в видеопамяти
@@ -49,7 +33,7 @@ public:
     Texture2(GLuint tex, GLenum target) :
         _tex(tex),
         _target(target)
-    {        
+    {
     }
 
     ~Texture2()
@@ -71,7 +55,7 @@ public:
     void setTexImage2D(GLenum target, GLint level, GLint internalFormat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid* data)
     {
         glBindTexture(_target, _tex);
-        glTexImage2D(_target, level, internalFormat, width, height, 0, format, type, data);
+        glTexImage2D(target, level, internalFormat, width, height, 0, format, type, data);
         glBindTexture(_target, 0);
     }
 

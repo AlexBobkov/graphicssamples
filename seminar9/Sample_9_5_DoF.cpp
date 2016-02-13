@@ -63,8 +63,8 @@ public:
     LightInfo _light;
     CameraInfo _lightCamera;
 
-    GLuint _brickTexId;
-    GLuint _rotateTexId;
+    TexturePtr _brickTex;
+    TexturePtr _rotateTex;
 
     GLuint _sampler;
     GLuint _repeatSampler;
@@ -389,8 +389,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _brickTexId = Texture::loadTexture("images/brick.jpg", true); //sRGB
-        _rotateTexId = Texture::loadTexture("images/rotate.png");
+        _brickTex = loadTexture("images/brick.jpg", true); //sRGB
+        _rotateTex = loadTexture("images/rotate.png");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -581,7 +581,7 @@ public:
         shader.setMat4Uniform("projectionMatrix", camera.projMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _repeatSampler);
         shader.setIntUniform("diffuseTex", 0);
 
@@ -688,7 +688,7 @@ public:
         shader.setIntUniform("depthTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        glBindTexture(GL_TEXTURE_2D, _rotateTexId);
+        _rotateTex->bind();
         glBindSampler(1, _repeatSampler);
         shader.setIntUniform("rotateTex", 1);
 

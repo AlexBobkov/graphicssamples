@@ -39,7 +39,7 @@ public:
 
     LightInfo _light;
 
-    GLuint _brickTexId;
+    TexturePtr _brickTex;
 
     GLuint _sampler;
     GLuint _cubeTexSampler;
@@ -86,7 +86,7 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _brickTexId = Texture::loadTexture("images/brick.jpg");
+        _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -156,7 +156,7 @@ public:
         _commonShader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         _commonShader.setIntUniform("diffuseTex", 0);
 

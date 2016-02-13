@@ -40,8 +40,8 @@ public:
 
     LightInfo _light;
 
-    GLuint _brickTexId;
-    GLuint _cubeTexId;
+    TexturePtr _brickTex;
+    TexturePtr _cubeTex;
 
     GLuint _sampler;
     GLuint _cubeTexSampler;
@@ -86,8 +86,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _brickTexId = Texture::loadTexture("images/brick.jpg");
-        _cubeTexId = Texture::loadCubeTexture("images/cube");
+        _brickTex = loadTexture("images/brick.jpg");
+        _cubeTex = loadCubeTexture("images/cube");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -139,7 +139,7 @@ public:
             _skyboxShader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
             glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-            glBindTexture(GL_TEXTURE_CUBE_MAP, _cubeTexId);
+            _cubeTex->bind();
             glBindSampler(0, _cubeTexSampler);
             _skyboxShader.setIntUniform("cubeTex", 0);
 
@@ -166,7 +166,7 @@ public:
         _commonShader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         _commonShader.setIntUniform("diffuseTex", 0);
 

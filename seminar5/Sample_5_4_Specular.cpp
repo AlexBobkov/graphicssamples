@@ -38,8 +38,8 @@ public:
 
     LightInfo _light;
 
-    GLuint _worldTexId;
-    GLuint _specularTexId;
+    TexturePtr _worldTex;
+    TexturePtr _specularTex;
 
     GLuint _sampler;
 
@@ -80,8 +80,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
-        _specularTexId = Texture::loadTexture("images/earth_specular.png");
+        _worldTex = loadTexture("images/earth_global.jpg");
+        _specularTex = loadTexture("images/earth_specular.png");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -131,12 +131,12 @@ public:
         _shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _worldTexId);
+        _worldTex->bind();
         glBindSampler(0, _sampler);
         _shader.setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        glBindTexture(GL_TEXTURE_2D, _specularTexId);
+        _specularTex->bind();
         glBindSampler(1, _sampler);
         _shader.setIntUniform("specularTex", 1);
 

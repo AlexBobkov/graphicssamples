@@ -36,7 +36,7 @@ public:
 
     LightInfo _light;
 
-    GLuint _chessTexId;
+    TexturePtr _chessTex;
 
     GLuint _actualSampler;
 
@@ -77,7 +77,7 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
+        _chessTex = loadTextureDDS("images/chess.dds");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -200,7 +200,7 @@ public:
         _shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _chessTexId);
+        _chessTex->bind();
         glBindSampler(0, _actualSampler);
         _shader.setIntUniform("diffuseTex", 0);
 

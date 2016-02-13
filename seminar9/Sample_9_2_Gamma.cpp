@@ -55,8 +55,8 @@ public:
     LightInfo _light;
     CameraInfo _lightCamera;
 
-    GLuint _brickTexId;
-    GLuint _brickGammaTexId;
+    TexturePtr _brickTex;
+    TexturePtr _brickGammaTex;
 
     GLuint _sampler;
     GLuint _cubeTexSampler;
@@ -195,8 +195,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _brickTexId = Texture::loadTexture("images/brick.jpg", false);
-        _brickGammaTexId = Texture::loadTexture("images/brick.jpg", true);
+        _brickTex = loadTexture("images/brick.jpg", false);
+        _brickGammaTex = loadTexture("images/brick.jpg", true);
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -335,7 +335,14 @@ public:
         shader.setMat4Uniform("projectionMatrix", camera.projMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _applyGammaTexture ? _brickGammaTexId : _brickTexId);
+        if (_applyGammaTexture)
+        {
+            _brickGammaTex->bind();
+        }
+        else
+        {
+            _brickTex->bind();
+        }
         glBindSampler(0, _sampler);
         shader.setIntUniform("diffuseTex", 0);
 

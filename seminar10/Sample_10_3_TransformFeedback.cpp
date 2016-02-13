@@ -56,7 +56,7 @@ public:
     LightInfo _light;
     CameraInfo _lightCamera;
 
-    GLuint _particleTexId;
+    TexturePtr _particleTex;
 
     GLuint _sampler;
     GLuint _cubeTexSampler;
@@ -122,7 +122,7 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _particleTexId = Texture::loadTexture("images/particle.png", false, true);
+        _particleTex = loadTexture("images/particle.png", false, true);
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -331,7 +331,7 @@ public:
         _transformFeedbackPass2Shader.setFloatUniform("time", (float)glfwGetTime());
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _particleTexId);
+        _particleTex->bind();
         glBindSampler(0, _sampler);
         _transformFeedbackPass2Shader.setIntUniform("tex", 0);
 

@@ -39,7 +39,7 @@ public:
 
     LightInfo _light;
 
-    GLuint _worldTexId;
+    TexturePtr _worldTex;
 
     GLuint _actualSampler;
 
@@ -85,7 +85,7 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
+        _worldTex = loadTexture("images/earth_global.jpg");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -160,7 +160,7 @@ public:
         _shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _worldTexId);
+        _worldTex->bind();
         glBindSampler(0, _actualSampler);
         _shader.setIntUniform("diffuseTex", 0);
 

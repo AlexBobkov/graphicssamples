@@ -41,8 +41,8 @@ public:
 
     LightInfo _light;
 
-    GLuint _worldTexId;
-    GLuint _brickTexId;
+    TexturePtr _worldTex;
+    TexturePtr _brickTex;
 
     GLuint _sampler;
     GLuint _cubeTexSampler;
@@ -95,8 +95,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
-        _brickTexId = Texture::loadTexture("images/brick.jpg");
+        _worldTex = loadTexture("images/earth_global.jpg");
+        _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -187,12 +187,12 @@ public:
         }
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         _projectorShader.setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        glBindTexture(GL_TEXTURE_2D, _worldTexId);
+        _worldTex->bind();
         glBindSampler(1, _projSampler);
         _projectorShader.setIntUniform("projTex", 1);
 
