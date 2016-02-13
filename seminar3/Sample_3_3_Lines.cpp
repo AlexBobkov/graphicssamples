@@ -31,7 +31,7 @@ public:
             vertices.push_back((float)i);
         }
 
-        VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+        DataBufferPtr buf0 = std::make_shared<DataBuffer>();
         buf0->setData(vertices.size() * sizeof(float), vertices.data());
 
         _lineStrip = std::make_shared<Mesh>();

@@ -14,15 +14,20 @@
 /**
 Абстракция буфера с данными в видеопамяти
 */
-class VertexBuffer
+class DataBuffer
 {
 public:
-    VertexBuffer()
+    /**
+    Создает буфер с данными
+    \param target тип буфера (GL_ARRAY_BUFFER, GL_TEXTURE_BUFFER и другие)
+    */
+    DataBuffer(GLenum target = GL_ARRAY_BUFFER):
+        _target(target)
     {
         glGenBuffers(1, &_vbo);
     }
 
-    ~VertexBuffer()
+    ~DataBuffer()
     {
         glDeleteBuffers(1, &_vbo);
     }
@@ -34,29 +39,41 @@ public:
     */
     void setData(GLsizeiptr size, const GLvoid* data)
     {
-        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-        glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(_target, _vbo);
+        glBufferData(_target, size, data, GL_STATIC_DRAW);
+        glBindBuffer(_target, 0);
     }
 
     void bind() const
     {
-        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        glBindBuffer(_target, _vbo);
     }
 
     void unbind() const
     {
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(_target, 0);
+    }
+
+    /**
+    Прикрепляет буфер с данными к текстуре с типом GL_TEXTURE_BUFFER (разбирается на 10м семинаре).
+    */
+    void attachToTexture(GLenum internalFormat)
+    {
+        glTexBuffer(GL_TEXTURE_BUFFER, internalFormat, _vbo);
     }
 
 protected:
-    VertexBuffer(const VertexBuffer&) = delete;
-    void operator=(const VertexBuffer&) = delete;
+    DataBuffer(const DataBuffer&) = delete;
+    void operator=(const DataBuffer&) = delete;
 
+    ///Идентификатор буфера
     GLuint _vbo;
+
+    ///Тип буфера
+    GLenum _target;
 };
 
-typedef std::shared_ptr<VertexBuffer> VertexBufferPtr;
+typedef std::shared_ptr<DataBuffer> DataBufferPtr;
 
 /**
 Абстракция полигональной модели
@@ -81,7 +98,7 @@ public:
     {
         glDeleteVertexArrays(1, &_vao);
     }
-
+    
     /**
     Устанавливает параметры вершинного атрибута полигональной модели
     \param index номер атрибута (0, 1, 2, ...)
@@ -92,7 +109,7 @@ public:
     \param offset сдвиг в байтах от начала буфера
     \param buffer буфер с данными, где хранятся значения атрибута
     */
-    void setAttribute(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLuint offset, const VertexBufferPtr& buffer)
+    void setAttribute(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLuint offset, const DataBufferPtr& buffer)
     {
         _buffers.insert(buffer); //чтобы буфер не был удален раньше модели
 
@@ -162,13 +179,19 @@ protected:
     Mesh(const Mesh&) = delete;
     void operator=(const Mesh&) = delete;
 
+    ///Идентификатор Vertex Array Object
     GLuint _vao;
 
-    std::set<VertexBufferPtr> _buffers;
+    ///Буферы с данными - храним здесь, чтобы они не были удалены раньше модели
+    std::set<DataBufferPtr> _buffers;
 
+    ///Тип геометрического примитива
     GLuint _primitiveType;
+
+    ///Количество вершин в модели
     GLuint _vertexCount;
 
+    ///Матрица модели (local to world)
     glm::mat4 _modelMatrix;
 };
 

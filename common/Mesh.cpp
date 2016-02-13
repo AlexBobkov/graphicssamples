@@ -57,13 +57,13 @@ MeshPtr makeSphere(float radius, unsigned int N)
 
     //----------------------------------------
 
-    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -240,13 +240,13 @@ MeshPtr makeCube(float size)
 
     //----------------------------------------
 
-    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -275,7 +275,7 @@ MeshPtr makeScreenAlignedQuad()
 
     //----------------------------------------
 
-    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -320,13 +320,13 @@ MeshPtr makeGroundPlane(float size, float numTiles)
 
     //----------------------------------------
 
-    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -375,13 +375,13 @@ MeshPtr loadFromFile(const std::string& filename)
         return std::make_shared<Mesh>();
     }
 
-    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
     buf0->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mVertices);
 
-    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
     buf1->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mNormals);
 
-    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
     buf2->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mTextureCoords[0]);
 
     MeshPtr mesh = std::make_shared<Mesh>();

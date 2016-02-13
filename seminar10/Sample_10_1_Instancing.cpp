@@ -81,13 +81,13 @@ MeshPtr loadFromFileArray(const std::string& filename, const std::vector<glm::ve
         }
     }
 
-    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -191,7 +191,7 @@ public:
 
         _teapotDivisor = loadFromFile("models/teapot.obj");
 
-        VertexBufferPtr buf = std::make_shared<VertexBuffer>();
+        DataBufferPtr buf = std::make_shared<DataBuffer>();
         buf->setData(_positions.size() * sizeof(float) * 3, _positions.data());
 
         _teapotDivisor->setAttribute(3, 3, GL_FLOAT, GL_FALSE, 0, 0, buf);
