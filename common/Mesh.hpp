@@ -163,7 +163,7 @@ typedef std::shared_ptr<StrongMesh> MeshPtr;
 
 //=========== Функции для создания тестовых мешей
 
-MeshPtr makeSphere(float radius, unsigned int N);
+MeshPtr makeSphere(float radius, unsigned int N = 100);
 
 MeshPtr makeCube(float size);
 

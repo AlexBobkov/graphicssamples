@@ -29,18 +29,17 @@ void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 class SampleApplication : public Application
 {
 public:
-    Mesh cube;
-    Mesh sphere;
-    Mesh bunny;
-    Mesh ground;
-    Mesh backgroundCube;
+    MeshPtr _cube;
+    MeshPtr _sphere;
+    MeshPtr _bunny;
+    MeshPtr _ground;
 
     Mesh teapot;
     Mesh teapotArray;
 
-    Mesh quad;
+    MeshPtr _quad;
 
-    Mesh marker; //Меш - маркер для источника света
+    MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
     ShaderProgram _commonShader;
@@ -84,24 +83,22 @@ public:
         //=========================================================
         //Создание и загрузка мешей		
 
-        cube.makeCube(0.5);
-        cube.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
+        _cube = makeCube(0.5f);
+        _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
 
-        sphere.makeSphere(0.5, 100);
-        sphere.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
+        _sphere = makeSphere(0.5f);
+        _sphere->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f)));
 
-        bunny.loadFromFile("models/bunny.obj");
-        bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        _bunny = loadFromFile("models/bunny.obj");
+        _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
         teapot.loadFromFile("models/teapot.obj");
 
-        ground.makeGroundPlane(5.0f, 2.0f);
+        _ground = makeGroundPlane(5.0f, 2.0f);
 
-        marker.makeSphere(0.1);
+        _marker = makeSphere(0.1f);
 
-        backgroundCube.makeCube(10.0f);
-
-        quad.makeScreenAlignedQuad();
+        _quad = makeScreenAlignedQuad();
 
         //=========================================================
         //Инициализация шейдеров
@@ -277,31 +274,31 @@ public:
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         {
-            shader.setMat4Uniform("modelMatrix", cube.modelMatrix());
-            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * cube.modelMatrix()))));
+            shader.setMat4Uniform("modelMatrix", _cube->modelMatrix());
+            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
 
-            cube.draw();
+            _cube->draw();
         }
 
         {
-            shader.setMat4Uniform("modelMatrix", sphere.modelMatrix());
-            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * sphere.modelMatrix()))));
+            shader.setMat4Uniform("modelMatrix", _sphere->modelMatrix());
+            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _sphere->modelMatrix()))));
 
-            sphere.draw();
+            _sphere->draw();
         }
 
         {
-            shader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
-            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * bunny.modelMatrix()))));
+            shader.setMat4Uniform("modelMatrix", _bunny->modelMatrix());
+            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));
 
-            bunny.draw();
+            _bunny->draw();
         }
 
         {
-            shader.setMat4Uniform("modelMatrix", ground.modelMatrix());
-            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * ground.modelMatrix()))));
+            shader.setMat4Uniform("modelMatrix", _ground->modelMatrix());
+            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
 
-            ground.draw();
+            _ground->draw();
         }
     }
 

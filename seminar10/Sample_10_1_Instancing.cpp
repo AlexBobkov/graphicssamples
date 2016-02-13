@@ -10,10 +10,10 @@
 
 struct LightInfo
 {
-	glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-	glm::vec3 ambient;
-	glm::vec3 diffuse;
-	glm::vec3 specular;
+    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
 };
 
 float frand()
@@ -29,24 +29,23 @@ void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 class SampleApplication : public Application
 {
 public:
-	Mesh cube;
-	Mesh sphere;
-	Mesh bunny;
-	Mesh ground;
-	Mesh backgroundCube;
+    MeshPtr _cube;
+    MeshPtr _sphere;
+    MeshPtr _bunny;
+    MeshPtr _ground;
 
     Mesh teapot;
     Mesh teapotArray;
 
-	Mesh quad;
+    MeshPtr _quad;
 
-	Mesh marker; //Меш - маркер для источника света
+    MeshPtr _marker; //Меш - маркер для источника света
 
-	//Идентификатор шейдерной программы
-	ShaderProgram _commonShader;
-	ShaderProgram _markerShader;
-	ShaderProgram _skyboxShader;
-	ShaderProgram _quadDepthShader;
+    //Идентификатор шейдерной программы
+    ShaderProgram _commonShader;
+    ShaderProgram _markerShader;
+    ShaderProgram _skyboxShader;
+    ShaderProgram _quadDepthShader;
     ShaderProgram _quadColorShader;
 
     ShaderProgram _instancingNoMatrixShader;
@@ -54,27 +53,27 @@ public:
     ShaderProgram _instancingTextureShader;
     ShaderProgram _instancingDivisorShader;
 
-	//Переменные для управления положением одного источника света
-	float _lr;
-	float _phi;
-	float _theta;
-		
-	LightInfo _light;
+    //Переменные для управления положением одного источника света
+    float _lr;
+    float _phi;
+    float _theta;
+
+    LightInfo _light;
     CameraInfo _lightCamera;
-    
-	GLuint _worldTexId;
-	GLuint _brickTexId;
-	GLuint _grassTexId;
-	GLuint _chessTexId;
-	GLuint _myTexId;
-	GLuint _cubeTexId;    
+
+    GLuint _worldTexId;
+    GLuint _brickTexId;
+    GLuint _grassTexId;
+    GLuint _chessTexId;
+    GLuint _myTexId;
+    GLuint _cubeTexId;
 
     GLuint _bufferTexId;
 
-	GLuint _sampler;
-	GLuint _cubeTexSampler;
+    GLuint _sampler;
+    GLuint _cubeTexSampler;
     GLuint _depthSampler;
-    
+
     bool _noInstancing;
     bool _staticInstancing;
     bool _noMatrixInstancing;
@@ -82,16 +81,16 @@ public:
     bool _textureInstancing;
     bool _divisorInstancing;
 
-    float _oldTime;    
+    float _oldTime;
     float _deltaTime;
     float _fps;
     std::deque<float> _fpsData;
 
     std::vector<glm::vec3> _positions;
-    
-	virtual void makeScene()
-	{
-		Application::makeScene();
+
+    void makeScene() override
+    {
+        Application::makeScene();
 
         _oldTime = 0.0;
         _deltaTime = 0.0;
@@ -104,75 +103,73 @@ public:
         _textureInstancing = false;
         _divisorInstancing = false;
 
-		//=========================================================
-		//Создание и загрузка мешей		
+        //=========================================================
+        //Создание и загрузка мешей		
 
-		cube.makeCube(0.5);
-		cube.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
+        _cube = makeCube(0.5f);
+        _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
 
-		sphere.makeSphere(0.5, 100);
-		sphere.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
+        _sphere = makeSphere(0.5f);
+        _sphere->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f)));
 
-		bunny.loadFromFile("models/bunny.obj");
-		bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        _bunny = loadFromFile("models/bunny.obj");
+        _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
         teapot.loadFromFile("models/teapot.obj");
 
-		ground.makeGroundPlane(5.0f, 2.0f);
+        _ground = makeGroundPlane(5.0f, 2.0f);
 
-		marker.makeSphere(0.1);
+        _marker = makeSphere(0.1f);
 
-		backgroundCube.makeCube(10.0f);
+        _quad = makeScreenAlignedQuad();
 
-		quad.makeScreenAlignedQuad();
+        //=========================================================
+        //Инициализация шейдеров
 
-		//=========================================================
-		//Инициализация шейдеров
-
-		_commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
-		_markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-		_skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-		_quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+        _commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
+        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+        _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
+        _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
         _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
         _instancingNoMatrixShader.createProgram("shaders10/instancingNoMatrix.vert", "shaders6/common.frag");
         _instancingUniformShader.createProgram("shaders10/instancingUniform.vert", "shaders6/common.frag");
         _instancingTextureShader.createProgram("shaders10/instancingTexture.vert", "shaders6/common.frag");
         _instancingDivisorShader.createProgram("shaders10/instancingDivisor.vert", "shaders6/common.frag");
 
-		//=========================================================
-		//Инициализация значений переменных освщения
-		_lr = 10.0;
-		_phi = 0.0f;
-		_theta = 0.48f;
+        //=========================================================
+        //Инициализация значений переменных освщения
+        _lr = 10.0;
+        _phi = 0.0f;
+        _theta = 0.48f;
 
-		_light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
-		_light.ambient = glm::vec3(0.2, 0.2, 0.2);
-		_light.diffuse = glm::vec3(0.8, 0.8, 0.8);
-		_light.specular = glm::vec3(1.0, 1.0, 1.0);
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.ambient = glm::vec3(0.2, 0.2, 0.2);
+        _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
+        _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
-		//=========================================================
-		//Загрузка и создание текстур
-		_worldTexId = Texture::loadTexture("images/earth_global.jpg");
-		_brickTexId = Texture::loadTexture("images/brick.jpg");
-		_grassTexId = Texture::loadTexture("images/grass.jpg");
-		_chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
-		_myTexId = Texture::makeProceduralTexture();
-		_cubeTexId = Texture::loadCubeTexture("images/cube");
+        //=========================================================
+        //Загрузка и создание текстур
+        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
+        _brickTexId = Texture::loadTexture("images/brick.jpg");
+        _grassTexId = Texture::loadTexture("images/grass.jpg");
+        _chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
+        _myTexId = Texture::makeProceduralTexture();
+        _cubeTexId = Texture::loadCubeTexture("images/cube");
 
-		//=========================================================
-		//Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
-		glGenSamplers(1, &_sampler);
-		glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        //=========================================================
+        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        glGenSamplers(1, &_sampler);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-		glGenSamplers(1, &_cubeTexSampler);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);	
+        glGenSamplers(1, &_cubeTexSampler);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -200,26 +197,26 @@ public:
         _bufferTexId = Texture::makeTextureBuffer(_positions);
 
         teapot.addInstancedData(3, _positions);
-	}
+    }
 
-	virtual void initGUI()
-	{
-		Application::initGUI();
+    void initGUI() override
+    {
+        Application::initGUI();
 
         TwAddVarRO(_bar, "FPS", TW_TYPE_FLOAT, &_fps, "");
-		TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-		TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-		TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-		TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
-		TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
-		TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
+        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
+        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
+        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
+        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
+        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
+        TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
         TwAddVarRW(_bar, "No instancing", TW_TYPE_BOOLCPP, &_noInstancing, "");
         TwAddVarRW(_bar, "Static instancing", TW_TYPE_BOOLCPP, &_staticInstancing, "");
         TwAddVarRW(_bar, "No Matrix instancing", TW_TYPE_BOOLCPP, &_noMatrixInstancing, "");
         TwAddVarRW(_bar, "Uniform instancing", TW_TYPE_BOOLCPP, &_uniformInstancing, "");
         TwAddVarRW(_bar, "Texture instancing", TW_TYPE_BOOLCPP, &_textureInstancing, "");
         TwAddVarRW(_bar, "Divisor instancing", TW_TYPE_BOOLCPP, &_divisorInstancing, "");
-	}
+    }
 
     virtual void handleKey(int key, int scancode, int action, int mods)
     {
@@ -233,7 +230,7 @@ public:
             }
             else if (key == GLFW_KEY_2)
             {
-                _staticInstancing = !_staticInstancing;                
+                _staticInstancing = !_staticInstancing;
             }
             else if (key == GLFW_KEY_3)
             {
@@ -287,7 +284,7 @@ public:
         computeFPS();
     }
 
-    virtual void draw()
+    void draw() override
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -297,12 +294,12 @@ public:
 
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
+
         if (_noInstancing || _staticInstancing)
         {
             drawScene(_commonShader);
         }
-        
+
         if (_noMatrixInstancing)
         {
             drawNoMatrixInstancedScene(_instancingNoMatrixShader);
@@ -368,7 +365,7 @@ public:
             shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
             teapotArray.draw();
-        }        
+        }
     }
 
     void drawNoMatrixInstancedScene(const ShaderProgram& shader)
@@ -446,7 +443,7 @@ public:
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
         glBindTexture(GL_TEXTURE_BUFFER, _bufferTexId);
-        shader.setIntUniform("texBuf", 1);        
+        shader.setIntUniform("texBuf", 1);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
         shader.setMat4Uniform("modelMatrix", modelMatrix);
@@ -484,8 +481,8 @@ public:
 
 int main()
 {
-	SampleApplication app;
-	app.start();
+    SampleApplication app;
+    app.start();
 
-	return 0;
+    return 0;
 }

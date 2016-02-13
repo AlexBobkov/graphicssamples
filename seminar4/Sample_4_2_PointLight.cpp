@@ -11,11 +11,11 @@
 class SampleApplication : public Application
 {
 public:
-    Mesh cube;
-    Mesh sphere;
-    Mesh bunny;
+    MeshPtr _cube;
+    MeshPtr _sphere;
+    MeshPtr _bunny;
 
-    Mesh marker; //Меш - маркер для источника света
+    MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
     ShaderProgram _shader;
@@ -32,23 +32,23 @@ public:
     glm::vec3 _rabbitAmbientColor;
     glm::vec3 _rabbitDiffuseColor;
 
-    virtual void makeScene()
+    void makeScene() override
     {
         Application::makeScene();
 
         //=========================================================
         //Создание и загрузка мешей		
 
-        cube.makeCube(0.5);
-        cube.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f));
+        _cube = makeCube(0.5f);
+        _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
 
-        sphere.makeSphere(0.5);
-        sphere.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f));
+        _sphere = makeSphere(0.5f);
+        _sphere->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f)));
 
-        bunny.loadFromFile("models/bunny.obj");
-        bunny.modelMatrix() = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        _bunny = loadFromFile("models/bunny.obj");
+        _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        marker.makeSphere(0.1);
+        _marker = makeSphere(0.1f);
 
         //=========================================================
         //Инициализация шейдеров
@@ -70,7 +70,7 @@ public:
         _rabbitDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
     }
 
-    virtual void initGUI()
+    void initGUI() override
     {
         Application::initGUI();
 
@@ -83,7 +83,7 @@ public:
         TwAddVarRW(_bar, "Kd", TW_TYPE_COLOR3F, &_rabbitDiffuseColor, "group='Rabbit material' label='diffuse'");
     }
 
-    virtual void draw()
+    void draw() override
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -108,33 +108,33 @@ public:
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         {
-            _shader.setMat4Uniform("modelMatrix", cube.modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * cube.modelMatrix()))));
+            _shader.setMat4Uniform("modelMatrix", _cube->modelMatrix());
+            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
 
             _shader.setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
             _shader.setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
 
-            cube.draw();
+            _cube->draw();
         }
 
         {
-            _shader.setMat4Uniform("modelMatrix", sphere.modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * sphere.modelMatrix()))));
+            _shader.setMat4Uniform("modelMatrix", _sphere->modelMatrix());
+            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _sphere->modelMatrix()))));
 
             _shader.setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
             _shader.setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
 
-            sphere.draw();
+            _sphere->draw();
         }
 
         {
-            _shader.setMat4Uniform("modelMatrix", bunny.modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * bunny.modelMatrix()))));
+            _shader.setMat4Uniform("modelMatrix", _bunny->modelMatrix());
+            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
             _shader.setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
             _shader.setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
 
-            bunny.draw();
+            _bunny->draw();
         }
 
         //Рисуем маркер для источника света		
@@ -142,7 +142,7 @@ public:
             _markerShader.use();
             _markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));
             _markerShader.setVec4Uniform("color", glm::vec4(_lightDiffuseColor, 1.0f));
-            marker.draw();
+            _marker->draw();
         }
     }
 };

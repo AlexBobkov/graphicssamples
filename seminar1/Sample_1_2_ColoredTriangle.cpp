@@ -13,7 +13,7 @@ public:
 	GLuint _shaderProgram;
 	GLuint _projMatrixUniform;	
 
-	virtual void makeScene()
+	void makeScene() override
 	{
 		Application::makeScene();
 
@@ -52,7 +52,7 @@ public:
 		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");		
 	}
 
-	virtual void draw()
+	void draw() override
 	{
 		int width, height;
 		glfwGetFramebufferSize(_window, &width, &height);
