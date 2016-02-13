@@ -55,13 +55,8 @@ public:
     LightInfo _light;
     CameraInfo _lightCamera;
 
-    GLuint _worldTexId;
     GLuint _brickTexId;
     GLuint _brickGammaTexId;
-    GLuint _grassTexId;
-    GLuint _chessTexId;
-    GLuint _myTexId;
-    GLuint _cubeTexId;
 
     GLuint _sampler;
     GLuint _cubeTexSampler;
@@ -200,13 +195,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
         _brickTexId = Texture::loadTexture("images/brick.jpg", false);
         _brickGammaTexId = Texture::loadTexture("images/brick.jpg", true);
-        _grassTexId = Texture::loadTexture("images/grass.jpg");
-        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
-        _myTexId = Texture::makeProceduralTexture();
-        _cubeTexId = Texture::loadCubeTexture("images/cube");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры

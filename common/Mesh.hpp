@@ -59,7 +59,9 @@ public:
     */
     void attachToTexture(GLenum internalFormat)
     {
+        glBindBuffer(GL_TEXTURE_BUFFER, _vbo);
         glTexBuffer(GL_TEXTURE_BUFFER, internalFormat, _vbo);
+        glBindBuffer(GL_TEXTURE_BUFFER, 0);
     }
 
 protected:

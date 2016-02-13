@@ -81,13 +81,13 @@ MeshPtr loadFromFileArray(const std::string& filename, const std::vector<glm::ve
         }
     }
 
-    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -132,14 +132,8 @@ public:
     LightInfo _light;
     CameraInfo _lightCamera;
 
-    GLuint _worldTexId;
-    GLuint _brickTexId;
-    GLuint _grassTexId;
-    GLuint _chessTexId;
-    GLuint _myTexId;
-    GLuint _cubeTexId;
-
-    GLuint _bufferTexId;
+    TexturePtr _brickTex;
+    TexturePtr _bufferTex;
 
     GLuint _sampler;
     GLuint _cubeTexSampler;
@@ -191,7 +185,7 @@ public:
 
         _teapotDivisor = loadFromFile("models/teapot.obj");
 
-        DataBufferPtr buf = std::make_shared<DataBuffer>();
+        DataBufferPtr buf = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
         buf->setData(_positions.size() * sizeof(float) * 3, _positions.data());
 
         _teapotDivisor->setAttribute(3, 3, GL_FLOAT, GL_FALSE, 0, 0, buf);
@@ -223,12 +217,12 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
-        _brickTexId = Texture::loadTexture("images/brick.jpg");
-        _grassTexId = Texture::loadTexture("images/grass.jpg");
-        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
-        _myTexId = Texture::makeProceduralTexture();
-        _cubeTexId = Texture::loadCubeTexture("images/cube");
+        _brickTex = loadTexture("images/brick.jpg");
+
+        _bufferTex = std::make_shared<Texture2>(GL_TEXTURE_BUFFER);
+        _bufferTex->bind();
+        buf->attachToTexture(GL_RGB32F_ARB);
+        _bufferTex->unbind();
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -256,9 +250,6 @@ public:
         glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 
-        //=========================================================
-
-        _bufferTexId = Texture::makeTextureBuffer(_positions);        
     }
 
     void initGUI() override
@@ -402,7 +393,7 @@ public:
         shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("diffuseTex", 0);
 
@@ -445,7 +436,7 @@ public:
         shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("diffuseTex", 0);
 
@@ -471,7 +462,7 @@ public:
         shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("diffuseTex", 0);
 
@@ -499,12 +490,12 @@ public:
         shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        glBindTexture(GL_TEXTURE_BUFFER, _bufferTexId);
+        _bufferTex->bind();
         shader.setIntUniform("texBuf", 1);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
@@ -529,7 +520,7 @@ public:
         shader.setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _brickTexId);
+        _brickTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("diffuseTex", 0);
 

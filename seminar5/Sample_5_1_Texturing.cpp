@@ -38,11 +38,7 @@ public:
 
     LightInfo _light;
 
-    GLuint _worldTexId;
-    GLuint _brickTexId;
-    GLuint _grassTexId;
-    GLuint _chessTexId;
-    GLuint _myTexId;
+    TexturePtr _worldTexture;
 
     GLuint _sampler;
 
@@ -83,11 +79,7 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _worldTexId = Texture::loadTexture("images/earth_global.jpg");
-        _brickTexId = Texture::loadTexture("images/brick.jpg");
-        _grassTexId = Texture::loadTexture("images/grass.jpg");
-        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
-        _myTexId = Texture::makeProceduralTexture();
+        _worldTexture = loadTexture("images/earth_global.jpg");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
@@ -136,9 +128,11 @@ public:
         _shader.setVec3Uniform("light.Ld", _light.diffuse);
         _shader.setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _worldTexId);
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        _worldTexture->bind();
+
         glBindSampler(0, _sampler);
+
         _shader.setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку

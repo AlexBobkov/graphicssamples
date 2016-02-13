@@ -39,11 +39,7 @@ public:
     LightInfo _light;
 
     GLuint _worldTexId;
-    GLuint _brickTexId;
-    GLuint _grassTexId;
     GLuint _specularTexId;
-    GLuint _chessTexId;
-    GLuint _myTexId;
 
     GLuint _sampler;
 
@@ -85,11 +81,7 @@ public:
         //=========================================================
         //Загрузка и создание текстур
         _worldTexId = Texture::loadTexture("images/earth_global.jpg");
-        _brickTexId = Texture::loadTexture("images/brick.jpg");
-        _grassTexId = Texture::loadTexture("images/grass.jpg");
         _specularTexId = Texture::loadTexture("images/earth_specular.png");
-        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
-        _myTexId = Texture::makeProceduralTexture();
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры

@@ -12,11 +12,11 @@ namespace
     */
     void invertY(unsigned char* image, int width, int height, int channels)
     {
-        for (unsigned j = 0; j * 2 < height; ++j)
+        for (int j = 0; j * 2 < height; ++j)
         {
             unsigned int index1 = j * width * channels;
             unsigned int index2 = (height - 1 - j) * width * channels;
-            for (unsigned i = 0; i < width * channels; i++)
+            for (int i = 0; i < width * channels; i++)
             {
                 unsigned char temp = image[index1];
                 image[index1] = image[index2];
@@ -25,36 +25,7 @@ namespace
                 ++index2;
             }
         }
-    }
-
-    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
-    void getColorFromLinearPalette(float value, float& r, float& g, float& b)
-    {
-        if (value < 0.25f)
-        {
-            r = 0.0f;
-            g = value * 4.0f;
-            b = 1.0f;
-        }
-        else if (value < 0.5f)
-        {
-            r = 0.0f;
-            g = 1.0f;
-            b = (0.5f - value) * 4.0f;
-        }
-        else if (value < 0.75f)
-        {
-            r = (value - 0.5f) * 4.0f;
-            g = 1.0f;
-            b = 0.0f;
-        }
-        else
-        {
-            r = 1.0f;
-            g = (1.0f - value) * 4.0f;
-            b = 0.0f;
-        }
-    }
+    }    
 }
 
 GLuint Texture::loadTexture(const std::string& filename, bool gamma, bool withAlpha)
@@ -97,37 +68,6 @@ GLuint Texture::loadTextureDDS(const std::string& filename)
     return texId;
 }
 
-GLuint Texture::makeProceduralTexture()
-{
-    int width = 128;
-    int height = 128;
-
-    std::vector<unsigned char> data;
-
-    for (int row = 0; row < height; row++)
-    {
-        for (int column = 0; column < width; column++)
-        {
-            float r, g, b;
-            getColorFromLinearPalette((float)column / width, r, g, b);
-
-            data.push_back((unsigned char)(255 * r));
-            data.push_back((unsigned char)(255 * g));
-            data.push_back((unsigned char)(255 * b));
-        }
-    }
-
-    GLuint texId;
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data.data());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    return texId;
-}
-
 void loadCubeTextureFace(std::string filename, GLenum target)
 {
     int width, height, channels;
@@ -158,36 +98,141 @@ GLuint Texture::loadCubeTexture(const std::string& basefilename)
     loadCubeTextureFace(basefilename + "/negz.jpg", GL_TEXTURE_CUBE_MAP_NEGATIVE_Z);
     loadCubeTextureFace(basefilename + "/posz.jpg", GL_TEXTURE_CUBE_MAP_POSITIVE_Z);
 
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
     return texId;
 }
 
-GLuint Texture::makeTextureBuffer(std::vector<glm::vec3>& positions)
+//======================================================
+
+TexturePtr loadTexture(const std::string& filename, bool gamma, bool withAlpha)
 {
-    std::vector<float> data;
-    for (unsigned int i = 0; i < positions.size(); i++)
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, withAlpha ? SOIL_LOAD_RGBA : SOIL_LOAD_RGB);
+    if (!image)
     {
-        data.push_back(positions[i].x);
-        data.push_back(positions[i].y);
-        data.push_back(positions[i].z);
+        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
+        return 0;
     }
 
-    GLuint texBufferId;
-    glGenBuffers(1, &texBufferId);
-    glBindBuffer(GL_TEXTURE_BUFFER, texBufferId);
-    glBufferData(GL_TEXTURE_BUFFER, data.size() * sizeof(float), data.data(), GL_STATIC_DRAW);
+    invertY(image, width, height, withAlpha ? 4 : 3);
 
-    GLuint texId;
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_BUFFER, texId);
+    GLint internalFormat = GL_RGB8;
+    if (gamma)
+    {
+        internalFormat = GL_SRGB8;
+    }
+    else if (withAlpha)
+    {
+        internalFormat = GL_RGBA8;
+    }
 
-    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, texBufferId);
+    GLint format = withAlpha ? GL_RGBA : GL_RGB;
 
-    glBindBuffer(GL_TEXTURE_BUFFER, 0);
-    glBindTexture(GL_TEXTURE_BUFFER, 0);
+    TexturePtr texture = std::make_shared<Texture2>(GL_TEXTURE_2D);
+    texture->setTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, format, GL_UNSIGNED_BYTE, image);
+    texture->generateMipmaps();
 
-    return texId;
+    SOIL_free_image_data(image);
+
+    return texture;
+}
+
+TexturePtr loadTextureDDS(const std::string& filename)
+{
+    GLuint tex = SOIL_load_OGL_texture(filename.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_DDS_LOAD_DIRECT);
+    if (tex == 0)
+    {
+        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
+        return std::make_shared<Texture2>();
+    }
+
+    return std::make_shared<Texture2>(tex, GL_TEXTURE_2D);
+}
+
+//==========================================================
+
+namespace
+{
+    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
+    glm::vec3 getColorFromLinearPalette(float value)
+    {
+        if (value < 0.25f)
+        {
+            return glm::vec3(0.0f, value * 4.0f, 1.0f);
+        }
+        else if (value < 0.5f)
+        {
+            return glm::vec3(0.0f, 1.0f, (0.5f - value) * 4.0f);
+        }
+        else if (value < 0.75f)
+        {
+            return glm::vec3((value - 0.5f) * 4.0f, 1.0f, 0.0f);
+        }
+        else
+        {
+            return glm::vec3(1.0f, (1.0f - value) * 4.0f, 0.0f);
+        }
+    }
+}
+
+TexturePtr makeProceduralTexture()
+{
+    int width = 128;
+    int height = 128;
+
+    std::vector<unsigned char> data;
+
+    for (int row = 0; row < height; row++)
+    {
+        for (int column = 0; column < width; column++)
+        {
+            glm::vec3 color = getColorFromLinearPalette((float)column / width);
+
+            data.push_back((unsigned char)(255 * color.r));
+            data.push_back((unsigned char)(255 * color.g));
+            data.push_back((unsigned char)(255 * color.b));
+        }
+    }
+        
+    TexturePtr texture = std::make_shared<Texture2>(GL_TEXTURE_2D);
+    texture->setTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, GL_RGB, GL_UNSIGNED_BYTE, data.data());
+
+    return texture;
+}
+
+//==========================================================
+
+namespace
+{
+    void loadCubeTextureFace(const TexturePtr& texture, GLenum target, const std::string& filename)
+    {
+        int width, height, channels;
+        unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, SOIL_LOAD_RGB);
+        if (!image)
+        {
+            std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
+            return;
+        }
+
+        invertY(image, width, height, 3);
+
+        texture->setTexImage2D(target, 0, GL_RGB8, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+        SOIL_free_image_data(image);
+    }
+}
+
+TexturePtr loadCubeTexture(const std::string& basefilename)
+{
+    TexturePtr texture = std::make_shared<Texture2>(GL_TEXTURE_CUBE_MAP);
+
+    loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, basefilename + "/negx.jpg");
+    loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, basefilename + "/posx.jpg");
+    loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, basefilename + "/negy.jpg");
+    loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Y, basefilename + "/posy.jpg");
+    loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, basefilename + "/negz.jpg");
+    loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_Z, basefilename + "/posz.jpg");
+
+    return texture;
 }

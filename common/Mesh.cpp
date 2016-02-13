@@ -57,13 +57,13 @@ MeshPtr makeSphere(float radius, unsigned int N)
 
     //----------------------------------------
 
-    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -240,13 +240,13 @@ MeshPtr makeCube(float size)
 
     //----------------------------------------
 
-    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -275,7 +275,7 @@ MeshPtr makeScreenAlignedQuad()
 
     //----------------------------------------
 
-    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -320,13 +320,13 @@ MeshPtr makeGroundPlane(float size, float numTiles)
 
     //----------------------------------------
 
-    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
 
-    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
 
-    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
 
     MeshPtr mesh = std::make_shared<Mesh>();
@@ -375,13 +375,13 @@ MeshPtr loadFromFile(const std::string& filename)
         return std::make_shared<Mesh>();
     }
 
-    DataBufferPtr buf0 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf0->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mVertices);
 
-    DataBufferPtr buf1 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf1 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf1->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mNormals);
 
-    DataBufferPtr buf2 = std::make_shared<DataBuffer>();
+    DataBufferPtr buf2 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
     buf2->setData(assimpMesh->mNumVertices * sizeof(float) * 3, assimpMesh->mTextureCoords[0]);
 
     MeshPtr mesh = std::make_shared<Mesh>();

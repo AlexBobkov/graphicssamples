@@ -31,7 +31,7 @@ public:
             vertices.push_back((float)i);
         }
 
-        DataBufferPtr buf0 = std::make_shared<DataBuffer>();
+        DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
         buf0->setData(vertices.size() * sizeof(float), vertices.data());
 
         _lineStrip = std::make_shared<Mesh>();
