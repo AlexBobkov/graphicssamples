@@ -52,7 +52,7 @@ TexturePtr loadTexture(const std::string& filename, bool gamma, bool withAlpha)
 
     GLint format = withAlpha ? GL_RGBA : GL_RGB;
 
-    TexturePtr texture = std::make_shared<Texture2>(GL_TEXTURE_2D);
+    TexturePtr texture = std::make_shared<Texture>(GL_TEXTURE_2D);
     texture->setTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, format, GL_UNSIGNED_BYTE, image);
     texture->generateMipmaps();
 
@@ -67,10 +67,10 @@ TexturePtr loadTextureDDS(const std::string& filename)
     if (tex == 0)
     {
         std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
-        return std::make_shared<Texture2>();
+        return std::make_shared<Texture>();
     }
 
-    return std::make_shared<Texture2>(tex, GL_TEXTURE_2D);
+    return std::make_shared<Texture>(tex, GL_TEXTURE_2D);
 }
 
 //==========================================================
@@ -118,7 +118,7 @@ TexturePtr makeProceduralTexture()
         }
     }
 
-    TexturePtr texture = std::make_shared<Texture2>(GL_TEXTURE_2D);
+    TexturePtr texture = std::make_shared<Texture>(GL_TEXTURE_2D);
     texture->setTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, GL_RGB, GL_UNSIGNED_BYTE, data.data());
 
     return texture;
@@ -148,7 +148,7 @@ namespace
 
 TexturePtr loadCubeTexture(const std::string& basefilename)
 {
-    TexturePtr texture = std::make_shared<Texture2>(GL_TEXTURE_CUBE_MAP);
+    TexturePtr texture = std::make_shared<Texture>(GL_TEXTURE_CUBE_MAP);
 
     loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_NEGATIVE_X, basefilename + "/negx.jpg");
     loadCubeTextureFace(texture, GL_TEXTURE_CUBE_MAP_POSITIVE_X, basefilename + "/posx.jpg");

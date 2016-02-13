@@ -14,14 +14,14 @@
 /**
 Абстракция буфера с данными в видеопамяти
 */
-class Texture2
+class Texture
 {
 public:
     /**
     Создает текстурный объект
     \param target тип текстуры (GL_TEXTURE_2D, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BUFFER и другие)
     */
-    Texture2(GLenum target = GL_TEXTURE_2D) :
+    Texture(GLenum target = GL_TEXTURE_2D) :
         _target(target)
     {
         glGenTextures(1, &_tex);
@@ -30,13 +30,13 @@ public:
     /**
     Использует уже созданный текстурный объект
     */
-    Texture2(GLuint tex, GLenum target) :
+    Texture(GLuint tex, GLenum target) :
         _tex(tex),
         _target(target)
     {
     }
 
-    ~Texture2()
+    ~Texture()
     {
         glDeleteTextures(1, &_tex);
     }
@@ -80,14 +80,14 @@ public:
     }
 
 protected:
-    Texture2(const Texture2&) = delete;
-    void operator=(const Texture2&) = delete;
+    Texture(const Texture&) = delete;
+    void operator=(const Texture&) = delete;
 
     GLuint _tex;
     GLenum _target;
 };
 
-typedef std::shared_ptr<Texture2> TexturePtr;
+typedef std::shared_ptr<Texture> TexturePtr;
 
 //=========== Функции для создания текстур
 

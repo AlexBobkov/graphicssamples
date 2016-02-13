@@ -219,7 +219,7 @@ public:
         //Загрузка и создание текстур
         _brickTex = loadTexture("images/brick.jpg");
 
-        _bufferTex = std::make_shared<Texture2>(GL_TEXTURE_BUFFER);
+        _bufferTex = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
         _bufferTex->bind();
         buf->attachToTexture(GL_RGB32F_ARB);
         _bufferTex->unbind();
