@@ -19,15 +19,15 @@ public:
     GLuint _viewMatrixUniform;
     GLuint _projMatrixUniform;
 
-    virtual void makeScene()
+    void makeScene() override
     {
         Application::makeScene();
 
-        //Создаем меш с помощью нового вспомогательного класса
+        //Создаем меш с кубом
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
 
-        //Создаем ещё один меш с помощью нового вспомогательного класса
+        //Создаем меш из файла
         _bunny = loadFromFile("models/bunny.obj");
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
@@ -42,7 +42,7 @@ public:
         _projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
     }
 
-    virtual void draw()
+    void draw() override
     {
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
