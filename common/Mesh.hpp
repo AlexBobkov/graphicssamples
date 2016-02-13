@@ -143,7 +143,7 @@ public:
     /**
     Рисует модель
     */
-    void draw()
+    void draw() const
     {
         glBindVertexArray(_vao);
         glDrawArrays(_primitiveType, 0, _vertexCount);
@@ -152,7 +152,7 @@ public:
     /**
     Рисует модель instanceCount раз (разбирается на 10м семинаре)
     */
-    void drawInstanced(unsigned int instanceCount)
+    void drawInstanced(unsigned int instanceCount) const
     {
         glBindVertexArray(_vao);
         glDrawArraysInstanced(_primitiveType, 0, _vertexCount, instanceCount);

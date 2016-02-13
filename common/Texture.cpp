@@ -2,115 +2,101 @@
 
 #include <glimg/glimg.h>
 
+#include <SOIL2.h>
+
 #include <vector>
 #include <iostream>
 
-GLuint Texture::loadTexture(const std::string& filename, bool gamma, bool withAlpha)
+namespace
 {
-    GLuint texId;
-
-    try
+    /**
+    Библиотека SOIL читает текстуры перевернутыми
+    */
+    void invertY(unsigned char* image, int width, int height, int channels)
     {
-        std::shared_ptr<glimg::ImageSet> pImageSet;
-
-        if (filename.find(".dds") != std::string::npos)
+        for (unsigned j = 0; j * 2 < height; ++j)
         {
-            pImageSet.reset(glimg::loaders::dds::LoadFromFile(filename));
+            unsigned int index1 = j * width * channels;
+            unsigned int index2 = (height - 1 - j) * width * channels;
+            for (unsigned i = 0; i < width * channels; i++)
+            {
+                unsigned char temp = image[index1];
+                image[index1] = image[index2];
+                image[index2] = temp;
+                ++index1;
+                ++index2;
+            }
+        }
+    }
+
+    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
+    void getColorFromLinearPalette(float value, float& r, float& g, float& b)
+    {
+        if (value < 0.25f)
+        {
+            r = 0.0f;
+            g = value * 4.0f;
+            b = 1.0f;
+        }
+        else if (value < 0.5f)
+        {
+            r = 0.0f;
+            g = 1.0f;
+            b = (0.5f - value) * 4.0f;
+        }
+        else if (value < 0.75f)
+        {
+            r = (value - 0.5f) * 4.0f;
+            g = 1.0f;
+            b = 0.0f;
         }
         else
         {
-            pImageSet.reset(glimg::loaders::stb::LoadFromFile(filename));
+            r = 1.0f;
+            g = (1.0f - value) * 4.0f;
+            b = 0.0f;
         }
-
-        glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
-        glimg::Dimensions dims = pImage.GetDimensions();
-
-        GLint internalFormat = gamma ? GL_SRGB8 : (withAlpha ? GL_RGBA8 : GL_RGB8);
-        GLint format = withAlpha ? GL_RGBA : GL_RGB;
-
-        glGenTextures(1, &texId);
-        glBindTexture(GL_TEXTURE_2D, texId);
-        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, dims.width, dims.height, 0, format, GL_UNSIGNED_BYTE, pImage.GetImageData());
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
-    catch (glimg::loaders::stb::StbLoaderException&)
-    {
-        std::cerr << "Failed to load texture " << filename << std::endl;;
-        exit(1);
-    }
-    catch (glimg::loaders::dds::DdsLoaderException&)
-    {
-        std::cerr << "Failed to load texture " << filename << std::endl;;
-        exit(1);
-    }
-
-    return texId;
 }
 
-GLuint Texture::loadTextureWithMipmaps(const std::string& filename)
+GLuint Texture::loadTexture(const std::string& filename, bool gamma, bool withAlpha)
 {
+    GLint internalFormat = gamma ? GL_SRGB8 : (withAlpha ? GL_RGBA8 : GL_RGB8);
+    GLint format = withAlpha ? GL_RGBA : GL_RGB;
+
     GLuint texId;
+    glGenTextures(1, &texId);
 
-    try
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, withAlpha ? SOIL_LOAD_RGBA : SOIL_LOAD_RGB);
+    if (!image)
     {
-        std::shared_ptr<glimg::ImageSet> pImageSet;
-        pImageSet.reset(glimg::loaders::dds::LoadFromFile(filename));
-
-        glGenTextures(1, &texId);
-        glBindTexture(GL_TEXTURE_2D, texId);
-
-        for (int mipmapLevel = 0; mipmapLevel < pImageSet->GetMipmapCount(); mipmapLevel++)
-        {
-            glimg::SingleImage pImage = pImageSet->GetImage(mipmapLevel, 0, 0);
-            glimg::Dimensions dims = pImage.GetDimensions();
-
-            glTexImage2D(GL_TEXTURE_2D, mipmapLevel, GL_RGB8, dims.width, dims.height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, pImage.GetImageData());
-        }
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, pImageSet->GetMipmapCount() - 1);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
+        return 0;
     }
-    catch (glimg::loaders::dds::DdsLoaderException&)
-    {
-        std::cerr << "Failed to load texture " << filename << std::endl;;
-        exit(1);
-    }
+
+    invertY(image, width, height, withAlpha ? 4 : 3);
+
+    glBindTexture(GL_TEXTURE_2D, texId);
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, image);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    SOIL_free_image_data(image);
 
     return texId;
 }
-//вычисление цвета по линейной палитре
-void getColorFromLinearPalette(float value, float& r, float& g, float& b)
+
+GLuint Texture::loadTextureDDS(const std::string& filename)
 {
-    if (value < 0.25f)
+    GLuint texId = SOIL_load_OGL_texture(filename.c_str(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_DDS_LOAD_DIRECT);
+    if (texId == 0)
     {
-        r = 0.0f;
-        g = value * 4.0f;
-        b = 1.0f;
+        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
+        return 0;
     }
-    else if (value < 0.5f)
-    {
-        r = 0.0f;
-        g = 1.0f;
-        b = (0.5f - value) * 4.0f;
-    }
-    else if (value < 0.75f)
-    {
-        r = (value - 0.5f) * 4.0f;
-        g = 1.0f;
-        b = 0.0f;
-    }
-    else
-    {
-        r = 1.0f;
-        g = (1.0f - value) * 4.0f;
-        b = 0.0f;
-    }
+
+    return texId;
 }
 
 GLuint Texture::makeProceduralTexture()
@@ -146,21 +132,19 @@ GLuint Texture::makeProceduralTexture()
 
 void loadCubeTextureFace(std::string filename, GLenum target)
 {
-    try
+    int width, height, channels;
+    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, SOIL_LOAD_RGB);
+    if (!image)
     {
-        std::shared_ptr<glimg::ImageSet> pImageSet;
-        pImageSet.reset(glimg::loaders::stb::LoadFromFile(filename));
-
-        glimg::SingleImage pImage = pImageSet->GetImage(0, 0, 0);
-        glimg::Dimensions dims = pImage.GetDimensions();
-
-        glTexImage2D(target, 0, GL_RGB8, dims.width, dims.height, 0, GL_RGB, GL_UNSIGNED_BYTE, pImage.GetImageData());
+        std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
+        return;
     }
-    catch (glimg::loaders::stb::StbLoaderException&)
-    {
-        std::cerr << "Failed to load texture " << filename << std::endl;;
-        exit(1);
-    }
+
+    invertY(image, width, height, 3);
+
+    glTexImage2D(target, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+    SOIL_free_image_data(image);
 }
 
 GLuint Texture::loadCubeTexture(const std::string& basefilename)

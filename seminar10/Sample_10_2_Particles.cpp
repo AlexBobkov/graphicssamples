@@ -32,8 +32,6 @@ float frand()
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-void getColorFromLinearPalette(float value, float& r, float& g, float& b);
-
 /**
 Инстансинг
 */
@@ -120,7 +118,7 @@ public:
         _worldTexId = Texture::loadTexture("images/earth_global.jpg");
         _brickTexId = Texture::loadTexture("images/brick.jpg");
         _grassTexId = Texture::loadTexture("images/grass.jpg");
-        _chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
+        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
         _myTexId = Texture::makeProceduralTexture();
         _cubeTexId = Texture::loadCubeTexture("images/cube");
         _particleTexId = Texture::loadTexture("images/particle.png", false, true);

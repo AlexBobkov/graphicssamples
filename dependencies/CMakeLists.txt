@@ -41,4 +41,10 @@ ExternalProject_Add(Assimp
 		"-DCMAKE_DEBUG_POSTFIX:STRING=d"
 )
 
+ExternalProject_Add(SOIL
+	URL https://bitbucket.org/AlexBobkov/soil2/get/default.zip
+	CMAKE_ARGS "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+		"-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
+)
+
     

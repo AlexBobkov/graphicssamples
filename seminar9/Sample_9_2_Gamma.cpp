@@ -21,8 +21,6 @@ float frand()
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 }
 
-void getColorFromLinearPalette(float value, float& r, float& g, float& b);
-
 /**
 Пример эффекта постобработки - вывод изображения с гамма-коррекцией
 */
@@ -206,7 +204,7 @@ public:
         _brickTexId = Texture::loadTexture("images/brick.jpg", false);
         _brickGammaTexId = Texture::loadTexture("images/brick.jpg", true);
         _grassTexId = Texture::loadTexture("images/grass.jpg");
-        _chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
+        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
         _myTexId = Texture::makeProceduralTexture();
         _cubeTexId = Texture::loadCubeTexture("images/cube");
 

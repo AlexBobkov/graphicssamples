@@ -88,7 +88,7 @@ public:
         _brickTexId = Texture::loadTexture("images/brick.jpg");
         _grassTexId = Texture::loadTexture("images/grass.jpg");
         _specularTexId = Texture::loadTexture("images/earth_specular.png");
-        _chessTexId = Texture::loadTextureWithMipmaps("images/chess.dds");
+        _chessTexId = Texture::loadTextureDDS("images/chess.dds");
         _myTexId = Texture::makeProceduralTexture();
 
         //=========================================================
