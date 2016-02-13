@@ -31,7 +31,7 @@ class SampleApplication : public Application
 {
 public:
     MeshPtr _cube;
-    MeshPtr _sphere;;
+    MeshPtr _sphere;
     MeshPtr _bunny;
 
     MeshPtr _marker; //Меш - маркер для источника света

@@ -3,6 +3,10 @@
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
 
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -23,23 +27,92 @@ float frand()
 
 void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 
+MeshPtr loadFromFileArray(const std::string& filename, const std::vector<glm::vec3>& positions)
+{
+    const struct aiScene* assimpScene = aiImportFile(filename.c_str(), aiProcess_Triangulate);
+
+    if (!assimpScene)
+    {
+        std::cerr << aiGetErrorString() << std::endl;
+        return std::make_shared<Mesh>();
+    }
+
+    if (assimpScene->mNumMeshes == 0)
+    {
+        std::cerr << "There is no meshes in file " << filename << std::endl;
+        return std::make_shared<Mesh>();
+    }
+
+    const struct aiMesh* assimpMesh = assimpScene->mMeshes[0];
+
+    if (!assimpMesh->HasPositions())
+    {
+        std::cerr << "This demo does not support meshes without positions\n";
+        return std::make_shared<Mesh>();
+    }
+
+    if (!assimpMesh->HasNormals())
+    {
+        std::cerr << "This demo does not support meshes without normals\n";
+        return std::make_shared<Mesh>();
+    }
+
+    if (!assimpMesh->HasTextureCoords(0))
+    {
+        std::cerr << "This demo does not support meshes without texcoords for texture unit 0\n";
+        return std::make_shared<Mesh>();
+    }
+
+    unsigned int instanceCount = positions.size();
+
+    std::vector<glm::vec3> vertices(assimpMesh->mNumVertices * instanceCount);
+    std::vector<glm::vec3> normals(assimpMesh->mNumVertices * instanceCount);
+    std::vector<glm::vec2> texcoords(assimpMesh->mNumVertices * instanceCount);
+
+    for (unsigned int k = 0; k < positions.size(); k++)
+    {
+        for (unsigned int i = 0; i < assimpMesh->mNumVertices; i++)
+        {
+            const aiVector3D* vp = &(assimpMesh->mVertices[i]);
+            const aiVector3D* normal = &(assimpMesh->mNormals[i]);
+            const aiVector3D* tc = &(assimpMesh->mTextureCoords[0][i]);
+
+            vertices[i + k * assimpMesh->mNumVertices] = glm::vec3(vp->x, vp->y, vp->z) + positions[k];
+            normals[i + k * assimpMesh->mNumVertices] = glm::vec3(normal->x, normal->y, normal->z);
+            texcoords[i + k * assimpMesh->mNumVertices] = glm::vec2(tc->x, tc->y);
+        }
+    }
+
+    VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
+    buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
+
+    VertexBufferPtr buf1 = std::make_shared<VertexBuffer>();
+    buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
+
+    VertexBufferPtr buf2 = std::make_shared<VertexBuffer>();
+    buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
+
+    MeshPtr mesh = std::make_shared<Mesh>();
+    mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
+    mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
+    mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
+    mesh->setPrimitiveType(GL_TRIANGLES);
+    mesh->setVertexCount(vertices.size());
+
+    aiReleaseImport(assimpScene);
+
+    return mesh;
+}
+
 /**
 Инстансинг
 */
 class SampleApplication : public Application
 {
 public:
-    MeshPtr _cube;
-    MeshPtr _sphere;
-    MeshPtr _bunny;
-    MeshPtr _ground;
-
-    Mesh teapot;
-    Mesh teapotArray;
-
-    MeshPtr _quad;
-
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _teapot;
+    MeshPtr _teapotArray;
+    MeshPtr _teapotDivisor;
 
     //Идентификатор шейдерной программы
     ShaderProgram _commonShader;
@@ -104,24 +177,27 @@ public:
         _divisorInstancing = false;
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //Создание и загрузка мешей
 
-        _cube = makeCube(0.5f);
-        _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
+        srand((int)(glfwGetTime() * 1000));
 
-        _sphere = makeSphere(0.5f);
-        _sphere->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f)));
+        float size = 50.0f;
+        for (int i = 0; i < 500; i++)
+        {
+            _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
+        }
 
-        _bunny = loadFromFile("models/bunny.obj");
-        _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
+        _teapot = loadFromFile("models/teapot.obj");
 
-        teapot.loadFromFile("models/teapot.obj");
+        _teapotArray = loadFromFileArray("models/teapot.obj", _positions);
 
-        _ground = makeGroundPlane(5.0f, 2.0f);
+        _teapotDivisor = loadFromFile("models/teapot.obj");
 
-        _marker = makeSphere(0.1f);
+        VertexBufferPtr buf = std::make_shared<VertexBuffer>();
+        buf->setData(_positions.size() * sizeof(float) * 3, _positions.data());
 
-        _quad = makeScreenAlignedQuad();
+        _teapotDivisor->setAttribute(3, 3, GL_FLOAT, GL_FALSE, 0, 0, buf);
+        _teapotDivisor->setAttributeDivisor(3, 1);
 
         //=========================================================
         //Инициализация шейдеров
@@ -184,19 +260,7 @@ public:
 
         //=========================================================
 
-        srand((int)(glfwGetTime() * 1000));
-
-        float size = 50.0f;
-        for (int i = 0; i < 500; i++)
-        {
-            _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
-        }
-
-        teapotArray.loadFromFileArray("models/teapot.obj", _positions);
-
-        _bufferTexId = Texture::makeTextureBuffer(_positions);
-
-        teapot.addInstancedData(3, _positions);
+        _bufferTexId = Texture::makeTextureBuffer(_positions);        
     }
 
     void initGUI() override
@@ -353,7 +417,7 @@ public:
                 shader.setMat4Uniform("modelMatrix", modelMatrix);
                 shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-                teapot.draw();
+                _teapot->draw();
             }
         }
 
@@ -364,7 +428,7 @@ public:
             shader.setMat4Uniform("modelMatrix", modelMatrix);
             shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-            teapotArray.draw();
+            _teapotArray->draw();
         }
     }
 
@@ -391,7 +455,7 @@ public:
         shader.setMat4Uniform("modelMatrix", modelMatrix);
         shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        teapot.drawInstanced(_positions.size());
+        _teapot->drawInstanced(_positions.size());
     }
 
     void drawUniformInstancedScene(const ShaderProgram& shader)
@@ -419,7 +483,7 @@ public:
         shader.setMat4Uniform("modelMatrix", modelMatrix);
         shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        teapot.drawInstanced(_positions.size());
+        _teapot->drawInstanced(_positions.size());
     }
 
     void drawTextureInstancedScene(const ShaderProgram& shader)
@@ -449,7 +513,7 @@ public:
         shader.setMat4Uniform("modelMatrix", modelMatrix);
         shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        teapot.drawInstanced(_positions.size());
+        _teapot->drawInstanced(_positions.size());
     }
 
     void drawDivisorInstancedScene(const ShaderProgram& shader)
@@ -475,7 +539,7 @@ public:
         shader.setMat4Uniform("modelMatrix", modelMatrix);
         shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        teapot.drawInstanced(_positions.size());
+        _teapotDivisor->drawInstanced(_positions.size());
     }
 };
 

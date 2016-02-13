@@ -40,18 +40,6 @@ void getColorFromLinearPalette(float value, float& r, float& g, float& b);
 class SampleApplication : public Application
 {
 public:
-    MeshPtr _cube;
-    MeshPtr _sphere;
-    MeshPtr _bunny;
-    MeshPtr _ground;
-
-    Mesh teapot;
-    Mesh teapotArray;
-
-    MeshPtr _quad;
-
-    MeshPtr _marker; //Меш - маркер для источника света
-
     //Идентификатор шейдерной программы
     ShaderProgram _commonShader;
     ShaderProgram _markerShader;
@@ -105,23 +93,6 @@ public:
 
         //=========================================================
         //Создание и загрузка мешей		
-
-        _cube = makeCube(0.5f);
-        _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
-
-        _sphere = makeSphere(0.5f);
-        _sphere->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f)));
-
-        _bunny = loadFromFile("models/bunny.obj");
-        _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
-
-        teapot.loadFromFile("models/teapot.obj");
-
-        _ground = makeGroundPlane(5.0f, 2.0f);
-
-        _marker = makeSphere(0.1f);
-
-        _quad = makeScreenAlignedQuad();
 
         //=========================================================
         //Инициализация шейдеров

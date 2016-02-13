@@ -34,11 +34,6 @@ public:
     MeshPtr _bunny;
     MeshPtr _ground;
 
-    Mesh teapot;
-    Mesh teapotArray;
-
-    MeshPtr _quad;
-
     MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
@@ -92,13 +87,9 @@ public:
         _bunny = loadFromFile("models/bunny.obj");
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        teapot.loadFromFile("models/teapot.obj");
-
         _ground = makeGroundPlane(5.0f, 2.0f);
 
         _marker = makeSphere(0.1f);
-
-        _quad = makeScreenAlignedQuad();
 
         //=========================================================
         //Инициализация шейдеров

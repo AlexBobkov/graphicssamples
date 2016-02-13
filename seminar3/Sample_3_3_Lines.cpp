@@ -34,7 +34,7 @@ public:
         VertexBufferPtr buf0 = std::make_shared<VertexBuffer>();
         buf0->setData(vertices.size() * sizeof(float), vertices.data());
 
-        _lineStrip = std::make_shared<StrongMesh>();
+        _lineStrip = std::make_shared<Mesh>();
         _lineStrip->setAttribute(0, 1, GL_FLOAT, GL_FALSE, 0, 0, buf0);
         _lineStrip->setPrimitiveType(GL_LINE_STRIP);
         _lineStrip->setVertexCount(vertices.size());
