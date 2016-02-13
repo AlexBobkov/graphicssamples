@@ -1,7 +1,5 @@
 #include <Texture.hpp>
 
-#include <glimg/glimg.h>
-
 #include <SOIL2.h>
 
 #include <vector>

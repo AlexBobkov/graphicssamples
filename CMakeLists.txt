@@ -41,7 +41,6 @@ endif (USE_CORE_PROFILE)
 
 include_directories(
 	${OpenGL_INCLUDE_DIRS}
-	${PROJECT_SOURCE_DIR}/3rdParty/glimg-0.5.2/include
 	${ANTTWEAKBAR_INCLUDE_DIRS}
 )
 
@@ -57,7 +56,6 @@ if (UNIX)
 	set(CMAKE_INSTALL_RPATH "${DEPENDENCIES_ROOT}/lib")	
 endif ()
 
-add_subdirectory(3rdParty/glimg-0.5.2)
 add_subdirectory(seminar1)
 add_subdirectory(seminar2)
 add_subdirectory(seminar3)
