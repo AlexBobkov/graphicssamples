@@ -67,16 +67,16 @@ public:
     bool _showShadowDebug;
     bool _showDeferredDebug;
 
-    Framebuffer _gbufferFB;
-    GLuint _depthTexId;
-    GLuint _normalsTexId;
-    GLuint _diffuseTexId;
+    FramebufferPtr _gbufferFB;
+    TexturePtr _depthTex;
+    TexturePtr _normalsTex;
+    TexturePtr _diffuseTex;
 
-    Framebuffer _shadowFB;
-    GLuint _shadowTexId;
+    FramebufferPtr _shadowFB;
+    TexturePtr _shadowTex;
 
-    Framebuffer _deferredFB;
-    GLuint _deferredTexId;
+    FramebufferPtr _deferredFB;
+    TexturePtr _deferredTex;
 
     //Старые размеры экрана
     int _oldWidth;
@@ -84,59 +84,47 @@ public:
 
     void initFramebuffers()
     {
-        _gbufferFB.create();
-        _gbufferFB.bind();
-        _gbufferFB.setSize(1024, 1024);
+        _gbufferFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _normalsTexId = _gbufferFB.addBuffer(GL_RGB16F, GL_COLOR_ATTACHMENT0);
-        _diffuseTexId = _gbufferFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT1);
-        _depthTexId = _gbufferFB.addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
+        _normalsTex = _gbufferFB->addBuffer(GL_RGB16F, GL_COLOR_ATTACHMENT0);
+        _diffuseTex = _gbufferFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT1);
+        _depthTex = _gbufferFB->addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
 
-        _gbufferFB.initDrawBuffers();
+        _gbufferFB->initDrawBuffers();
 
-        if (!_gbufferFB.valid())
+        if (!_gbufferFB->valid())
         {
-            std::cerr << "Failed to setup framebuffer\n";
+            std::cerr << "Failed to setup framebuffer _gbufferFB\n";
             exit(1);
         }
-
-        _gbufferFB.unbind();
 
         //=========================================================
 
-        _shadowFB.create();
-        _shadowFB.bind();
-        _shadowFB.setSize(1024, 1024);
+        _shadowFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _shadowTexId = _shadowFB.addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
+        _shadowTex = _shadowFB->addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
 
-        _shadowFB.initDrawBuffers();
+        _shadowFB->initDrawBuffers();
 
-        if (!_shadowFB.valid())
+        if (!_shadowFB->valid())
         {
-            std::cerr << "Failed to setup framebuffer\n";
+            std::cerr << "Failed to setup framebuffer _shadowFB\n";
             exit(1);
         }
-
-        _shadowFB.unbind();
 
         //=========================================================
 
-        _deferredFB.create();
-        _deferredFB.bind();
-        _deferredFB.setSize(1024, 1024);
+        _deferredFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _deferredTexId = _deferredFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+        _deferredTex = _deferredFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
 
-        _deferredFB.initDrawBuffers();
+        _deferredFB->initDrawBuffers();
 
-        if (!_deferredFB.valid())
+        if (!_deferredFB->valid())
         {
-            std::cerr << "Failed to setup framebuffer\n";
+            std::cerr << "Failed to setup framebuffer _deferredFB\n";
             exit(1);
         }
-
-        _deferredFB.unbind();
     }
 
     void makeScene() override
@@ -281,8 +269,8 @@ public:
         glfwGetFramebufferSize(_window, &width, &height);
         if (width != _oldWidth || height != _oldHeight)
         {
-            _gbufferFB.resize(width, height);
-            _deferredFB.resize(width, height);
+            _gbufferFB->resize(width, height);
+            _deferredFB->resize(width, height);
 
             _oldWidth = width;
             _oldHeight = height;
@@ -314,11 +302,11 @@ public:
         drawDebug();
     }
 
-    void drawToGBuffer(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera)
+    void drawToGBuffer(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
@@ -334,14 +322,14 @@ public:
 
         glUseProgram(0); //Отключаем шейдер
 
-        fb.unbind(); //Отключаем фреймбуфер
+        fb->unbind(); //Отключаем фреймбуфер
     }
 
-    void drawToShadowMap(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& lightCamera)
+    void drawToShadowMap(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& lightCamera)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_DEPTH_BUFFER_BIT);
 
         shader.use();
@@ -357,14 +345,14 @@ public:
 
         glUseProgram(0);
 
-        fb.unbind();
+        fb->unbind();
     }
 
-    void drawDeferred(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
+    void drawDeferred(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
@@ -385,22 +373,22 @@ public:
         shader.setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _normalsTexId);
+        _normalsTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("normalsTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
+        _diffuseTex->bind();
         glBindSampler(1, _sampler);
         shader.setIntUniform("diffuseTex", 1);
 
         glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
-        glBindTexture(GL_TEXTURE_2D, _depthTexId);
+        _depthTex->bind();
         glBindSampler(2, _sampler);
         shader.setIntUniform("depthTex", 2);
 
         glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3
-        glBindTexture(GL_TEXTURE_2D, _shadowTexId);
+        _shadowTex->bind();
         glBindSampler(3, _depthSampler);
         shader.setIntUniform("shadowTex", 3);
 
@@ -408,7 +396,7 @@ public:
 
         glUseProgram(0);
 
-        fb.unbind();
+        fb->unbind();
     }
 
     void drawToScreen(const ShaderProgram& shader)
@@ -423,7 +411,7 @@ public:
         shader.use();
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _deferredTexId);
+        _deferredTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("tex", 0);
 
@@ -469,31 +457,31 @@ public:
 
         if (_showGBufferDebug)
         {
-            drawQuad(_quadDepthShader, _depthTexId, 0, 0, size, size);
-            drawQuad(_quadColorShader, _normalsTexId, size, 0, size, size);
-            drawQuad(_quadColorShader, _diffuseTexId, size * 2, 0, size, size);
+            drawQuad(_quadDepthShader, _depthTex, 0, 0, size, size);
+            drawQuad(_quadColorShader, _normalsTex, size, 0, size, size);
+            drawQuad(_quadColorShader, _diffuseTex, size * 2, 0, size, size);
         }
         else if (_showShadowDebug)
         {
-            drawQuad(_quadDepthShader, _shadowTexId, 0, 0, size, size);
+            drawQuad(_quadDepthShader, _shadowTex, 0, 0, size, size);
         }
         else if (_showDeferredDebug)
         {
-            drawQuad(_quadColorShader, _deferredTexId, 0, 0, size, size);
+            drawQuad(_quadColorShader, _deferredTex, 0, 0, size, size);
         }
 
         glBindSampler(0, 0);
         glUseProgram(0);
     }
 
-    void drawQuad(const ShaderProgram& shader, GLuint& texId, GLint x, GLint y, GLint width, GLint height)
+    void drawQuad(const ShaderProgram& shader, const TexturePtr& texture, GLint x, GLint y, GLint width, GLint height)
     {
         glViewport(x, y, width, height);
 
         shader.use();
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texId);
+        texture->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("tex", 0);
 

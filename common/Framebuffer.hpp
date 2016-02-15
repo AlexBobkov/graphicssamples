@@ -1,40 +1,33 @@
 #pragma once
 
+#include <Texture.hpp>
+
 #include <GL/glew.h>
 
-#include <string>
-#include <vector>
 #include <map>
+#include <memory>
 
 /**
-Создает и инициализирует Frame Buffer Object
+Класс для управления фреймбуфером FrameBufferObject
 */
 class Framebuffer
 {
 public:
-    Framebuffer() :
-        _fboId(0),
-        _width(1024),
-        _height(1024)
+    Framebuffer(unsigned int width, unsigned int height) :
+        _width(width),
+        _height(height)
     {
+        glGenFramebuffers(1, &_fbo);
     }
 
     ~Framebuffer()
     {
-        if (_fboId != 0)
-        {
-            glDeleteFramebuffers(1, &_fboId);
-        }
-    }
-
-    void create()
-    {
-        glGenFramebuffers(1, &_fboId);
+        glDeleteFramebuffers(1, &_fbo);
     }
 
     void bind() const
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, _fboId);
+        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
     }
 
     void unbind() const
@@ -42,23 +35,20 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+    /**
+    Возвращает ширину фреймбуфера
+    */
     unsigned int width() const { return _width; }
+
+    /**
+    Возвращает высоту фреймбуфера
+    */
     unsigned int height() const { return _height; }
 
     /**
-    Устанавливает начальный размер текстур
+    Создает текстуру заданного формата, добавляет к фреймбуферу в заданный аттачмент и возвращает текстуру
     */
-    void setSize(unsigned int width, unsigned int height) { _width = width; _height = height; }
-
-    /**
-    Изменяет размер текстур
-    */
-    void resize(unsigned int width, unsigned int height);
-
-    /**
-    Создает текстуру заданного формата, добавляет к фреймбуферу в заданный аттачмент и возвращает id текстуры
-    */
-    GLuint addBuffer(GLint internalFormat, GLenum attachment);
+    TexturePtr addBuffer(GLint internalFormat, GLenum attachment);
 
     /**
     Устанавливает буферы, куда осуществлять рендеринг
@@ -66,16 +56,36 @@ public:
     void initDrawBuffers();
 
     /**
+    Изменяет размер текстур
+    Это нужно при изменении размеров окна для тех фреймбуферов, которые должны совпадать по размерам с окном.
+    */
+    void resize(unsigned int width, unsigned int height);
+
+    /**
     Проверят, настроен ли фреймбуфер корректно
     */
-    bool valid() const { return glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE; }
+    bool valid() const
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+        bool result = glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        return result;
+    }
 
 protected:
-    GLuint _fboId;
+    Framebuffer(const Framebuffer&) = delete;
+    void operator=(const Framebuffer&) = delete;
+
+    GLuint _fbo;
 
     unsigned int _width;
     unsigned int _height;
 
-    std::map<GLuint, GLint> _texIdToFormat;
-    std::map<GLuint, GLenum> _texIdToAttachment;
+    std::map<TexturePtr, GLenum> _textureToAttachment;
+    std::map<TexturePtr, GLint> _textureToInternalFormat;
+
+    std::vector<GLenum> _drawAttachments;
 };
+
+typedef std::shared_ptr<Framebuffer> FramebufferPtr;

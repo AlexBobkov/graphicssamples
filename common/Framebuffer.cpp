@@ -3,53 +3,54 @@
 #include <iostream>
 #include <vector>
 
-GLuint Framebuffer::addBuffer(GLint internalFormat, GLenum attachment)
+TexturePtr Framebuffer::addBuffer(GLint internalFormat, GLenum attachment)
 {
-    GLuint texId;
+    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
-    glGenTextures(1, &texId);
-    glBindTexture(GL_TEXTURE_2D, texId);
+    //Создаем текстуру
+    TexturePtr texture = std::make_shared<Texture>();
 
+    //Выделяем под нее память
     if (attachment == GL_DEPTH_ATTACHMENT)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, attachment, texId, 0);
+        texture->setTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     }
     else
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0); //GL_RGB и GL_UNSIGNED_BYTE игнорируются, т.к. мы не копируем данные из оперативной памяти
-        glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texId, 0);
+        texture->setTexImage2D(GL_TEXTURE_2D, 0, internalFormat, _width, _height, GL_RGB, GL_UNSIGNED_BYTE, 0); //GL_RGB и GL_UNSIGNED_BYTE игнорируются, т.к. мы не копируем данные из оперативной памяти        
     }
 
-    _texIdToFormat[texId] = internalFormat;
-    _texIdToAttachment[texId] = attachment;
+    //Прикрепляем текстуру к фреймбуферу
+    texture->attachToFramebuffer(attachment);
 
-    return texId;
+    _textureToAttachment[texture] = attachment;
+    _textureToInternalFormat[texture] = internalFormat;
+
+    if (attachment != GL_DEPTH_ATTACHMENT)
+    {
+        _drawAttachments.push_back(attachment);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return texture;
 }
 
 void Framebuffer::initDrawBuffers()
 {
-    std::vector<GLenum> attachments;
+    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
-    for (std::map<GLuint, GLenum>::iterator itr = _texIdToAttachment.begin();
-         itr != _texIdToAttachment.end();
-         ++itr)
+    if (_drawAttachments.size() > 0)
     {
-        if (itr->second != GL_DEPTH_ATTACHMENT)
-        {
-            attachments.push_back(itr->second);
-        }
-    }
-
-    if (attachments.size() > 0)
-    {
-        glDrawBuffers(attachments.size(), attachments.data());
+        glDrawBuffers(_drawAttachments.size(), _drawAttachments.data());
     }
     else
     {
         GLenum buffers[] = { GL_NONE };
         glDrawBuffers(1, buffers);
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Framebuffer::resize(unsigned int width, unsigned int height)
@@ -57,21 +58,18 @@ void Framebuffer::resize(unsigned int width, unsigned int height)
     _width = width;
     _height = height;
 
-    glBindFramebuffer(GL_FRAMEBUFFER, _fboId);
+    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
 
-    for (std::map<GLuint, GLint>::iterator itr = _texIdToFormat.begin();
-         itr != _texIdToFormat.end();
-         ++itr)
+    //Пробегаем по всем текстурам и по новой выделяем память под нужный размер
+    for (const auto& kv : _textureToInternalFormat)
     {
-        glBindTexture(GL_TEXTURE_2D, itr->first);
-
-        if (_texIdToAttachment[itr->first] == GL_DEPTH_ATTACHMENT)
+        if (_textureToAttachment[kv.first] == GL_DEPTH_ATTACHMENT)
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+            kv.first->setTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _width, _height, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
         }
         else
         {
-            glTexImage2D(GL_TEXTURE_2D, 0, itr->second, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+            kv.first->setTexImage2D(GL_TEXTURE_2D, 0, kv.second, _width, _height, GL_RGB, GL_UNSIGNED_BYTE, 0);
         }
     }
 

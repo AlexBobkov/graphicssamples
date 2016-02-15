@@ -80,31 +80,31 @@ public:
 
     float _exposure; //Параметр алгоритма ToneMapping
 
-    Framebuffer _gbufferFB;
-    GLuint _depthTexId;
-    GLuint _normalsTexId;
-    GLuint _diffuseTexId;
+    FramebufferPtr _gbufferFB;
+    TexturePtr _depthTex;
+    TexturePtr _normalsTex;
+    TexturePtr _diffuseTex;
 
-    Framebuffer _shadowFB;
-    GLuint _shadowTexId;
+    FramebufferPtr _shadowFB;
+    TexturePtr _shadowTex;
 
-    Framebuffer _deferredFB;
-    GLuint _deferredTexId;
+    FramebufferPtr _deferredFB;
+    TexturePtr _deferredTex;
 
-    Framebuffer _brightFB;
-    GLuint _brightTexId;
+    FramebufferPtr _brightFB;
+    TexturePtr _brightTex;
 
-    Framebuffer _horizBlurFB;
-    GLuint _horizBlurTexId;
+    FramebufferPtr _horizBlurFB;
+    TexturePtr _horizBlurTex;
 
-    Framebuffer _vertBlurFB;
-    GLuint _vertBlurTexId;
+    FramebufferPtr _vertBlurFB;
+    TexturePtr _vertBlurTex;
 
-    Framebuffer _toneMappingFB;
-    GLuint _toneMappingTexId;
+    FramebufferPtr _toneMappingFB;
+    TexturePtr _toneMappingTex;
 
-    Framebuffer _ssaoFB;
-    GLuint _ssaoTexId;
+    FramebufferPtr _ssaoFB;
+    TexturePtr _ssaoTex;
 
     //Старые размеры экрана
     int _oldWidth;
@@ -112,149 +112,117 @@ public:
 
     void initFramebuffers()
     {
-        _gbufferFB.create();
-        _gbufferFB.bind();
-        _gbufferFB.setSize(1024, 1024);
+        _gbufferFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _normalsTexId = _gbufferFB.addBuffer(GL_RGB16F, GL_COLOR_ATTACHMENT0);
-        _diffuseTexId = _gbufferFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT1);
-        _depthTexId = _gbufferFB.addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
+        _normalsTex = _gbufferFB->addBuffer(GL_RGB16F, GL_COLOR_ATTACHMENT0);
+        _diffuseTex = _gbufferFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT1);
+        _depthTex = _gbufferFB->addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
 
-        _gbufferFB.initDrawBuffers();
+        _gbufferFB->initDrawBuffers();
 
-        if (!_gbufferFB.valid())
+        if (!_gbufferFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _gbufferFB.unbind();
 
         //=========================================================
 
-        _shadowFB.create();
-        _shadowFB.bind();
-        _shadowFB.setSize(1024, 1024);
+        _shadowFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _shadowTexId = _shadowFB.addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
+        _shadowTex = _shadowFB->addBuffer(GL_DEPTH_COMPONENT16, GL_DEPTH_ATTACHMENT);
 
-        _shadowFB.initDrawBuffers();
+        _shadowFB->initDrawBuffers();
 
-        if (!_shadowFB.valid())
+        if (!_shadowFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _shadowFB.unbind();
 
         //=========================================================
 
-        _deferredFB.create();
-        _deferredFB.bind();
-        _deferredFB.setSize(1024, 1024);
+        _deferredFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _deferredTexId = _deferredFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+        _deferredTex = _deferredFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
 
-        _deferredFB.initDrawBuffers();
+        _deferredFB->initDrawBuffers();
 
-        if (!_deferredFB.valid())
+        if (!_deferredFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _deferredFB.unbind();
 
         //=========================================================
 
-        _brightFB.create();
-        _brightFB.bind();
-        _brightFB.setSize(512, 512); //В 2 раза меньше
+        _brightFB = std::make_shared<Framebuffer>(512, 512); //В 2 раза меньше
 
-        _brightTexId = _brightFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+        _brightTex = _brightFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
 
-        _brightFB.initDrawBuffers();
+        _brightFB->initDrawBuffers();
 
-        if (!_brightFB.valid())
+        if (!_brightFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _brightFB.unbind();
 
         //=========================================================
 
-        _horizBlurFB.create();
-        _horizBlurFB.bind();
-        _horizBlurFB.setSize(512, 512); //В 2 раза меньше
+        _horizBlurFB = std::make_shared<Framebuffer>(512, 512); //В 2 раза меньше
 
-        _horizBlurTexId = _horizBlurFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+        _horizBlurTex = _horizBlurFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
 
-        _horizBlurFB.initDrawBuffers();
+        _horizBlurFB->initDrawBuffers();
 
-        if (!_horizBlurFB.valid())
+        if (!_horizBlurFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _horizBlurFB.unbind();
 
         //=========================================================
 
-        _vertBlurFB.create();
-        _vertBlurFB.bind();
-        _vertBlurFB.setSize(512, 512); //В 2 раза меньше
+        _vertBlurFB = std::make_shared<Framebuffer>(512, 512); //В 2 раза меньше
 
-        _vertBlurTexId = _vertBlurFB.addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+        _vertBlurTex = _vertBlurFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
 
-        _vertBlurFB.initDrawBuffers();
+        _vertBlurFB->initDrawBuffers();
 
-        if (!_vertBlurFB.valid())
+        if (!_vertBlurFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _vertBlurFB.unbind();
 
         //=========================================================
 
-        _toneMappingFB.create();
-        _toneMappingFB.bind();
-        _toneMappingFB.setSize(1024, 1024);
+        _toneMappingFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _toneMappingTexId = _toneMappingFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+        _toneMappingTex = _toneMappingFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
 
-        _toneMappingFB.initDrawBuffers();
+        _toneMappingFB->initDrawBuffers();
 
-        if (!_toneMappingFB.valid())
+        if (!_toneMappingFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _toneMappingFB.unbind();
 
         //=========================================================
 
-        _ssaoFB.create();
-        _ssaoFB.bind();
-        _ssaoFB.setSize(1024, 1024);
+        _ssaoFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _ssaoTexId = _ssaoFB.addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+        _ssaoTex = _ssaoFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
 
-        _ssaoFB.initDrawBuffers();
+        _ssaoFB->initDrawBuffers();
 
-        if (!_ssaoFB.valid())
+        if (!_ssaoFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
         }
-
-        _ssaoFB.unbind();
     }
 
     void makeScene() override
@@ -428,15 +396,15 @@ public:
         glfwGetFramebufferSize(_window, &width, &height);
         if (width != _oldWidth || height != _oldHeight)
         {
-            _gbufferFB.resize(width, height);
-            _deferredFB.resize(width, height);
+            _gbufferFB->resize(width, height);
+            _deferredFB->resize(width, height);
 
-            _brightFB.resize(width / 2, height / 2);
-            _horizBlurFB.resize(width / 2, height / 2);
-            _vertBlurFB.resize(width / 2, height / 2);
-            _toneMappingFB.resize(width, height);
+            _brightFB->resize(width / 2, height / 2);
+            _horizBlurFB->resize(width / 2, height / 2);
+            _vertBlurFB->resize(width / 2, height / 2);
+            _toneMappingFB->resize(width, height);
 
-            _ssaoFB.resize(width, height);
+            _ssaoFB->resize(width, height);
 
             _oldWidth = width;
             _oldHeight = height;
@@ -465,24 +433,24 @@ public:
         }
 
         //Получаем текстуру с яркими областями
-        drawProcessTexture(_brightFB, _brightShader, _deferredTexId, _deferredFB.width(), _deferredFB.height());
+        drawProcessTexture(_brightFB, _brightShader, _deferredTex, _deferredFB->width(), _deferredFB->height());
 
         //Выполняем размытие текстуры с яркими областями
-        drawProcessTexture(_horizBlurFB, _horizBlurShader, _brightTexId, _brightFB.width(), _brightFB.height());
-        drawProcessTexture(_vertBlurFB, _vertBlurShader, _horizBlurTexId, _horizBlurFB.width(), _horizBlurFB.height());
+        drawProcessTexture(_horizBlurFB, _horizBlurShader, _brightTex, _brightFB->width(), _brightFB->height());
+        drawProcessTexture(_vertBlurFB, _vertBlurShader, _horizBlurTex, _horizBlurFB->width(), _horizBlurFB->height());
 
         drawToneMapping(_toneMappingFB, _toneMappingShader);
-        drawToScreen(_gammaShader, _toneMappingTexId);
+        drawToScreen(_gammaShader, _toneMappingTex);
 
         //Отладочный рендер текстур
         drawDebug();
     }
 
-    void drawToGBuffer(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera)
+    void drawToGBuffer(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
@@ -498,14 +466,14 @@ public:
 
         glUseProgram(0); //Отключаем шейдер
 
-        fb.unbind(); //Отключаем фреймбуфер
+        fb->unbind(); //Отключаем фреймбуфер
     }
 
-    void drawToShadowMap(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& lightCamera)
+    void drawToShadowMap(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& lightCamera)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_DEPTH_BUFFER_BIT);
 
         shader.use();
@@ -521,14 +489,14 @@ public:
 
         glUseProgram(0);
 
-        fb.unbind();
+        fb->unbind();
     }
 
-    void drawDeferred(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
+    void drawDeferred(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
@@ -549,27 +517,27 @@ public:
         shader.setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _normalsTexId);
+        _normalsTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("normalsTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
+        _diffuseTex->bind();
         glBindSampler(1, _sampler);
         shader.setIntUniform("diffuseTex", 1);
 
         glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
-        glBindTexture(GL_TEXTURE_2D, _depthTexId);
+        _depthTex->bind();
         glBindSampler(2, _sampler);
         shader.setIntUniform("depthTex", 2);
 
         glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3
-        glBindTexture(GL_TEXTURE_2D, _shadowTexId);
+        _shadowTex->bind();
         glBindSampler(3, _depthSampler);
         shader.setIntUniform("shadowTex", 3);
 
         glActiveTexture(GL_TEXTURE4);  //текстурный юнит 4
-        glBindTexture(GL_TEXTURE_2D, _ssaoTexId);
+        _ssaoTex->bind();
         glBindSampler(4, _sampler);
         shader.setIntUniform("ssaoTex", 4);
 
@@ -577,14 +545,14 @@ public:
 
         glUseProgram(0);
 
-        fb.unbind();
+        fb->unbind();
     }
 
-    void drawSSAO(const Framebuffer& fb, const ShaderProgram& shader, const CameraInfo& camera)
+    void drawSSAO(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
@@ -592,7 +560,7 @@ public:
         shader.setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _depthTexId);
+        _depthTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("depthTex", 0);
 
@@ -605,14 +573,14 @@ public:
 
         glUseProgram(0);
 
-        fb.unbind();
+        fb->unbind();
     }
 
-    void drawProcessTexture(const Framebuffer& fb, const ShaderProgram& shader, GLuint inputTextureId, int inputTexWidth, int inputTexHeight)
+    void drawProcessTexture(const FramebufferPtr& fb, const ShaderProgram& shader, const TexturePtr& inputTexture, int inputTexWidth, int inputTexHeight)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
@@ -620,7 +588,7 @@ public:
         shader.setVec2Uniform("texSize", glm::vec2(inputTexWidth, inputTexHeight));
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, inputTextureId);
+        inputTexture->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("tex", 0);
 
@@ -628,14 +596,14 @@ public:
 
         glUseProgram(0);
 
-        fb.unbind();
+        fb->unbind();
     }
 
-    void drawToneMapping(const Framebuffer& fb, const ShaderProgram& shader)
+    void drawToneMapping(const FramebufferPtr& fb, const ShaderProgram& shader)
     {
-        fb.bind();
+        fb->bind();
 
-        glViewport(0, 0, fb.width(), fb.height());
+        glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.use();
@@ -643,12 +611,12 @@ public:
         shader.setFloatUniform("exposure", _exposure);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _deferredTexId);
+        _deferredTex->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("tex", 0);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, _vertBlurTexId);
+        _vertBlurTex->bind();
         glBindSampler(1, _sampler);
         shader.setIntUniform("bloomTex", 1);
 
@@ -656,10 +624,10 @@ public:
 
         glUseProgram(0);
 
-        fb.unbind();
+        fb->unbind();
     }
 
-    void drawToScreen(const ShaderProgram& shader, GLuint inputTextureId)
+    void drawToScreen(const ShaderProgram& shader, const TexturePtr& inputTexture)
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -671,7 +639,7 @@ public:
         shader.use();
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, inputTextureId);
+        inputTexture->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("tex", 0);
 
@@ -717,41 +685,41 @@ public:
 
         if (_showGBufferDebug)
         {
-            drawQuad(_quadDepthShader, _depthTexId, 0, 0, size, size);
-            drawQuad(_quadColorShader, _normalsTexId, size, 0, size, size);
-            drawQuad(_quadColorShader, _diffuseTexId, size * 2, 0, size, size);
+            drawQuad(_quadDepthShader, _depthTex, 0, 0, size, size);
+            drawQuad(_quadColorShader, _normalsTex, size, 0, size, size);
+            drawQuad(_quadColorShader, _diffuseTex, size * 2, 0, size, size);
         }
         else if (_showShadowDebug)
         {
-            drawQuad(_quadDepthShader, _shadowTexId, 0, 0, size, size);
+            drawQuad(_quadDepthShader, _shadowTex, 0, 0, size, size);
         }
         else if (_showDeferredDebug)
         {
-            drawQuad(_quadColorShader, _deferredTexId, 0, 0, size, size);
+            drawQuad(_quadColorShader, _deferredTex, 0, 0, size, size);
         }
         else if (_showHDRDebug)
         {
-            drawQuad(_quadColorShader, _brightTexId, 0, 0, size, size);
-            drawQuad(_quadColorShader, _horizBlurTexId, size, 0, size, size);
-            drawQuad(_quadColorShader, _vertBlurTexId, size * 2, 0, size, size);
+            drawQuad(_quadColorShader, _brightTex, 0, 0, size, size);
+            drawQuad(_quadColorShader, _horizBlurTex, size, 0, size, size);
+            drawQuad(_quadColorShader, _vertBlurTex, size * 2, 0, size, size);
         }
         else if (_showSSAODebug)
         {
-            drawQuad(_quadColorShader, _ssaoTexId, 0, 0, size, size);
+            drawQuad(_quadColorShader, _ssaoTex, 0, 0, size, size);
         }
 
         glBindSampler(0, 0);
         glUseProgram(0);
     }
 
-    void drawQuad(const ShaderProgram& shader, GLuint& texId, GLint x, GLint y, GLint width, GLint height)
+    void drawQuad(const ShaderProgram& shader, const TexturePtr& texture, GLint x, GLint y, GLint width, GLint height)
     {
         glViewport(x, y, width, height);
 
         shader.use();
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texId);
+        texture->bind();
         glBindSampler(0, _sampler);
         shader.setIntUniform("tex", 0);
 

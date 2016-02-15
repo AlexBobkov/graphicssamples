@@ -12,7 +12,7 @@
 #include <memory>
 
 /**
-Абстракция буфера с данными в видеопамяти
+Класс для управления текстурным объектом
 */
 class Texture
 {
@@ -66,6 +66,16 @@ public:
     {
         glBindTexture(_target, _tex);
         glGenerateMipmap(_target);
+        glBindTexture(_target, 0);
+    }
+
+    /**
+    Прикрепляет текстуру к фреймбуферу (разбирается на 7м семинаре)
+    */
+    void attachToFramebuffer(GLenum attachment)
+    {
+        glBindTexture(_target, _tex);        
+        glFramebufferTexture(GL_FRAMEBUFFER, attachment, _tex, 0);
         glBindTexture(_target, 0);
     }
 
