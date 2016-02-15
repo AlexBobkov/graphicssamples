@@ -37,22 +37,21 @@ public:
     MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
-    ShaderProgram _commonShader;
-    ShaderProgram _markerShader;
-    ShaderProgram _skyboxShader;
-    ShaderProgram _quadDepthShader;
-    ShaderProgram _quadColorShader;
-    ShaderProgram _renderToShadowMapShader;
-    ShaderProgram _renderToGBufferShader;
-    ShaderProgram _renderDeferredShader;
-    ShaderProgram _renderDeferredWithSSAOShader;
-    ShaderProgram _gammaShader;
-    ShaderProgram _brightShader;
-    ShaderProgram _horizBlurShader;
-    ShaderProgram _vertBlurShader;
-    ShaderProgram _toneMappingShader;
-    ShaderProgram _ssaoShader;
-    ShaderProgram _dofShader;
+    ShaderProgramPtr _commonShader;
+    ShaderProgramPtr _markerShader;
+    ShaderProgramPtr _quadDepthShader;
+    ShaderProgramPtr _quadColorShader;
+    ShaderProgramPtr _renderToShadowMapShader;
+    ShaderProgramPtr _renderToGBufferShader;
+    ShaderProgramPtr _renderDeferredShader;
+    ShaderProgramPtr _renderDeferredWithSSAOShader;
+    ShaderProgramPtr _gammaShader;
+    ShaderProgramPtr _brightShader;
+    ShaderProgramPtr _horizBlurShader;
+    ShaderProgramPtr _vertBlurShader;
+    ShaderProgramPtr _toneMappingShader;
+    ShaderProgramPtr _ssaoShader;
+    ShaderProgramPtr _dofShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -313,22 +312,50 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
-        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-        _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-        _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
-        _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
-        _renderToShadowMapShader.createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
-        _renderToGBufferShader.createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
-        _renderDeferredShader.createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
-        _renderDeferredWithSSAOShader.createProgram("shaders9/deferred.vert", "shaders9/deferredWithSSAO.frag");
-        _gammaShader.createProgram("shaders9/quad.vert", "shaders9/gamma.frag");
-        _brightShader.createProgram("shaders9/quad.vert", "shaders9/bright.frag");
-        _horizBlurShader.createProgram("shaders9/quad.vert", "shaders9/horizblur.frag");
-        _vertBlurShader.createProgram("shaders9/quad.vert", "shaders9/vertblur.frag");
-        _toneMappingShader.createProgram("shaders9/quad.vert", "shaders9/tonemapping.frag");
-        _ssaoShader.createProgram("shaders9/quad.vert", "shaders9/ssao.frag");
-        _dofShader.createProgram("shaders9/quad.vert", "shaders9/dof.frag");
+        _commonShader = std::make_shared<ShaderProgram>();
+        _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
+
+        _markerShader = std::make_shared<ShaderProgram>();
+        _markerShader->createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+
+        _quadDepthShader = std::make_shared<ShaderProgram>();
+        _quadDepthShader->createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+
+        _quadColorShader = std::make_shared<ShaderProgram>();
+        _quadColorShader->createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
+
+        _renderToShadowMapShader = std::make_shared<ShaderProgram>();
+        _renderToShadowMapShader->createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
+
+        _renderToGBufferShader = std::make_shared<ShaderProgram>();
+        _renderToGBufferShader->createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
+
+        _renderDeferredShader = std::make_shared<ShaderProgram>();
+        _renderDeferredShader->createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
+
+        _renderDeferredWithSSAOShader = std::make_shared<ShaderProgram>();
+        _renderDeferredWithSSAOShader->createProgram("shaders9/deferred.vert", "shaders9/deferredWithSSAO.frag");
+
+        _gammaShader = std::make_shared<ShaderProgram>();
+        _gammaShader->createProgram("shaders9/quad.vert", "shaders9/gamma.frag");
+
+        _brightShader = std::make_shared<ShaderProgram>();
+        _brightShader->createProgram("shaders9/quad.vert", "shaders9/bright.frag");
+
+        _horizBlurShader = std::make_shared<ShaderProgram>();
+        _horizBlurShader->createProgram("shaders9/quad.vert", "shaders9/horizblur.frag");
+
+        _vertBlurShader = std::make_shared<ShaderProgram>();
+        _vertBlurShader->createProgram("shaders9/quad.vert", "shaders9/vertblur.frag");
+
+        _toneMappingShader = std::make_shared<ShaderProgram>();
+        _toneMappingShader->createProgram("shaders9/quad.vert", "shaders9/tonemapping.frag");
+
+        _ssaoShader = std::make_shared<ShaderProgram>();
+        _ssaoShader->createProgram("shaders9/quad.vert", "shaders9/ssao.frag");
+
+        _dofShader = std::make_shared<ShaderProgram>();
+        _dofShader->createProgram("shaders9/quad.vert", "shaders9/dof.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -524,21 +551,21 @@ public:
         drawDebug();
     }
 
-    void drawToGBuffer(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera)
+    void drawToGBuffer(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
         fb->bind();
 
         glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.use();
-        shader.setMat4Uniform("viewMatrix", camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", camera.projMatrix);
+        shader->use();
+        shader->setMat4Uniform("viewMatrix", camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _brickTex->bind();
         glBindSampler(0, _repeatSampler);
-        shader.setIntUniform("diffuseTex", 0);
+        shader->setIntUniform("diffuseTex", 0);
 
         drawScene(shader, camera);
 
@@ -547,16 +574,16 @@ public:
         fb->unbind(); //Отключаем фреймбуфер
     }
 
-    void drawToShadowMap(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& lightCamera)
+    void drawToShadowMap(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& lightCamera)
     {
         fb->bind();
 
         glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        shader.use();
-        shader.setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
+        shader->use();
+        shader->setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
 
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
@@ -570,54 +597,54 @@ public:
         fb->unbind();
     }
 
-    void drawDeferred(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
+    void drawDeferred(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
     {
         fb->bind();
 
         glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shader.use();
-        shader.setMat4Uniform("viewMatrixInverse", glm::inverse(camera.viewMatrix));
-        shader.setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
+        shader->use();
+        shader->setMat4Uniform("viewMatrixInverse", glm::inverse(camera.viewMatrix));
+        shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient * _lightIntensity);
-        shader.setVec3Uniform("light.Ld", _light.diffuse * _lightIntensity);
-        shader.setVec3Uniform("light.Ls", _light.specular * _lightIntensity);
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient * _lightIntensity);
+        shader->setVec3Uniform("light.Ld", _light.diffuse * _lightIntensity);
+        shader->setVec3Uniform("light.Ls", _light.specular * _lightIntensity);
 
-        shader.setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
-        shader.setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
+        shader->setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
+        shader->setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
 
         glm::mat4 projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
-        shader.setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
+        shader->setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _normalsTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("normalsTex", 0);
+        shader->setIntUniform("normalsTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
         _diffuseTex->bind();
         glBindSampler(1, _sampler);
-        shader.setIntUniform("diffuseTex", 1);
+        shader->setIntUniform("diffuseTex", 1);
 
         glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
         _depthTex->bind();
         glBindSampler(2, _sampler);
-        shader.setIntUniform("depthTex", 2);
+        shader->setIntUniform("depthTex", 2);
 
         glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3
         _shadowTex->bind();
         glBindSampler(3, _depthSampler);
-        shader.setIntUniform("shadowTex", 3);
+        shader->setIntUniform("shadowTex", 3);
 
         glActiveTexture(GL_TEXTURE4);  //текстурный юнит 4
         _ssaoTex->bind();
         glBindSampler(4, _sampler);
-        shader.setIntUniform("ssaoTex", 4);
+        shader->setIntUniform("ssaoTex", 4);
 
         _quad->draw();
 
@@ -626,26 +653,26 @@ public:
         fb->unbind();
     }
 
-    void drawSSAO(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera)
+    void drawSSAO(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
         fb->bind();
 
         glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shader.use();
-        shader.setMat4Uniform("projMatrix", camera.projMatrix);
-        shader.setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
+        shader->use();
+        shader->setMat4Uniform("projMatrix", camera.projMatrix);
+        shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _depthTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("depthTex", 0);
+        shader->setIntUniform("depthTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
         _rotateTex->bind();
         glBindSampler(1, _repeatSampler);
-        shader.setIntUniform("rotateTex", 1);
+        shader->setIntUniform("rotateTex", 1);
 
         _quad->draw();
 
@@ -654,33 +681,33 @@ public:
         fb->unbind();
     }
 
-    void drawDoF(const FramebufferPtr& fb, const ShaderProgram& shader, const CameraInfo& camera)
+    void drawDoF(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
         fb->bind();
 
         glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shader.use();
-        shader.setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
+        shader->use();
+        shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
 
-        shader.setFloatUniform("focalDistance", _focalDistance);
-        shader.setFloatUniform("focalRange", _focalRange);
+        shader->setFloatUniform("focalDistance", _focalDistance);
+        shader->setFloatUniform("focalRange", _focalRange);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _toneMappingTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("tex", 0);
+        shader->setIntUniform("tex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
         _vertBlurDofTex->bind();
         glBindSampler(1, _sampler);
-        shader.setIntUniform("blurTex", 1);
+        shader->setIntUniform("blurTex", 1);
 
         glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
         _depthTex->bind();
         glBindSampler(2, _sampler);
-        shader.setIntUniform("depthTex", 2);
+        shader->setIntUniform("depthTex", 2);
 
         _quad->draw();
 
@@ -689,21 +716,21 @@ public:
         fb->unbind();
     }
 
-    void drawProcessTexture(const FramebufferPtr& fb, const ShaderProgram& shader, const TexturePtr& inputTexture, int inputTexWidth, int inputTexHeight)
+    void drawProcessTexture(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const TexturePtr& inputTexture, int inputTexWidth, int inputTexHeight)
     {
         fb->bind();
 
         glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shader.use();
+        shader->use();
 
-        shader.setVec2Uniform("texSize", glm::vec2(inputTexWidth, inputTexHeight));
+        shader->setVec2Uniform("texSize", glm::vec2(inputTexWidth, inputTexHeight));
 
         glActiveTexture(GL_TEXTURE0);
         inputTexture->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("tex", 0);
+        shader->setIntUniform("tex", 0);
 
         _quad->draw();
 
@@ -712,26 +739,26 @@ public:
         fb->unbind();
     }
 
-    void drawToneMapping(const FramebufferPtr& fb, const ShaderProgram& shader)
+    void drawToneMapping(const FramebufferPtr& fb, const ShaderProgramPtr& shader)
     {
         fb->bind();
 
         glViewport(0, 0, fb->width(), fb->height());
         glClear(GL_COLOR_BUFFER_BIT);
 
-        shader.use();
+        shader->use();
 
-        shader.setFloatUniform("exposure", _exposure);
+        shader->setFloatUniform("exposure", _exposure);
 
         glActiveTexture(GL_TEXTURE0);
         _deferredTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("tex", 0);
+        shader->setIntUniform("tex", 0);
 
         glActiveTexture(GL_TEXTURE1);
         _vertBlurTex->bind();
         glBindSampler(1, _sampler);
-        shader.setIntUniform("bloomTex", 1);
+        shader->setIntUniform("bloomTex", 1);
 
         _quad->draw();
 
@@ -740,7 +767,7 @@ public:
         fb->unbind();
     }
 
-    void drawToScreen(const ShaderProgram& shader, const TexturePtr& inputTexture)
+    void drawToScreen(const ShaderProgramPtr& shader, const TexturePtr& inputTexture)
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -749,12 +776,12 @@ public:
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.use();
+        shader->use();
 
         glActiveTexture(GL_TEXTURE0);
         inputTexture->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("tex", 0);
+        shader->setIntUniform("tex", 0);
 
         _quad->draw();
 
@@ -763,29 +790,29 @@ public:
         glUseProgram(0);
     }
 
-    void drawScene(const ShaderProgram& shader, const CameraInfo& camera)
+    void drawScene(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
         glFrontFace(GL_CW);
 
-        shader.setMat4Uniform("modelMatrix", _cube->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
 
         _cube->draw();
 
-        shader.setMat4Uniform("modelMatrix", _sphere->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _sphere->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _sphere->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _sphere->modelMatrix()))));
 
         _sphere->draw();
 
-        shader.setMat4Uniform("modelMatrix", _ground->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _ground->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
 
         _ground->draw();
 
         glFrontFace(GL_CCW);
 
-        shader.setMat4Uniform("modelMatrix", _bunny->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));
 
         _bunny->draw();
     }
@@ -829,16 +856,16 @@ public:
         glUseProgram(0);
     }
 
-    void drawQuad(const ShaderProgram& shader, const TexturePtr& texture, GLint x, GLint y, GLint width, GLint height)
+    void drawQuad(const ShaderProgramPtr& shader, const TexturePtr& texture, GLint x, GLint y, GLint width, GLint height)
     {
         glViewport(x, y, width, height);
 
-        shader.use();
+        shader->use();
 
         glActiveTexture(GL_TEXTURE0);
         texture->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("tex", 0);
+        shader->setIntUniform("tex", 0);
 
         _quad->draw();
     }

@@ -113,16 +113,12 @@ public:
     MeshPtr _teapotDivisor;
 
     //Идентификатор шейдерной программы
-    ShaderProgram _commonShader;
-    ShaderProgram _markerShader;
-    ShaderProgram _skyboxShader;
-    ShaderProgram _quadDepthShader;
-    ShaderProgram _quadColorShader;
-
-    ShaderProgram _instancingNoMatrixShader;
-    ShaderProgram _instancingUniformShader;
-    ShaderProgram _instancingTextureShader;
-    ShaderProgram _instancingDivisorShader;
+    ShaderProgramPtr _commonShader;
+    
+    ShaderProgramPtr _instancingNoMatrixShader;
+    ShaderProgramPtr _instancingUniformShader;
+    ShaderProgramPtr _instancingTextureShader;
+    ShaderProgramPtr _instancingDivisorShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -194,15 +190,20 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
-        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-        _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-        _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
-        _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
-        _instancingNoMatrixShader.createProgram("shaders10/instancingNoMatrix.vert", "shaders6/common.frag");
-        _instancingUniformShader.createProgram("shaders10/instancingUniform.vert", "shaders6/common.frag");
-        _instancingTextureShader.createProgram("shaders10/instancingTexture.vert", "shaders6/common.frag");
-        _instancingDivisorShader.createProgram("shaders10/instancingDivisor.vert", "shaders6/common.frag");
+        _commonShader = std::make_shared<ShaderProgram>();
+        _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
+        
+        _instancingNoMatrixShader = std::make_shared<ShaderProgram>();
+        _instancingNoMatrixShader->createProgram("shaders10/instancingNoMatrix.vert", "shaders6/common.frag");
+
+        _instancingUniformShader = std::make_shared<ShaderProgram>();
+        _instancingUniformShader->createProgram("shaders10/instancingUniform.vert", "shaders6/common.frag");
+
+        _instancingTextureShader = std::make_shared<ShaderProgram>();
+        _instancingTextureShader->createProgram("shaders10/instancingTexture.vert", "shaders6/common.frag");
+
+        _instancingDivisorShader = std::make_shared<ShaderProgram>();
+        _instancingDivisorShader->createProgram("shaders10/instancingDivisor.vert", "shaders6/common.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -378,24 +379,24 @@ public:
         glUseProgram(0);
     }
 
-    void drawScene(const ShaderProgram& shader)
+    void drawScene(const ShaderProgramPtr& shader)
     {
-        shader.use();
+        shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient);
-        shader.setVec3Uniform("light.Ld", _light.diffuse);
-        shader.setVec3Uniform("light.Ls", _light.specular);
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _brickTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("diffuseTex", 0);
+        shader->setIntUniform("diffuseTex", 0);
 
         if (_noInstancing)
         {
@@ -403,8 +404,8 @@ public:
             {
                 glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _positions[i]);
 
-                shader.setMat4Uniform("modelMatrix", modelMatrix);
-                shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+                shader->setMat4Uniform("modelMatrix", modelMatrix);
+                shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
                 _teapot->draw();
             }
@@ -414,119 +415,119 @@ public:
         {
             glm::mat4 modelMatrix = glm::mat4(1.0);
 
-            shader.setMat4Uniform("modelMatrix", modelMatrix);
-            shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+            shader->setMat4Uniform("modelMatrix", modelMatrix);
+            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
             _teapotArray->draw();
         }
     }
 
-    void drawNoMatrixInstancedScene(const ShaderProgram& shader)
+    void drawNoMatrixInstancedScene(const ShaderProgramPtr& shader)
     {
-        shader.use();
+        shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient);
-        shader.setVec3Uniform("light.Ld", _light.diffuse);
-        shader.setVec3Uniform("light.Ls", _light.specular);
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _brickTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("diffuseTex", 0);
+        shader->setIntUniform("diffuseTex", 0);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader.setMat4Uniform("modelMatrix", modelMatrix);
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+        shader->setMat4Uniform("modelMatrix", modelMatrix);
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
         _teapot->drawInstanced(_positions.size());
     }
 
-    void drawUniformInstancedScene(const ShaderProgram& shader)
+    void drawUniformInstancedScene(const ShaderProgramPtr& shader)
     {
-        shader.use();
+        shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient);
-        shader.setVec3Uniform("light.Ld", _light.diffuse);
-        shader.setVec3Uniform("light.Ls", _light.specular);
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _brickTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("diffuseTex", 0);
+        shader->setIntUniform("diffuseTex", 0);
 
-        shader.setVec3UniformArray("positions", _positions);
+        shader->setVec3UniformArray("positions", _positions);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader.setMat4Uniform("modelMatrix", modelMatrix);
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+        shader->setMat4Uniform("modelMatrix", modelMatrix);
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
         _teapot->drawInstanced(_positions.size());
     }
 
-    void drawTextureInstancedScene(const ShaderProgram& shader)
+    void drawTextureInstancedScene(const ShaderProgramPtr& shader)
     {
-        shader.use();
+        shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient);
-        shader.setVec3Uniform("light.Ld", _light.diffuse);
-        shader.setVec3Uniform("light.Ls", _light.specular);
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _brickTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("diffuseTex", 0);
+        shader->setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
         _bufferTex->bind();
-        shader.setIntUniform("texBuf", 1);
+        shader->setIntUniform("texBuf", 1);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader.setMat4Uniform("modelMatrix", modelMatrix);
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+        shader->setMat4Uniform("modelMatrix", modelMatrix);
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
         _teapot->drawInstanced(_positions.size());
     }
 
-    void drawDivisorInstancedScene(const ShaderProgram& shader)
+    void drawDivisorInstancedScene(const ShaderProgramPtr& shader)
     {
-        shader.use();
+        shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient);
-        shader.setVec3Uniform("light.Ld", _light.diffuse);
-        shader.setVec3Uniform("light.Ls", _light.specular);
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _brickTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("diffuseTex", 0);
+        shader->setIntUniform("diffuseTex", 0);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader.setMat4Uniform("modelMatrix", modelMatrix);
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+        shader->setMat4Uniform("modelMatrix", modelMatrix);
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
         _teapotDivisor->drawInstanced(_positions.size());
     }

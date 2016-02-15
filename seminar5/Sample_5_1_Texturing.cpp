@@ -28,8 +28,8 @@ public:
     MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
-    ShaderProgram _shader;
-    ShaderProgram _markerShader;
+    ShaderProgramPtr _shader;
+    ShaderProgramPtr _markerShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -63,8 +63,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader.createProgram("shaders5/texture.vert", "shaders5/texture.frag");
-        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+        _shader = std::make_shared<ShaderProgram>();
+        _shader->createProgram("shaders5/texture.vert", "shaders5/texture.frag");
+
+        _markerShader = std::make_shared<ShaderProgram>();
+        _markerShader->createProgram("shaders4/marker.vert", "shaders4/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -114,55 +117,55 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Подключаем шейдер		
-        _shader.use();
+        _shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        _shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        _shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        _shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        _shader.setVec3Uniform("light.La", _light.ambient);
-        _shader.setVec3Uniform("light.Ld", _light.diffuse);
-        _shader.setVec3Uniform("light.Ls", _light.specular);
+        _shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        _shader->setVec3Uniform("light.La", _light.ambient);
+        _shader->setVec3Uniform("light.Ld", _light.diffuse);
+        _shader->setVec3Uniform("light.Ls", _light.specular);
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         _worldTexture->bind();
 
         glBindSampler(0, _sampler);
 
-        _shader.setIntUniform("diffuseTex", 0);
+        _shader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         {
-            _shader.setMat4Uniform("modelMatrix", _cube->modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
+            _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
+            _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
 
             _cube->draw();
         }
 
         {
-            _shader.setMat4Uniform("modelMatrix", _sphere->modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _sphere->modelMatrix()))));
+            _shader->setMat4Uniform("modelMatrix", _sphere->modelMatrix());
+            _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _sphere->modelMatrix()))));
 
             _sphere->draw();
         }
 
         {
-            _shader.setMat4Uniform("modelMatrix", _bunny->modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
+            _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
+            _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
             _bunny->draw();
         }
 
         //Рисуем маркеры для всех источников света		
         {
-            _markerShader.use();
+            _markerShader->use();
 
-            _markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
-            _markerShader.setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
+            _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
+            _markerShader->setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
             _marker->draw();
         }
 

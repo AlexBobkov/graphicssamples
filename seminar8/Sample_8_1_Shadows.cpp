@@ -31,13 +31,12 @@ public:
     MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
-    ShaderProgram _commonShader;
-    ShaderProgram _markerShader;
-    ShaderProgram _skyboxShader;
-    ShaderProgram _quadShader;
-    ShaderProgram _renderToShadowMapShader;
-    ShaderProgram _commonWithShadowsShader;
-    ShaderProgram _commonWithShadowsShaderVar2;
+    ShaderProgramPtr _commonShader;
+    ShaderProgramPtr _markerShader;
+    ShaderProgramPtr _quadShader;
+    ShaderProgramPtr _renderToShadowMapShader;
+    ShaderProgramPtr _commonWithShadowsShader;
+    ShaderProgramPtr _commonWithShadowsShaderVar2;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -125,13 +124,23 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
-        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-        _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-        _quadShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
-        _renderToShadowMapShader.createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
-        _commonWithShadowsShader.createProgram("shaders8/shadow.vert", "shaders8/shadow.frag");
-        _commonWithShadowsShaderVar2.createProgram("shaders8/shadow.vert", "shaders8/shadow2.frag");
+        _commonShader = std::make_shared<ShaderProgram>();
+        _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
+
+        _markerShader = std::make_shared<ShaderProgram>();
+        _markerShader->createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+
+        _quadShader = std::make_shared<ShaderProgram>();
+        _quadShader->createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+
+        _renderToShadowMapShader = std::make_shared<ShaderProgram>();
+        _renderToShadowMapShader->createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
+
+        _commonWithShadowsShader = std::make_shared<ShaderProgram>();
+        _commonWithShadowsShader->createProgram("shaders8/shadow.vert", "shaders8/shadow.frag");
+
+        _commonWithShadowsShaderVar2 = std::make_shared<ShaderProgram>();
+        _commonWithShadowsShaderVar2->createProgram("shaders8/shadow.vert", "shaders8/shadow2.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -255,9 +264,9 @@ public:
         glViewport(0, 0, _fbWidth, _fbHeight);
         glClear(GL_DEPTH_BUFFER_BIT);
 
-        _renderToShadowMapShader.use();
-        _renderToShadowMapShader.setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
-        _renderToShadowMapShader.setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
+        _renderToShadowMapShader->use();
+        _renderToShadowMapShader->setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
+        _renderToShadowMapShader->setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
 
         if (_cullFrontFaces)
         {
@@ -276,7 +285,7 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, 0); //Отключаем фреймбуфер
     }
 
-    void drawToScreen(const ShaderProgram& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
+    void drawToScreen(const ShaderProgramPtr& shader, const CameraInfo& camera, const CameraInfo& lightCamera)
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -287,44 +296,44 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader.use();
-        shader.setMat4Uniform("viewMatrix", camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", camera.projMatrix);
+        shader->use();
+        shader->setMat4Uniform("viewMatrix", camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        shader.setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader.setVec3Uniform("light.La", _light.ambient);
-        shader.setVec3Uniform("light.Ld", _light.diffuse);
-        shader.setVec3Uniform("light.Ls", _light.specular);
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
 
         {
-            shader.setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
-            shader.setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
+            shader->setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
+            shader->setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
 
             glm::mat4 projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
-            shader.setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
+            shader->setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
         }
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _brickTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("diffuseTex", 0);
+        shader->setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glBindSampler(1, _isLinearSampler ? _depthSamplerLinear : _depthSampler);
-        shader.setIntUniform("shadowTex", 1);
+        shader->setIntUniform("shadowTex", 1);
 
 
         drawScene(shader, camera);
 
         //Рисуем маркеры для всех источников света		
         {
-            _markerShader.use();
+            _markerShader->use();
 
-            _markerShader.setMat4Uniform("mvpMatrix", camera.projMatrix * camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
-            _markerShader.setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
+            _markerShader->setMat4Uniform("mvpMatrix", camera.projMatrix * camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
+            _markerShader->setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
             _marker->draw();
         }
 
@@ -333,29 +342,29 @@ public:
         glUseProgram(0);
     }
 
-    void drawScene(const ShaderProgram& shader, const CameraInfo& camera)
+    void drawScene(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
         glFrontFace(GL_CW);
 
-        shader.setMat4Uniform("modelMatrix", _cube->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
 
         _cube->draw();
 
-        shader.setMat4Uniform("modelMatrix", _sphere->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _sphere->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _sphere->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _sphere->modelMatrix()))));
 
         _sphere->draw();
 
-        shader.setMat4Uniform("modelMatrix", _ground->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _ground->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
 
         _ground->draw();
 
         glFrontFace(GL_CCW);
 
-        shader.setMat4Uniform("modelMatrix", _bunny->modelMatrix());
-        shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));
+        shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));
 
         _bunny->draw();
     }
@@ -364,12 +373,12 @@ public:
     {
         glViewport(0, 0, 500, 500);
 
-        _quadShader.use();
+        _quadShader->use();
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glBindSampler(0, _sampler);
-        _quadShader.setIntUniform("tex", 0);
+        _quadShader->setIntUniform("tex", 0);
 
         _quad->draw();
 

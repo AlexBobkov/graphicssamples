@@ -14,11 +14,7 @@ public:
     MeshPtr _cube;
     MeshPtr _bunny;
 
-    GLuint _shaderProgram;
-    GLuint _modelMatrixUniform;
-    GLuint _viewMatrixUniform;
-    GLuint _projMatrixUniform;
-    GLuint _timeUniform;
+    ShaderProgramPtr _shader;
 
     void makeScene() override
     {
@@ -73,14 +69,8 @@ public:
             fragFilename = "shaders3/shaderDiscard.frag";
         }
 
-        ShaderProgram sp;
-        sp.createProgram(vertFilename, fragFilename);
-        _shaderProgram = sp.id();
-
-        _modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
-        _viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
-        _projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-        _timeUniform = glGetUniformLocation(_shaderProgram, "time");
+        _shader = std::make_shared<ShaderProgram>();
+        _shader->createProgram(vertFilename, fragFilename);
     }
 
     void draw() override
@@ -95,19 +85,19 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Подключаем шейдер
-        glUseProgram(_shaderProgram);
+        _shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменные: время и матрицы
-        glUniform1f(_timeUniform, (float)glfwGetTime()); //передаем время в шейдер	
+        _shader->setFloatUniform("time", (float)glfwGetTime()); //передаем время в шейдер
 
-        glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_camera.projMatrix));
-        glUniformMatrix4fv(_viewMatrixUniform, 1, GL_FALSE, glm::value_ptr(_camera.viewMatrix));
+        _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
-        glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_cube->modelMatrix()));
+        _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         _cube->draw();
 
-        glUniformMatrix4fv(_modelMatrixUniform, 1, GL_FALSE, glm::value_ptr(_bunny->modelMatrix()));
+        _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         _bunny->draw();
     }
 

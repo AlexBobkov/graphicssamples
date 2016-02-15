@@ -13,11 +13,7 @@ class SampleApplication : public Application
 public:
     MeshPtr _quad;
 
-    GLuint _shaderProgram;
-    GLuint _modelMatrixUniform;
-    GLuint _viewMatrixUniform;
-    GLuint _projMatrixUniform;
-    GLuint _timeUniform;
+    ShaderProgramPtr _shader;
 
     void makeScene() override
     {
@@ -36,14 +32,8 @@ public:
             fragFilename = "shaders3/shaderQuadMandelbrot.frag";
         }
 
-        ShaderProgram sp;
-        sp.createProgram(vertFilename, fragFilename);
-        _shaderProgram = sp.id();
-
-        _modelMatrixUniform = glGetUniformLocation(_shaderProgram, "modelMatrix");
-        _viewMatrixUniform = glGetUniformLocation(_shaderProgram, "viewMatrix");
-        _projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-        _timeUniform = glGetUniformLocation(_shaderProgram, "time");
+        _shader = std::make_shared<ShaderProgram>();
+        _shader->createProgram(vertFilename, fragFilename);
     }
 
     void draw() override
@@ -58,7 +48,7 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Подключаем шейдер
-        glUseProgram(_shaderProgram);
+        _shader->use();
 
         //Рисуем квад
         _quad->draw();

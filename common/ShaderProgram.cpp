@@ -4,167 +4,87 @@
 #include <vector>
 #include <fstream>
 
-GLuint ShaderProgram::createShader(GLenum shaderType, const std::string& filename)
+void Shader::createFromFile(const std::string& filepath)
 {
     //Читаем текст шейдера из файла
-    std::ifstream vertFile(filename.c_str());
+    std::ifstream vertFile(filepath.c_str());
     if (vertFile.fail())
     {
-        std::cerr << "Failed to load shader file " << filename << std::endl;
+        std::cerr << "Failed to load shader file " << filepath << std::endl;
         exit(1);
     }
     std::string vertFileContent((std::istreambuf_iterator<char>(vertFile)), (std::istreambuf_iterator<char>()));
     vertFile.close();
 
-    const char* vertexShaderText = vertFileContent.c_str();
+    createFromString(vertFileContent);
+}
 
-    //Создаем шейдерный объект в OpenGL
-    GLuint vs = glCreateShader(shaderType);
-    glShaderSource(vs, 1, &vertexShaderText, NULL);
-    glCompileShader(vs);
+void Shader::createFromString(const std::string& text)
+{
+    const char* vertexShaderText = text.c_str();
+
+    glShaderSource(_id, 1, &vertexShaderText, NULL);
+
+    glCompileShader(_id);
 
     //Проверяем ошибки компиляции
     int status = -1;
-    glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
+    glGetShaderiv(_id, GL_COMPILE_STATUS, &status);
     if (status != GL_TRUE)
     {
-        std::cerr << "Failed to compile the shader:\n";
-
         GLint errorLength;
-        glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
+        glGetShaderiv(_id, GL_INFO_LOG_LENGTH, &errorLength);
 
         GLchar* log = new GLchar[errorLength];
-        glGetShaderInfoLog(vs, errorLength, 0, log);
+        glGetShaderInfoLog(_id, errorLength, 0, log);
 
-        std::cerr << log << std::endl;
+        std::cerr << "Failed to compile the shader:\n" << log << std::endl;
 
         delete[] log;
         exit(1);
     }
-
-    return vs;
 }
 
-void ShaderProgram::createProgram(const std::string& vertFilename, const std::string& fragFilename)
-{
-    GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
-    GLuint fs = createShader(GL_FRAGMENT_SHADER, fragFilename);
+//===================================================================
 
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, fs);
-    glAttachShader(shaderProgram, vs);
-    glLinkProgram(shaderProgram);
+void ShaderProgram::createProgram(const std::string& vertFilepath, const std::string& fragFilepath)
+{
+    ShaderPtr vs = std::make_shared<Shader>(GL_VERTEX_SHADER);
+    vs->createFromFile(vertFilepath);
+    attachShader(vs);
+
+    ShaderPtr fs = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
+    fs->createFromFile(fragFilepath);
+    attachShader(fs);
+
+    linkProgram();
+}
+
+void ShaderProgram::attachShader(const ShaderPtr& shader)
+{
+    glAttachShader(_programId, shader->id());
+
+    _shaders.push_back(shader);
+}
+
+void ShaderProgram::linkProgram()
+{
+    glLinkProgram(_programId);
 
     //Проверяем ошибки линковки
     int status = -1;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
+    glGetProgramiv(_programId, GL_LINK_STATUS, &status);
     if (status != GL_TRUE)
     {
-        std::cerr << "Failed to link the program:\n";
-
         GLint errorLength;
-        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &errorLength);
+        glGetProgramiv(_programId, GL_INFO_LOG_LENGTH, &errorLength);
 
         GLchar* log = new GLchar[errorLength];
-        glGetProgramInfoLog(shaderProgram, errorLength, 0, log);
+        glGetProgramInfoLog(_programId, errorLength, 0, log);
 
-        std::cerr << log << std::endl;
+        std::cerr << "Failed to link the program:\n" << log << std::endl;
 
         delete[] log;
         exit(1);
     }
-
-    _shaderId = shaderProgram;
-}
-
-void ShaderProgram::createProgram(const std::string& vertFilename, const std::string& geomFilename, const std::string& fragFilename)
-{
-    GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
-    GLuint gs = createShader(GL_GEOMETRY_SHADER, geomFilename);
-    GLuint fs = createShader(GL_FRAGMENT_SHADER, fragFilename);
-
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, fs);
-    glAttachShader(shaderProgram, gs);
-    glAttachShader(shaderProgram, vs);
-    glLinkProgram(shaderProgram);
-
-    //Проверяем ошибки линковки
-    int status = -1;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-    if (status != GL_TRUE)
-    {
-        std::cerr << "Failed to link the program:\n";
-
-        GLint errorLength;
-        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &errorLength);
-
-        GLchar* log = new GLchar[errorLength];
-        glGetProgramInfoLog(shaderProgram, errorLength, 0, log);
-
-        std::cerr << log << std::endl;
-
-        delete[] log;
-        exit(1);
-    }
-
-    _shaderId = shaderProgram;
-}
-
-void ShaderProgram::createProgramForTransformFeedback(const std::string& vertFilename, const std::string& fragFilename, const std::vector<std::string>& attribs)
-{
-    GLuint vs = createShader(GL_VERTEX_SHADER, vertFilename);
-    GLuint fs = createShader(GL_FRAGMENT_SHADER, fragFilename);
-
-    GLuint shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, fs);
-    glAttachShader(shaderProgram, vs);
-
-    //===============================================
-
-    GLchar** attribStrings = new GLchar*[attribs.size()];
-    for (unsigned int i = 0; i < attribs.size(); i++)
-    {
-        attribStrings[i] = const_cast<GLchar*>(attribs[i].c_str());
-    }
-    glTransformFeedbackVaryings(shaderProgram, attribs.size(), attribStrings, GL_SEPARATE_ATTRIBS);
-
-    //===============================================
-
-    glLinkProgram(shaderProgram);
-
-    //Проверяем ошибки линковки
-    int status = -1;
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &status);
-    if (status != GL_TRUE)
-    {
-        std::cerr << "Failed to link the program:\n";
-
-        GLint errorLength;
-        glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &errorLength);
-
-        GLchar* log = new GLchar[errorLength];
-        glGetProgramInfoLog(shaderProgram, errorLength, 0, log);
-
-        std::cerr << log << std::endl;
-
-        delete[] log;
-        exit(1);
-    }
-
-    _shaderId = shaderProgram;
-}
-
-void ShaderProgram::setVec3UniformArray(const std::string& name, const std::vector<glm::vec3>& positions) const
-{
-    std::vector<float> data;
-    for (unsigned int i = 0; i < positions.size(); i++)
-    {
-        data.push_back(positions[i].x);
-        data.push_back(positions[i].y);
-        data.push_back(positions[i].z);
-    }
-
-    GLuint uniformLoc = glGetUniformLocation(_shaderId, name.c_str());
-    glUniform3fv(uniformLoc, data.size() / 3, data.data());
 }

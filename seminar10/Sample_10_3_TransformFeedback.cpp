@@ -38,15 +38,9 @@ float frand()
 class SampleApplication : public Application
 {
 public:
-    //Идентификатор шейдерной программы
-    ShaderProgram _commonShader;
-    ShaderProgram _markerShader;
-    ShaderProgram _skyboxShader;
-    ShaderProgram _quadDepthShader;
-    ShaderProgram _quadColorShader;
-
-    ShaderProgram _transformFeedbackPass1Shader;
-    ShaderProgram _transformFeedbackPass2Shader;
+    //Идентификатор шейдерной программы    
+    ShaderProgramPtr _transformFeedbackPass1Shader;
+    ShaderProgramPtr _transformFeedbackPass2Shader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -94,20 +88,35 @@ public:
 
         //=========================================================
         //Инициализация шейдеров
-
-        _commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
-        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-        _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-        _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
-        _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
+        
+        _transformFeedbackPass1Shader = std::make_shared<ShaderProgram>();
+        
+        ShaderPtr vs = std::make_shared<Shader>(GL_VERTEX_SHADER);
+        vs->createFromFile("shaders10/transformFeedbackPass1.vert");
+        _transformFeedbackPass1Shader->attachShader(vs);
+        
+        ShaderPtr fs = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
+        fs->createFromFile("shaders10/particle.frag");
+        _transformFeedbackPass1Shader->attachShader(fs);
 
         std::vector<std::string> attribs;
         attribs.push_back("position");
         attribs.push_back("velocity");
         attribs.push_back("particleTime");
-        _transformFeedbackPass1Shader.createProgramForTransformFeedback("shaders10/transformFeedbackPass1.vert", "shaders10/particle.frag", attribs);
 
-        _transformFeedbackPass2Shader.createProgram("shaders10/transformFeedbackPass2.vert", "shaders10/particle.frag");
+        GLchar** attribStrings = new GLchar*[attribs.size()];
+        for (unsigned int i = 0; i < attribs.size(); i++)
+        {
+            attribStrings[i] = const_cast<GLchar*>(attribs[i].c_str());
+        }
+        glTransformFeedbackVaryings(_transformFeedbackPass1Shader->id(), attribs.size(), attribStrings, GL_SEPARATE_ATTRIBS);
+        
+        _transformFeedbackPass1Shader->linkProgram();
+
+        //----------------------------
+
+        _transformFeedbackPass2Shader = std::make_shared<ShaderProgram>();
+        _transformFeedbackPass2Shader->createProgram("shaders10/transformFeedbackPass2.vert", "shaders10/particle.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -297,8 +306,8 @@ public:
 
         //=========================================================
 
-        _transformFeedbackPass1Shader.use();
-        _transformFeedbackPass1Shader.setFloatUniform("deltaTime", _deltaTime);
+        _transformFeedbackPass1Shader->use();
+        _transformFeedbackPass1Shader->setFloatUniform("deltaTime", _deltaTime);
 
         glEnable(GL_RASTERIZER_DISCARD);
 
@@ -323,17 +332,17 @@ public:
 
         //=========================================================
 
-        _transformFeedbackPass2Shader.use();
+        _transformFeedbackPass2Shader->use();
 
-        _transformFeedbackPass2Shader.setMat4Uniform("modelMatrix", glm::mat4(1.0f));
-        _transformFeedbackPass2Shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        _transformFeedbackPass2Shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
-        _transformFeedbackPass2Shader.setFloatUniform("time", (float)glfwGetTime());
+        _transformFeedbackPass2Shader->setMat4Uniform("modelMatrix", glm::mat4(1.0f));
+        _transformFeedbackPass2Shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        _transformFeedbackPass2Shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        _transformFeedbackPass2Shader->setFloatUniform("time", (float)glfwGetTime());
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _particleTex->bind();
         glBindSampler(0, _sampler);
-        _transformFeedbackPass2Shader.setIntUniform("tex", 0);
+        _transformFeedbackPass2Shader->setIntUniform("tex", 0);
 
         glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_POINT_SPRITE);

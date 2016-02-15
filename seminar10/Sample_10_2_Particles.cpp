@@ -38,14 +38,8 @@ float frand()
 class SampleApplication : public Application
 {
 public:
-    //Идентификатор шейдерной программы
-    ShaderProgram _commonShader;
-    ShaderProgram _markerShader;
-    ShaderProgram _skyboxShader;
-    ShaderProgram _quadDepthShader;
-    ShaderProgram _quadColorShader;
-
-    ShaderProgram _particleShader;
+    //Идентификатор шейдерной программы       
+    ShaderProgramPtr _particleShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -88,12 +82,8 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader.createProgram("shaders6/common.vert", "shaders6/common.frag");
-        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
-        _skyboxShader.createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
-        _quadDepthShader.createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
-        _quadColorShader.createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
-        _particleShader.createProgram("shaders10/particle.vert", "shaders10/particle.frag");
+        _particleShader = std::make_shared<ShaderProgram>();
+        _particleShader->createProgram("shaders10/particle.vert", "shaders10/particle.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -314,20 +304,20 @@ public:
         glUseProgram(0);
     }
 
-    void drawParticles(const ShaderProgram& shader)
+    void drawParticles(const ShaderProgramPtr& shader)
     {
-        shader.use();
+        shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        shader.setMat4Uniform("modelMatrix", glm::mat4(1.0f));
-        shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
-        shader.setFloatUniform("time", (float)glfwGetTime());
+        shader->setMat4Uniform("modelMatrix", glm::mat4(1.0f));
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        shader->setFloatUniform("time", (float)glfwGetTime());
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _particleTex->bind();
         glBindSampler(0, _sampler);
-        shader.setIntUniform("tex", 0);
+        shader->setIntUniform("tex", 0);
 
         glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_POINT_SPRITE);

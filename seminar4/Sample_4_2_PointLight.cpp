@@ -18,8 +18,8 @@ public:
     MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
-    ShaderProgram _shader;
-    ShaderProgram _markerShader;
+    ShaderProgramPtr _shader;
+    ShaderProgramPtr _markerShader;
 
     float _lr;
     float _phi;
@@ -53,8 +53,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader.createProgram("shaders4/diffusePointLight.vert", "shaders4/diffusePointLight.frag");
-        _markerShader.createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+        _shader = std::make_shared<ShaderProgram>();
+        _shader->createProgram("shaders4/diffusePointLight.vert", "shaders4/diffusePointLight.frag");
+
+        _markerShader = std::make_shared<ShaderProgram>();
+        _markerShader->createProgram("shaders4/marker.vert", "shaders4/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -95,53 +98,53 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Подключаем шейдер		
-        _shader.use();
+        _shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        _shader.setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        _shader.setMat4Uniform("projectionMatrix", _camera.projMatrix);
+        _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPos = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
-        _shader.setVec3Uniform("light.pos", lightPos);
-        _shader.setVec3Uniform("light.La", _lightAmbientColor);
-        _shader.setVec3Uniform("light.Ld", _lightDiffuseColor);
+        _shader->setVec3Uniform("light.pos", lightPos);
+        _shader->setVec3Uniform("light.La", _lightAmbientColor);
+        _shader->setVec3Uniform("light.Ld", _lightDiffuseColor);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         {
-            _shader.setMat4Uniform("modelMatrix", _cube->modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
+            _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
+            _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
 
-            _shader.setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
-            _shader.setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
+            _shader->setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
+            _shader->setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
 
             _cube->draw();
         }
 
         {
-            _shader.setMat4Uniform("modelMatrix", _sphere->modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _sphere->modelMatrix()))));
+            _shader->setMat4Uniform("modelMatrix", _sphere->modelMatrix());
+            _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _sphere->modelMatrix()))));
 
-            _shader.setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
-            _shader.setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
+            _shader->setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
+            _shader->setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
 
             _sphere->draw();
         }
 
         {
-            _shader.setMat4Uniform("modelMatrix", _bunny->modelMatrix());
-            _shader.setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
+            _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
+            _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
-            _shader.setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
-            _shader.setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
+            _shader->setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
+            _shader->setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
 
             _bunny->draw();
         }
 
         //Рисуем маркер для источника света		
         {
-            _markerShader.use();
-            _markerShader.setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));
-            _markerShader.setVec4Uniform("color", glm::vec4(_lightDiffuseColor, 1.0f));
+            _markerShader->use();
+            _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));
+            _markerShader->setVec4Uniform("color", glm::vec4(_lightDiffuseColor, 1.0f));
             _marker->draw();
         }
     }
