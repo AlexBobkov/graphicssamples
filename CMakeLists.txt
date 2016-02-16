@@ -56,6 +56,7 @@ if (UNIX)
 	set(CMAKE_INSTALL_RPATH "${DEPENDENCIES_ROOT}/lib")	
 endif ()
 
+add_subdirectory(3rdParty/imgui)
 add_subdirectory(seminar1)
 add_subdirectory(seminar2)
 add_subdirectory(seminar3)

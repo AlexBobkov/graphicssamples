@@ -1,5 +1,8 @@
 #include <Application.hpp>
 
+#include <imgui.h>
+#include <imgui_impl_glfw_gl3.h>
+
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -36,7 +39,7 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 
 //======================================
 
-Application::Application() :
+Application::Application(bool hasGUI) :
 _oldTime(0.0),
 _rotateLeft(false),
 _rotateRight(false),
@@ -46,12 +49,17 @@ _rotateDown(false),
 _thetaAng(0.0),
 _radiusInc(false),
 _radiusDec(false),
-_r(5.0)
+_r(5.0),
+_hasGUI(hasGUI)
 {
 }
 
 Application::~Application()
 {
+    if (_hasGUI)
+    {
+        ImGui_ImplGlfwGL3_Shutdown();
+    }
     glfwTerminate();
 }
 
@@ -59,8 +67,14 @@ void Application::start()
 {
     initContext();
     initGL();
-    initGUI();
+
+    if (_hasGUI)
+    {
+        initGUI();
+    }
+
     makeScene();
+
     run();
 }
 
@@ -89,7 +103,7 @@ void Application::initContext()
     }
     else
     {
-        _window = glfwCreateWindow(640, 480, "MIPT OpenGL demos", NULL, NULL);
+        _window = glfwCreateWindow(800, 600, "MIPT OpenGL demos", NULL, NULL);
     }
     if (!_window)
     {
@@ -124,23 +138,6 @@ void Application::initGL()
     glDepthFunc(GL_LESS);
 }
 
-void Application::initGUI()
-{
-    int width, height;
-    glfwGetFramebufferSize(_window, &width, &height);
-
-#ifdef USE_CORE_PROFILE
-    TwInit(TW_OPENGL_CORE, NULL);
-#else
-    TwInit(TW_OPENGL, NULL);
-#endif
-
-    TwWindowSize(width, height);
-
-    _bar = TwNewBar("TweakBar");
-    TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
-}
-
 void Application::makeScene()
 {
     _camera.viewMatrix = glm::lookAt(glm::vec3(0.0f, -5.0f, 0.0f), glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -157,15 +154,13 @@ void Application::run()
 
         draw(); //Рисуем один кадр
 
-        drawGUI();
+        if (_hasGUI)
+        {
+            drawGUI();
+        }
 
         glfwSwapBuffers(_window); //Переключаем передний и задний буферы
     }
-}
-
-void Application::drawGUI()
-{
-    TwDraw(); //Рисуем графический интерфейс пользователя
 }
 
 void Application::handleKey(int key, int scancode, int action, int mods)
@@ -278,10 +273,41 @@ void Application::update()
     //Обновляем матрицу проекции на случай, если размеры окна изменились
     _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 
-    updateGUI();
+    if (_hasGUI)
+    {
+        ImGui_ImplGlfwGL3_NewFrame();
+        TwRefreshBar(_bar);
+
+        updateGUI();
+    }
+}
+
+void Application::initGUI()
+{
+    int width, height;
+    glfwGetFramebufferSize(_window, &width, &height);
+
+#ifdef USE_CORE_PROFILE
+    TwInit(TW_OPENGL_CORE, NULL);
+#else
+    TwInit(TW_OPENGL, NULL);
+#endif
+
+    TwWindowSize(width, height);
+
+    _bar = TwNewBar("TweakBar");
+    TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
+
+    ImGui_ImplGlfwGL3_Init(_window, false);
 }
 
 void Application::updateGUI()
+{   
+}
+
+void Application::drawGUI()
 {
-    TwRefreshBar(_bar);
+    ImGui::Render();
+
+    TwDraw(); //Рисуем графический интерфейс пользователя
 }

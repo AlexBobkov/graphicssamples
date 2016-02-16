@@ -21,7 +21,7 @@ struct CameraInfo
 class Application
 {
 public:
-    Application();
+    Application(bool hasGUI = true);
     ~Application();
 
     /**
@@ -39,12 +39,12 @@ protected:
     /**
     Инициализирует графический контекст
     */
-    void initContext();
+    virtual void initContext();
 
     /**
     Настраивает некоторые параметры OpenGL
     */
-    void initGL();
+    virtual void initGL();
 
     /**
     Инициализирует графический интерфейс пользователя
@@ -103,4 +103,6 @@ protected:
     bool _radiusDec;
 
     TwBar* _bar; //GUI
+
+    bool _hasGUI;
 };
