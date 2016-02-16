@@ -17,6 +17,6 @@ set(HEADER_FILES
 
 add_library(imgui STATIC ${SRC_FILES} ${HEADER_FILES})
 
-target_link_libraries(imgui GLEW::glew_s glfw)
+target_link_libraries(imgui PUBLIC GLEW::glew_s PUBLIC glfw)
 
-target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(imgui PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

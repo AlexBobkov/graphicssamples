@@ -6,7 +6,7 @@ macro(MAKE_SAMPLE TRGTNAME)
 	target_link_libraries(${TRGTNAME} GLEW::glew_s glm glfw ASSIMP::assimp SOIL::soil imgui)
 	
 	if (CMAKE_COMPILER_IS_GNUCC)
-		target_compile_options(${TRGTNAME} PUBLIC -std=c++11)
+		target_compile_options(${TRGTNAME} PRIVATE -std=c++11)
 	endif ()
 
 	install(TARGETS ${TRGTNAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
