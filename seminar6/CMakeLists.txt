@@ -24,11 +24,11 @@ source_group("Shaders" FILES
 	${SHADER_FILES}	
 )
 
-MAKE_SAMPLE(Sample_6_1_CubeTex)
-MAKE_SAMPLE(Sample_6_2_Viewports)
-MAKE_SAMPLE(Sample_6_3_ZFighting)
-MAKE_SAMPLE(Sample_6_4_BackFaceCulling)
-MAKE_SAMPLE(Sample_6_5_Transparency)
-MAKE_SAMPLE(Sample_6_6_Stencil)
+MAKE_SAMPLE(Sample_06_1_CubeTex)
+MAKE_SAMPLE(Sample_06_2_Viewports)
+MAKE_SAMPLE(Sample_06_3_ZFighting)
+MAKE_SAMPLE(Sample_06_4_BackFaceCulling)
+MAKE_SAMPLE(Sample_06_5_Transparency)
+MAKE_SAMPLE(Sample_06_6_Stencil)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar6/shaders6 DESTINATION ${CMAKE_INSTALL_PREFIX})

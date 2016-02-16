@@ -19,6 +19,6 @@ source_group("Shaders" FILES
 	${SHADER_FILES}	
 )
 
-MAKE_SAMPLE(Sample_2_1_Transformation)
+MAKE_SAMPLE(Sample_02_1_Transformation)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar2/shaders2 DESTINATION ${CMAKE_INSTALL_PREFIX})

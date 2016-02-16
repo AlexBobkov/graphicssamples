@@ -30,9 +30,9 @@ source_group("Shaders" FILES
 	${SHADER_FILES}	
 )
 
-MAKE_SAMPLE(Sample_7_1_Projector)
-MAKE_SAMPLE(Sample_7_2_CopyTex)
-MAKE_SAMPLE(Sample_7_3_Framebuffer)
-MAKE_SAMPLE(Sample_7_4_MRT)
+MAKE_SAMPLE(Sample_07_1_Projector)
+MAKE_SAMPLE(Sample_07_2_CopyTex)
+MAKE_SAMPLE(Sample_07_3_Framebuffer)
+MAKE_SAMPLE(Sample_07_4_MRT)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar7/shaders7 DESTINATION ${CMAKE_INSTALL_PREFIX})

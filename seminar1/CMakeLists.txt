@@ -20,9 +20,9 @@ SOURCE_GROUP("Shaders" FILES
 	${SHADER_FILES}	
 )
 
-MAKE_SAMPLE(Sample_1_1_SolidTriangle)
-MAKE_SAMPLE(Sample_1_2_ColoredTriangle)
-MAKE_SAMPLE(Sample_1_3_DrawArrays)
-MAKE_SAMPLE(Sample_1_4_DrawElements)
+MAKE_SAMPLE(Sample_01_1_SolidTriangle)
+MAKE_SAMPLE(Sample_01_2_ColoredTriangle)
+MAKE_SAMPLE(Sample_01_3_DrawArrays)
+MAKE_SAMPLE(Sample_01_4_DrawElements)
 
 INSTALL(DIRECTORY ${PROJECT_SOURCE_DIR}/${APP_NAME}/shaders1 DESTINATION ${CMAKE_INSTALL_PREFIX})

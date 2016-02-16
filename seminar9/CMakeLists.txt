@@ -38,10 +38,10 @@ source_group("Shaders" FILES
 	${SHADER_FILES}	
 )
 
-MAKE_SAMPLE(Sample_9_1_Grayscale)
-MAKE_SAMPLE(Sample_9_2_Gamma)
-MAKE_SAMPLE(Sample_9_3_HDR)
-MAKE_SAMPLE(Sample_9_4_SSAO)
-MAKE_SAMPLE(Sample_9_5_DoF)
+MAKE_SAMPLE(Sample_09_1_Grayscale)
+MAKE_SAMPLE(Sample_09_2_Gamma)
+MAKE_SAMPLE(Sample_09_3_HDR)
+MAKE_SAMPLE(Sample_09_4_SSAO)
+MAKE_SAMPLE(Sample_09_5_DoF)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar9/shaders9 DESTINATION ${CMAKE_INSTALL_PREFIX})
