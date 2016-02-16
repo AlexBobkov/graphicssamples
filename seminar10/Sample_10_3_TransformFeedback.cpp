@@ -42,14 +42,6 @@ public:
     ShaderProgramPtr _transformFeedbackPass1Shader;
     ShaderProgramPtr _transformFeedbackPass2Shader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
-
-    LightInfo _light;
-    CameraInfo _lightCamera;
-
     TexturePtr _particleTex;
 
     GLuint _sampler;
@@ -117,17 +109,6 @@ public:
 
         _transformFeedbackPass2Shader = std::make_shared<ShaderProgram>();
         _transformFeedbackPass2Shader->createProgram("shaders10/transformFeedbackPass2.vert", "shaders10/particle.frag");
-
-        //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
-        _light.ambient = glm::vec3(0.2, 0.2, 0.2);
-        _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
-        _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
         //Загрузка и создание текстур
@@ -223,29 +204,6 @@ public:
         _firstTime = true;
     }
 
-    void initGUI() override
-    {
-        Application::initGUI();
-
-        TwAddVarRO(_bar, "FPS", TW_TYPE_FLOAT, &_fps, "");
-        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
-        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
-        TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
-    }
-
-    virtual void handleKey(int key, int scancode, int action, int mods)
-    {
-        Application::handleKey(key, scancode, action, mods);
-
-        if (action == GLFW_PRESS)
-        {
-
-        }
-    }
-
     void computeFPS()
     {
         _fpsData.push_back(1 / _deltaTime);
@@ -269,10 +227,6 @@ public:
     void update()
     {
         Application::update();
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
-        _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
         _deltaTime = glfwGetTime() - _oldTime;
         _oldTime = glfwGetTime();

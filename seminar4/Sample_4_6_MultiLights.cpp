@@ -103,22 +103,6 @@ public:
         _material.shininess = 128.0f;
     }
 
-    void initGUI() override
-    {
-        Application::initGUI();
-
-        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light[0].ambient, "group=Light label='ambient'");
-        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light[0].diffuse, "group=Light label='diffuse'");
-        TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light[0].specular, "group=Light label='specular'");
-        TwAddVarRW(_bar, "Ka", TW_TYPE_COLOR3F, &_material.ambient, "group='Rabbit material' label='ambient'");
-        TwAddVarRW(_bar, "Kd", TW_TYPE_COLOR3F, &_material.diffuse, "group='Rabbit material' label='diffuse'");
-        TwAddVarRW(_bar, "Ks", TW_TYPE_COLOR3F, &_material.specular, "group='Rabbit material' label='specular'");
-        TwAddVarRW(_bar, "shininess", TW_TYPE_FLOAT, &_material.shininess, "group='Rabbit material' min=0.1 max=255.0");
-    }
-
     void draw() override
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт

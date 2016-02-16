@@ -38,7 +38,13 @@ public:
 
     TexturePtr _chessTex;
 
-    GLuint _actualSampler;
+    int _minificationType;
+    //0 - nearest
+    //1 - linear
+    //2 - nearest mipmap nearest
+    //3 - linear mipmap nearest
+    //4 - linear mipmap linear
+    //5 - anisotropy
 
     GLuint _samplerMinNearest;
     GLuint _samplerMinLinear;
@@ -121,7 +127,7 @@ public:
         glSamplerParameteri(_samplerMinMipLinearLinearAnisotropy, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glSamplerParameterf(_samplerMinMipLinearLinearAnisotropy, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4.0f);
 
-        _actualSampler = _samplerMinNearest;
+        _minificationType = 0;
 
         //====
         GLfloat maxAniso = 0.0f;
@@ -131,19 +137,26 @@ public:
         //====
     }
 
-    void initGUI() override
+    void updateGUI() override
     {
-        Application::initGUI();
+        Application::updateGUI();
 
-        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
-        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
-        TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
+
+            ImGui::RadioButton("nearest", &_minificationType, 0);
+            ImGui::RadioButton("linear", &_minificationType, 1);
+            ImGui::RadioButton("nearest mip nearest", &_minificationType, 2);
+            ImGui::RadioButton("linear mip nearest", &_minificationType, 3);
+            ImGui::RadioButton("linear mip linear", &_minificationType, 4);
+            ImGui::RadioButton("anisotropy", &_minificationType, 5);
+        }
+        ImGui::End();
     }
 
-    virtual void handleKey(int key, int scancode, int action, int mods)
+    void handleKey(int key, int scancode, int action, int mods) override
     {
         Application::handleKey(key, scancode, action, mods);
 
@@ -151,27 +164,27 @@ public:
         {
             if (key == GLFW_KEY_1)
             {
-                _actualSampler = _samplerMinNearest;
+                _minificationType = 0;
             }
             else if (key == GLFW_KEY_2)
             {
-                _actualSampler = _samplerMinLinear;
+                _minificationType = 1;
             }
             else if (key == GLFW_KEY_3)
             {
-                _actualSampler = _samplerMinMipNearestNearest;
+                _minificationType = 2;
             }
             else if (key == GLFW_KEY_4)
             {
-                _actualSampler = _samplerMinMipLinearNearest;
+                _minificationType = 3;
             }
             else if (key == GLFW_KEY_5)
             {
-                _actualSampler = _samplerMinMipLinearLinear;
+                _minificationType = 4;
             }
             else if (key == GLFW_KEY_6)
             {
-                _actualSampler = _samplerMinMipLinearLinearAnisotropy;
+                _minificationType = 5;
             }
         }
     }
@@ -204,7 +217,30 @@ public:
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _chessTex->bind();
-        glBindSampler(0, _actualSampler);
+        if (_minificationType == 0)
+        {
+            glBindSampler(0, _samplerMinNearest);
+        }
+        else if (_minificationType == 1)
+        {
+            glBindSampler(0, _samplerMinLinear);
+        }
+        else if (_minificationType == 2)
+        {
+            glBindSampler(0, _samplerMinMipNearestNearest);
+        }
+        else if (_minificationType == 3)
+        {
+            glBindSampler(0, _samplerMinMipLinearNearest);
+        }
+        else if (_minificationType == 4)
+        {
+            glBindSampler(0, _samplerMinMipLinearLinear);
+        }
+        else
+        {
+            glBindSampler(0, _samplerMinMipLinearLinearAnisotropy);
+        }
         _shader->setIntUniform("diffuseTex", 0);
 
         //«агружаем на видеокарту матрицы модели мешей и запускаем отрисовку

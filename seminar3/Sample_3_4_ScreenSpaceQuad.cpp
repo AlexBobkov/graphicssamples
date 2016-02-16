@@ -53,11 +53,6 @@ public:
         //Рисуем квад
         _quad->draw();
     }
-
-    //В этом примере нет ГУИ
-    void initGUI() override { }
-    void updateGUI() override { }
-    void drawGUI() override { }
 };
 
 int main()

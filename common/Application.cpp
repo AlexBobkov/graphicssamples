@@ -1,8 +1,5 @@
 #include <Application.hpp>
 
-#include <imgui.h>
-#include <imgui_impl_glfw_gl3.h>
-
 #include <iostream>
 #include <vector>
 #include <cstdlib>
@@ -66,6 +63,7 @@ Application::~Application()
 void Application::start()
 {
     initContext();
+
     initGL();
 
     if (_hasGUI)
@@ -151,6 +149,11 @@ void Application::run()
         glfwPollEvents(); //Проверяем события ввода
 
         update(); //Обновляем сцену и положение виртуальной камеры
+
+        if (_hasGUI)
+        {            
+            updateGUI();
+        }
 
         draw(); //Рисуем один кадр
 
@@ -271,16 +274,14 @@ void Application::update()
     glfwGetFramebufferSize(_window, &width, &height);
 
     //Обновляем матрицу проекции на случай, если размеры окна изменились
-    _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
-
-    if (_hasGUI)
-    {
-        ImGui_ImplGlfwGL3_NewFrame();
-        TwRefreshBar(_bar);
-
-        updateGUI();
-    }
+    _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);    
 }
+
+void Application::draw()
+{
+}
+
+//====================================================
 
 void Application::initGUI()
 {
@@ -302,7 +303,10 @@ void Application::initGUI()
 }
 
 void Application::updateGUI()
-{   
+{
+    ImGui_ImplGlfwGL3_NewFrame();
+
+    TwRefreshBar(_bar);
 }
 
 void Application::drawGUI()

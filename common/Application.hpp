@@ -2,6 +2,9 @@
 
 #include <AntTweakBar.h>
 
+#include <imgui.h>
+#include <imgui_impl_glfw_gl3.h>
+
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -74,7 +77,7 @@ protected:
     /**
     Отрисовывает один кадр
     */
-    virtual void draw() = 0;
+    virtual void draw();
 
     /**
     Отрисовывает графический интерфейс пользователя

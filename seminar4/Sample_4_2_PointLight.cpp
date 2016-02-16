@@ -73,17 +73,32 @@ public:
         _rabbitDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
     }
 
-    void initGUI() override
+    void updateGUI() override
     {
-        Application::initGUI();
+        Application::updateGUI();
 
-        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_lightAmbientColor, "group=Light label='ambient'");
-        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_lightDiffuseColor, "group=Light label='diffuse'");
-        TwAddVarRW(_bar, "Ka", TW_TYPE_COLOR3F, &_rabbitAmbientColor, "group='Rabbit material' label='ambient'");
-        TwAddVarRW(_bar, "Kd", TW_TYPE_COLOR3F, &_rabbitDiffuseColor, "group='Rabbit material' label='diffuse'");
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
+
+            if (ImGui::CollapsingHeader("Light"))
+            {
+                ImGui::ColorEdit3("ambient", glm::value_ptr(_lightAmbientColor));
+                ImGui::ColorEdit3("diffuse", glm::value_ptr(_lightDiffuseColor));
+
+                ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
+                ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
+                ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
+            }
+
+            if (ImGui::CollapsingHeader("Rabbit material"))
+            {
+                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_rabbitAmbientColor));
+                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_rabbitDiffuseColor));
+            }
+        }
+        ImGui::End();
     }
 
     void draw() override

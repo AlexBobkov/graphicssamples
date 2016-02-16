@@ -128,18 +128,6 @@ public:
         glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
     }
 
-    void handleKey(int key, int scancode, int action, int mods) override
-    {
-        Application::handleKey(key, scancode, action, mods);
-
-        if (action == GLFW_PRESS)
-        {
-            if (key == GLFW_KEY_1)
-            {
-            }
-        }
-    }
-
     void computeFPS()
     {
         _deltaTime = glfwGetTime() - _oldTime;

@@ -41,8 +41,8 @@ public:
 
     TexturePtr _worldTex;
 
-    GLuint _actualSampler;
-
+    int _magnificationType; //0 - nearest, 1 - linear
+    
     GLuint _samplerMagNearest;
     GLuint _samplerMagLinear;
 
@@ -104,22 +104,36 @@ public:
         glSamplerParameteri(_samplerMagLinear, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_samplerMagLinear, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        _actualSampler = _samplerMagNearest;
+        _magnificationType = 0; //nearest
     }
 
-    void initGUI() override
+    void updateGUI() override
     {
-        Application::initGUI();
+        Application::updateGUI();
 
-        TwAddVarRW(_bar, "r", TW_TYPE_FLOAT, &_lr, "group=Light step=0.01 min=0.1 max=100.0");
-        TwAddVarRW(_bar, "phi", TW_TYPE_FLOAT, &_phi, "group=Light step=0.01 min=0.0 max=6.28");
-        TwAddVarRW(_bar, "theta", TW_TYPE_FLOAT, &_theta, "group=Light step=0.01 min=-1.57 max=1.57");
-        TwAddVarRW(_bar, "La", TW_TYPE_COLOR3F, &_light.ambient, "group=Light label='ambient'");
-        TwAddVarRW(_bar, "Ld", TW_TYPE_COLOR3F, &_light.diffuse, "group=Light label='diffuse'");
-        TwAddVarRW(_bar, "Ls", TW_TYPE_COLOR3F, &_light.specular, "group=Light label='specular'");
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
+
+            if (ImGui::CollapsingHeader("Light"))
+            {
+                ImGui::ColorEdit3("ambient", glm::value_ptr(_light.ambient));
+                ImGui::ColorEdit3("diffuse", glm::value_ptr(_light.diffuse));
+                ImGui::ColorEdit3("specular", glm::value_ptr(_light.specular));
+
+                ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
+                ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
+                ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
+            }
+
+            ImGui::RadioButton("mag nearest", &_magnificationType, 0);
+            ImGui::RadioButton("mag linear", &_magnificationType, 1);
+        }
+        ImGui::End();
     }
 
-    virtual void handleKey(int key, int scancode, int action, int mods)
+    void handleKey(int key, int scancode, int action, int mods) override
     {
         Application::handleKey(key, scancode, action, mods);
 
@@ -127,11 +141,11 @@ public:
         {
             if (key == GLFW_KEY_1)
             {
-                _actualSampler = _samplerMagNearest;
+                _magnificationType = 0;
             }
             else if (key == GLFW_KEY_2)
             {
-                _actualSampler = _samplerMagLinear;
+                _magnificationType = 1;
             }
         }
     }
@@ -164,7 +178,14 @@ public:
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         _worldTex->bind();
-        glBindSampler(0, _actualSampler);
+        if (_magnificationType == 0)
+        {
+            glBindSampler(0, _samplerMagNearest);
+        }
+        else
+        {
+            glBindSampler(0, _samplerMagLinear);
+        }
         _shader->setIntUniform("diffuseTex", 0);
 
         //«агружаем на видеокарту матрицы модели мешей и запускаем отрисовку

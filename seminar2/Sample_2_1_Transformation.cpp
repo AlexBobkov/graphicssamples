@@ -35,6 +35,8 @@ public:
 
     void draw() override
     {
+        Application::draw();
+
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
@@ -56,11 +58,6 @@ public:
         _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         _bunny->draw(); //Рисуем второй меш
     }
-
-    //В этом примере нет ГУИ
-    void initGUI() override { }
-    void updateGUI() override { }
-    void drawGUI() override { }
 };
 
 int main()

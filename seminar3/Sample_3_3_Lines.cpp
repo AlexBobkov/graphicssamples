@@ -67,11 +67,6 @@ public:
         //Рисуем линию
         _lineStrip->draw();
     }
-
-    //В этом примере нет ГУИ
-    void initGUI() override { }
-    void updateGUI() override { }
-    void drawGUI() override { }
 };
 
 int main()
