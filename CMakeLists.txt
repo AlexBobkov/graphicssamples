@@ -23,15 +23,6 @@ endif ()
 find_package(AntTweakBar)
 find_package(OculusSDK)
 
-if (UNIX)
-	find_package(X11 REQUIRED)
-
-	find_package(OpenGL REQUIRED)
-	add_definitions(${OpenGL_DEFINITIONS})
-
-	find_package(Threads REQUIRED)
-endif (UNIX)
-
 set(CMAKE_DEBUG_POSTFIX "d")
 
 option(USE_CORE_PROFILE "Enable to use core profile" OFF)
@@ -40,7 +31,6 @@ if (USE_CORE_PROFILE)
 endif (USE_CORE_PROFILE)
 
 include_directories(
-	${OpenGL_INCLUDE_DIRS}
 	${ANTTWEAKBAR_INCLUDE_DIRS}
 )
 
@@ -48,9 +38,6 @@ if (OCULUS_SDK_LIBRARIES)
 	include_directories(${INCLUDE_DIRECTORIES} ${OCULUS_SDK_INCLUDE_DIRS})
 endif ()
 
-link_directories(
-	${OpenGL_LIBRARY_DIRS}
-)
 
 if (UNIX)
 	set(CMAKE_INSTALL_RPATH "${DEPENDENCIES_ROOT}/lib")	
