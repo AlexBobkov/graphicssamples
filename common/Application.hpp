@@ -1,7 +1,5 @@
 #pragma once
 
-#include <AntTweakBar.h>
-
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 
@@ -104,8 +102,6 @@ protected:
     bool _rotateDown;
     bool _radiusInc;
     bool _radiusDec;
-
-    TwBar* _bar; //GUI
 
     bool _hasGUI;
 };

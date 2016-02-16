@@ -16,22 +16,18 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void windowSizeChangedCallback(GLFWwindow* window, int width, int height)
 {
-    TwWindowSize(width, height);
 }
 
 void mouseButtonPressedCallback(GLFWwindow* window, int button, int action, int mods)
 {
-    TwEventMouseButtonGLFW(button, action);
 }
 
 void mouseCursosPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
-    TwEventMousePosGLFW(xpos, ypos);
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    TwEventMouseWheelGLFW(xoffset);
 }
 
 //======================================
@@ -151,7 +147,7 @@ void Application::run()
         update(); //Обновляем сцену и положение виртуальной камеры
 
         if (_hasGUI)
-        {            
+        {
             updateGUI();
         }
 
@@ -274,7 +270,7 @@ void Application::update()
     glfwGetFramebufferSize(_window, &width, &height);
 
     //Обновляем матрицу проекции на случай, если размеры окна изменились
-    _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);    
+    _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
 }
 
 void Application::draw()
@@ -285,33 +281,15 @@ void Application::draw()
 
 void Application::initGUI()
 {
-    int width, height;
-    glfwGetFramebufferSize(_window, &width, &height);
-
-#ifdef USE_CORE_PROFILE
-    TwInit(TW_OPENGL_CORE, NULL);
-#else
-    TwInit(TW_OPENGL, NULL);
-#endif
-
-    TwWindowSize(width, height);
-
-    _bar = TwNewBar("TweakBar");
-    TwDefine("GLOBAL help='This example shows how to integrate AntTweakBar with GLFW and OpenGL.'");
-
     ImGui_ImplGlfwGL3_Init(_window, false);
 }
 
 void Application::updateGUI()
 {
     ImGui_ImplGlfwGL3_NewFrame();
-
-    TwRefreshBar(_bar);
 }
 
 void Application::drawGUI()
 {
     ImGui::Render();
-
-    TwDraw(); //Рисуем графический интерфейс пользователя
 }

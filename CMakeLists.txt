@@ -20,7 +20,6 @@ else ()
 	message("Set DEPENDENCIES_ROOT variable")
 endif ()
 		
-find_package(AntTweakBar)
 find_package(OculusSDK)
 
 set(CMAKE_DEBUG_POSTFIX "d")
@@ -30,14 +29,9 @@ if (USE_CORE_PROFILE)
 	add_definitions(-DUSE_CORE_PROFILE)
 endif (USE_CORE_PROFILE)
 
-include_directories(
-	${ANTTWEAKBAR_INCLUDE_DIRS}
-)
-
 if (OCULUS_SDK_LIBRARIES)
 	include_directories(${INCLUDE_DIRECTORIES} ${OCULUS_SDK_INCLUDE_DIRS})
 endif ()
-
 
 if (UNIX)
 	set(CMAKE_INSTALL_RPATH "${DEPENDENCIES_ROOT}/lib")	
