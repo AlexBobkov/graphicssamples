@@ -50,14 +50,6 @@ add_subdirectory(seminar9)
 add_subdirectory(seminar10)
 add_subdirectory(seminar11)
 
-file(GLOB STUDENTS students/*)
-foreach(STUDENT ${STUDENTS})
-	if (IS_DIRECTORY ${STUDENT})
-		message("Student task found " ${STUDENT})
-		add_subdirectory("${STUDENT}")
-	endif ()
-endforeach()
-
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/images/ DESTINATION ${CMAKE_INSTALL_PREFIX}/images)
 
 # Здесь нужные библиотеки (dll) копируются из папки с зависимостями в папку install для примеров
@@ -90,3 +82,13 @@ if (WIN32)
 		message("ASSIMP_LOCATION_RELEASE is empty")
 	endif ()
 endif (WIN32)
+
+############################################
+
+file(GLOB STUDENTS students/*)
+foreach(STUDENT ${STUDENTS})
+	if (IS_DIRECTORY ${STUDENT})
+		message("Student task found " ${STUDENT})
+		add_subdirectory("${STUDENT}")
+	endif ()
+endforeach()
