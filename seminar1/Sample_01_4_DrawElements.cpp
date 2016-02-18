@@ -1,4 +1,4 @@
-#include "Application.h"
+#include <Application.hpp>
 
 #include <iostream>
 #include <vector>
@@ -9,110 +9,251 @@
 class SampleApplication : public Application
 {
 public:
-	GLuint _vao;
+    //Идентификатор VertexArrayObject, который хранит настройки полигональной модели
+    GLuint _vao;
 
-	GLuint _shaderProgram;
-	GLuint _projMatrixUniform;	
+    //Идентификатор шейдерной программы
+    GLuint _program;
 
-	void addPoint(std::vector<float>& vec, float x, float y, float z)
-	{
-		vec.push_back(x);
-		vec.push_back(y);
-		vec.push_back(z);
-	}
+    void makeScene() override
+    {
+        Application::makeScene();
 
-	void addColor(std::vector<float>& vec, float r, float g, float b, float a)
-	{
-		vec.push_back(r);
-		vec.push_back(g);
-		vec.push_back(b);
-		vec.push_back(a);
-	}
+        float points[] =
+        {
+            //coords
+            -0.3f, 0.3f, 0.0f,
+            0.3f, 0.3f, 0.0f,
+            0.3f, -0.3f, 0.0f,
+            -0.3f, -0.3f, 0.0f,
+            -0.3f, 0.3f, -1.0f,
+            -0.3f, -0.3f, -1.0f,
+            0.3f, -0.3f, -1.0f,
 
-	void makeScene() override
-	{
-		Application::makeScene();
+            //colors
+            1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
+            1.0f, 0.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+        };
 
-		std::vector<float> vertices;
-		addPoint(vertices, -0.3f, 0.3f, 0.0f);
-		addPoint(vertices, 0.3f, 0.3f, 0.0f);
-		addPoint(vertices, 0.3f, -0.3f, 0.0f);
-		addPoint(vertices, -0.3f, -0.3f, 0.0f);
-		addPoint(vertices, -0.3f, 0.3f, -1.0f);
-		addPoint(vertices, -0.3f, -0.3f, -1.0f);
-		addPoint(vertices, 0.3f, -0.3f, -1.0f);
+        int vertexCount = sizeof(points) / sizeof(float) / 7;
 
-		addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
-		addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
-		addColor(vertices, 1.0f, 0.0f, 0.0f, 1.0f);
-		addColor(vertices, 0.0f, 0.0f, 1.0f, 1.0f);
-		addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
-		addColor(vertices, 1.0f, 1.0f, 0.0f, 1.0f);
-		addColor(vertices, 0.0f, 1.0f, 0.0f, 1.0f);
+        unsigned short indices[] =
+        {
+            0, 1, 2,
+            0, 2, 3,
+            4, 0, 3,
+            4, 3, 5,
+            5, 6, 2,
+            5, 2, 3
+        };
 
-		int Npoints = vertices.size() / 7;
+        int indicesCount = sizeof(indices) / sizeof(unsigned short);
 
-		std::vector<unsigned short> indices = {
-			0, 1, 2,
-			0, 2, 3,
-			4, 0, 3,
-			4, 3, 5,
-			5, 6, 2,
-			5, 2, 3 };
+        //Создаем буфер VertexBufferObject для хранения координат на видеокарте
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
 
-		//Копируем буфер с атрибутами на видеокарту
-		//Сначала в буфере идут координаты, потом цвета вершин
-		unsigned int vbo = 0;
-		glGenBuffers(1, &vbo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+        //Делаем этот буфер текущим
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-		//А это ещё один буфер - для хранений индексов
-		unsigned int ibo = 0;
-		glGenBuffers(1, &ibo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned short), indices.data(), GL_STATIC_DRAW);
+        //Копируем содержимое массива в буфер на видеокарте
+        glBufferData(GL_ARRAY_BUFFER, vertexCount * 7 * sizeof(float), points, GL_STATIC_DRAW);
 
-		//Описываем какие буферы относятся к нашему мешу, сколько у него вершинных атрибутов и их настройки
-		//Здесь 1й буфер содержит 2 атрибута
-		//2й буфер содержит индексы
-		_vao = 0;
-		glGenVertexArrays(1, &_vao);
-		glBindVertexArray(_vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(Npoints * 4 * 3));
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+        //=========================================================
 
-		//=========================================================
+        //Создаем ещё один буфер VertexBufferObject для хранения индексов
+        unsigned int ibo;
+        glGenBuffers(1, &ibo);
 
-		_shaderProgram = createProgram("shaders1/cube.vert", "shaders1/color.frag");
+        //Делаем этот буфер текущим
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
-		_projMatrixUniform = glGetUniformLocation(_shaderProgram, "projectionMatrix");
-	}
+        //Копируем содержимое массива индексов в буфер на видеокарте
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCount * sizeof(unsigned short), indices, GL_STATIC_DRAW);
 
-	void draw() override
-	{
-		int width, height;
-		glfwGetFramebufferSize(_window, &width, &height);
-		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //=========================================================
 
-		glUseProgram(_shaderProgram); //Подключаем шейдер
+        //Создаем объект VertexArrayObject для хранения настроек полигональной модели
+        glGenVertexArrays(1, &_vao);
 
-		glUniformMatrix4fv(_projMatrixUniform, 1, GL_FALSE, glm::value_ptr(_projMatrix));
+        //Делаем этот объект текущим
+        glBindVertexArray(_vao);
 
-		glBindVertexArray(_vao); //Подключаем VertexArray с настойками буферов
-		glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, 0); //Рисуем с помощью индексов
-	}
+        //Делаем буфер с координатами текущим
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        //Включаем 0й вершинный атрибут - координаты
+        glEnableVertexAttribArray(0);
+
+        //Включаем 1й вершинный атрибут - цвета
+        glEnableVertexAttribArray(1);
+
+        //Устанавливаем настройки: 0й атрибут, 3 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 0 - сдвиг от начала
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+
+        //Устанавливаем настройки: 1й атрибут, 4 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 84 - сдвиг от начала массива
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(vertexCount * 4 * 3));
+
+        //Подключаем буфер с индексами
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+        //=========================================================
+
+        //Вершинный шейдер
+        const char* vertexShaderText =
+            "#version 330\n"
+
+            "uniform mat4 matrix;\n"
+
+            "layout(location = 0) in vec3 vertexPosition;\n"
+            "layout(location = 1) in vec4 vertexColor;\n"
+
+            "out vec4 color;\n"
+
+            "void main()\n"
+            "{\n"
+            "   color = vertexColor;\n"
+            "   gl_Position = matrix * vec4(vertexPosition, 1.0);\n"
+            "}\n";
+
+        //Создаем шейдерный объект
+        GLuint vs = glCreateShader(GL_VERTEX_SHADER);
+
+        //Передаем в шейдерный объект текст шейдера
+        glShaderSource(vs, 1, &vertexShaderText, NULL);
+
+        //Компилируем шейдер
+        glCompileShader(vs);
+
+        //Проверяем ошибки компиляции
+        int status = -1;
+        glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
+        if (status != GL_TRUE)
+        {
+            GLint errorLength;
+            glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
+
+            GLchar* log = new GLchar[errorLength];
+            glGetShaderInfoLog(vs, errorLength, 0, log);
+
+            std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+
+            delete[] log;
+            exit(1);
+        }
+
+        //=========================================================
+
+        //Фрагментный шейдер
+        const char* fragmentShaderText =
+            "#version 330\n"
+
+            "in vec4 color;\n"
+
+            "out vec4 fragColor;\n"
+
+            "void main()\n"
+            "{\n"
+            "    fragColor = color;\n"
+            "}\n";
+
+        //Создаем шейдерный объект
+        GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
+
+        //Передаем в шейдерный объект текст шейдера
+        glShaderSource(fs, 1, &fragmentShaderText, NULL);
+
+        //Компилируем шейдер
+        glCompileShader(fs);
+
+        //Проверяем ошибки компиляции
+        status = -1;
+        glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
+        if (status != GL_TRUE)
+        {
+            GLint errorLength;
+            glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &errorLength);
+
+            GLchar* log = new GLchar[errorLength];
+            glGetShaderInfoLog(fs, errorLength, 0, log);
+
+            std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+
+            delete[] log;
+            exit(1);
+        }
+
+        //=========================================================
+
+        //Создаем шейдерную программу
+        _program = glCreateProgram();
+
+        //Прикрепляем шейдерные объекты
+        glAttachShader(_program, vs);
+        glAttachShader(_program, fs);
+
+        //Линкуем программу
+        glLinkProgram(_program);
+
+        //Проверяем ошибки линковки
+        status = -1;
+        glGetProgramiv(_program, GL_LINK_STATUS, &status);
+        if (status != GL_TRUE)
+        {
+            GLint errorLength;
+            glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &errorLength);
+
+            GLchar* log = new GLchar[errorLength];
+            glGetProgramInfoLog(_program, errorLength, 0, log);
+
+            std::cerr << "Failed to link the program:\n" << log << std::endl;
+
+            delete[] log;
+            exit(1);
+        }
+    }
+
+    void draw() override
+    {
+        Application::draw();
+
+        //Получаем размеры экрана (окна)
+        int width, height;
+        glfwGetFramebufferSize(_window, &width, &height);
+
+        //Устанавливаем порт вывода на весь экран (окно)
+        glViewport(0, 0, width, height);
+
+        //Очищаем порт вывода (буфер цвета и буфер глубины)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        //Подключаем шейдерную программу
+        glUseProgram(_program);
+
+        //Задаем матрицу поворота, чтобы смотреть на куб сбоку
+        glm::mat4 mat = glm::rotate(glm::mat4(1.0f), 0.2f, glm::vec3(-1.0f, 1.0f, 0.0f));
+
+        //Копируем матрицу на видеокарту в виде юниформ-переменной
+        GLuint uniformLoc = glGetUniformLocation(_program, "matrix");
+        glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
+
+        //Подключаем VertexArrayObject с настойками полигональной модели
+        glBindVertexArray(_vao);
+
+        //Рисуем индексную полигональную модель (3 грани куба состоят из 6 треугольников, количество индексов 18, тип данных индекса unsigned short, сдвиг 0)
+        glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, 0); //Рисуем с помощью индексов
+    }
 };
 
 int main()
 {
-	SampleApplication app;
-	app.start();
+    SampleApplication app;
+    app.start();
 
-	return 0;
+    return 0;
 }

@@ -7,23 +7,23 @@
 void Shader::createFromFile(const std::string& filepath)
 {
     //Читаем текст шейдера из файла
-    std::ifstream vertFile(filepath.c_str());
-    if (vertFile.fail())
+    std::ifstream shaderFile(filepath.c_str());
+    if (shaderFile.fail())
     {
         std::cerr << "Failed to load shader file " << filepath << std::endl;
         exit(1);
     }
-    std::string vertFileContent((std::istreambuf_iterator<char>(vertFile)), (std::istreambuf_iterator<char>()));
-    vertFile.close();
+    std::string shaderFileContent((std::istreambuf_iterator<char>(shaderFile)), (std::istreambuf_iterator<char>()));
+    shaderFile.close();
 
-    createFromString(vertFileContent);
+    createFromString(shaderFileContent);
 }
 
 void Shader::createFromString(const std::string& text)
 {
-    const char* vertexShaderText = text.c_str();
+    const char* shaderText = text.c_str();
 
-    glShaderSource(_id, 1, &vertexShaderText, NULL);
+    glShaderSource(_id, 1, &shaderText, NULL);
 
     glCompileShader(_id);
 
