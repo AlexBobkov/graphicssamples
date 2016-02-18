@@ -1,17 +1,16 @@
 Примеры для семинаров по компьютерной графике в МФТИ
 ====================================================
 
-Для сборки проекта необходимы внешние библиотеки:
+Примеры используют библиотеки:
 
 * GLFW (<http://www.glfw.org/>)
-* Assimp (<http://www.assimp.org/>)
-* AntTweakBar (<http://anttweakbar.sourceforge.net/doc/>)
-
-Некоторые библиотеки уже включены, и компилируются вместе с примерами:
-
-* GLEW (<http://sourceforge.net/projects/glew/>)
+* GLEW (<http://glew.sourceforge.net/>)
 * GLM (<http://glm.g-truc.net>)
-* GL Image (<http://glsdk.sourceforge.net/docs/html/group__module__glimg.html>)
+* Assimp (<http://www.assimp.org/>)
+* SOIL (<https://bitbucket.org/SpartanJ/soil2>)
+* imgui (<https://github.com/ocornut/imgui>)
+
+Собирать эти библиотеки самостоятельно не нужно - CMake автоматически их скачает и соберет.
 
 Подробная инструкция по сборке на сайте курса: <http://alexander-bobkov.ru/opengl/samples>
 
