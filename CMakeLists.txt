@@ -38,6 +38,7 @@ if (UNIX)
 endif ()
 
 add_subdirectory(3rdParty/imgui)
+add_subdirectory(seminar0)
 add_subdirectory(seminar1)
 add_subdirectory(seminar2)
 add_subdirectory(seminar3)
