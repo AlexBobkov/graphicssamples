@@ -5,7 +5,10 @@ project(GraphicsSamples VERSION 3.0)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake Targets")
 
+set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+
+option(USE_CORE_PROFILE "Enable to use core profile" OFF)
 
 include(MacroUtils)
 
@@ -21,14 +24,6 @@ else ()
 endif ()
 		
 find_package(OculusSDK)
-
-set(CMAKE_DEBUG_POSTFIX "d")
-
-option(USE_CORE_PROFILE "Enable to use core profile" OFF)
-if (USE_CORE_PROFILE)
-	add_definitions(-DUSE_CORE_PROFILE)
-endif (USE_CORE_PROFILE)
-
 if (OCULUS_SDK_LIBRARIES)
 	include_directories(${INCLUDE_DIRECTORIES} ${OCULUS_SDK_INCLUDE_DIRS})
 endif ()
