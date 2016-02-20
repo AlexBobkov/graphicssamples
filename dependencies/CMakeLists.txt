@@ -18,7 +18,7 @@ if (UNIX)
 		DOWNLOAD_COMMAND wget https://sourceforge.net/projects/glew/files/glew/1.13.0/glew-1.13.0.zip
 		URL ${CMAKE_BINARY_DIR}/External/Download/GLEW/glew-1.13.0.zip
 		CONFIGURE_COMMAND "${CMAKE_COMMAND}"
-			"${CMAKE_BINARY_DIR}/External/Source/GLEW/build/cmake"
+			"${CMAKE_BINARY_DIR}/External/Source/glew-1.13.0/build/cmake"
 			"-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 			"-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
 			"-DBUILD_UTILS:BOOL=OFF"
@@ -29,13 +29,6 @@ if (UNIX)
 		COMMAND ${CMAKE_COMMAND} -E tar xfz ${CMAKE_BINARY_DIR}/External/Download/GLEW/glew-1.13.0.zip
 		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/External/Source
 	)
-		
-	ExternalProject_Add_Step(GLEW rename
-		DEPENDEES extract
-		DEPENDERS update
-		COMMAND ${CMAKE_COMMAND} -E rename glew-1.13.0 GLEW
-		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/External/Source
-	)		
 		
 	ExternalProject_Add(GLFW		
 		GIT_REPOSITORY https://github.com/glfw/glfw.git
