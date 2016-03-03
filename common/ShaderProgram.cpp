@@ -35,12 +35,13 @@ void Shader::createFromString(const std::string& text)
         GLint errorLength;
         glGetShaderiv(_id, GL_INFO_LOG_LENGTH, &errorLength);
 
-        GLchar* log = new GLchar[errorLength];
-        glGetShaderInfoLog(_id, errorLength, 0, log);
+        std::vector<char> errorMessage;
+        errorMessage.resize(errorLength);
 
-        std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+        glGetShaderInfoLog(_id, errorLength, 0, errorMessage.data());
 
-        delete[] log;
+        std::cerr << "Failed to compile the shader:\n" << errorMessage.data() << std::endl;
+
         exit(1);
     }
 }
@@ -79,12 +80,13 @@ void ShaderProgram::linkProgram()
         GLint errorLength;
         glGetProgramiv(_programId, GL_INFO_LOG_LENGTH, &errorLength);
 
-        GLchar* log = new GLchar[errorLength];
-        glGetProgramInfoLog(_programId, errorLength, 0, log);
+        std::vector<char> errorMessage;
+        errorMessage.resize(errorLength);
 
-        std::cerr << "Failed to link the program:\n" << log << std::endl;
+        glGetProgramInfoLog(_programId, errorLength, 0, errorMessage.data());
 
-        delete[] log;
+        std::cerr << "Failed to link the program:\n" << errorMessage.data() << std::endl;
+
         exit(1);
     }
 }

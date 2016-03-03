@@ -1,6 +1,7 @@
 #include <Application.hpp>
 
 #include <iostream>
+#include <vector>
 
 /**
 Синий треугольник
@@ -53,6 +54,8 @@ public:
         //Устанавливаем настройки: 0й атрибут, 3 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 0 - сдвиг от начала
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
 
+        glBindVertexArray(0);
+
         //=========================================================
 
         //Вершинный шейдер
@@ -83,12 +86,13 @@ public:
             GLint errorLength;
             glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
 
-            GLchar* log = new GLchar[errorLength];
-            glGetShaderInfoLog(vs, errorLength, 0, log);
+            std::vector<char> errorMessage;
+            errorMessage.resize(errorLength);
 
-            std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+            glGetShaderInfoLog(vs, errorLength, 0, errorMessage.data());
 
-            delete[] log;
+            std::cerr << "Failed to compile the shader:\n" << errorMessage.data() << std::endl;
+
             exit(1);
         }
 
@@ -122,12 +126,13 @@ public:
             GLint errorLength;
             glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &errorLength);
 
-            GLchar* log = new GLchar[errorLength];
-            glGetShaderInfoLog(fs, errorLength, 0, log);
+            std::vector<char> errorMessage;
+            errorMessage.resize(errorLength);
 
-            std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+            glGetShaderInfoLog(fs, errorLength, 0, errorMessage.data());
 
-            delete[] log;
+            std::cerr << "Failed to compile the shader:\n" << errorMessage.data() << std::endl;
+
             exit(1);
         }
 
@@ -151,12 +156,13 @@ public:
             GLint errorLength;
             glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &errorLength);
 
-            GLchar* log = new GLchar[errorLength];
-            glGetProgramInfoLog(_program, errorLength, 0, log);
+            std::vector<char> errorMessage;
+            errorMessage.resize(errorLength);
 
-            std::cerr << "Failed to link the program:\n" << log << std::endl;
+            glGetProgramInfoLog(_program, errorLength, 0, errorMessage.data());
 
-            delete[] log;
+            std::cerr << "Failed to link the program:\n" << errorMessage.data() << std::endl;
+
             exit(1);
         }
     }

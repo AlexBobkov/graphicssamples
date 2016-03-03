@@ -112,6 +112,8 @@ public:
         //Устанавливаем настройки: 1й атрибут, 4 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 216 - сдвиг от начала массива
         glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(vertexCount * 3 * sizeof(float)));
 
+        glBindVertexArray(0);
+
         //=========================================================
 
         //Вершинный шейдер
@@ -148,12 +150,13 @@ public:
             GLint errorLength;
             glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
 
-            GLchar* log = new GLchar[errorLength];
-            glGetShaderInfoLog(vs, errorLength, 0, log);
+            std::vector<char> errorMessage;
+            errorMessage.resize(errorLength);
 
-            std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+            glGetShaderInfoLog(vs, errorLength, 0, errorMessage.data());
 
-            delete[] log;
+            std::cerr << "Failed to compile the shader:\n" << errorMessage.data() << std::endl;
+
             exit(1);
         }
 
@@ -189,12 +192,13 @@ public:
             GLint errorLength;
             glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &errorLength);
 
-            GLchar* log = new GLchar[errorLength];
-            glGetShaderInfoLog(fs, errorLength, 0, log);
+            std::vector<char> errorMessage;
+            errorMessage.resize(errorLength);
 
-            std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+            glGetShaderInfoLog(fs, errorLength, 0, errorMessage.data());
 
-            delete[] log;
+            std::cerr << "Failed to compile the shader:\n" << errorMessage.data() << std::endl;
+
             exit(1);
         }
 
@@ -218,12 +222,13 @@ public:
             GLint errorLength;
             glGetProgramiv(_program, GL_INFO_LOG_LENGTH, &errorLength);
 
-            GLchar* log = new GLchar[errorLength];
-            glGetProgramInfoLog(_program, errorLength, 0, log);
+            std::vector<char> errorMessage;
+            errorMessage.resize(errorLength);
 
-            std::cerr << "Failed to link the program:\n" << log << std::endl;
+            glGetProgramInfoLog(_program, errorLength, 0, errorMessage.data());
 
-            delete[] log;
+            std::cerr << "Failed to link the program:\n" << errorMessage.data() << std::endl;
+
             exit(1);
         }
     }
@@ -249,7 +254,7 @@ public:
         glm::mat4 mat = glm::rotate(glm::mat4(1.0f), 0.2f, glm::vec3(-1.0f, 1.0f, 0.0f));
 
         //Копируем матрицу на видеокарту в виде юниформ-переменной
-        GLuint uniformLoc = glGetUniformLocation(_program, "matrix");
+        GLint uniformLoc = glGetUniformLocation(_program, "matrix");
         glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
 
         //Подключаем VertexArrayObject с настойками полигональной модели

@@ -98,49 +98,49 @@ public:
 
     void setIntUniform(const std::string& name, const int& value) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniform1i(uniformLoc, value);
     }
 
     void setFloatUniform(const std::string& name, const float& value) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniform1f(uniformLoc, value);
     }
 
     void setVec2Uniform(const std::string& name, const glm::vec2& vec) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniform2fv(uniformLoc, 1, glm::value_ptr(vec));
     }
 
     void setVec3Uniform(const std::string& name, const glm::vec3& vec) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniform3fv(uniformLoc, 1, glm::value_ptr(vec));
     }
 
     void setVec4Uniform(const std::string& name, const glm::vec4& vec) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniform4fv(uniformLoc, 1, glm::value_ptr(vec));
     }
 
     void setMat3Uniform(const std::string& name, const glm::mat3& mat) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniformMatrix3fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
     }
 
     void setMat4Uniform(const std::string& name, const glm::mat4& mat) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
     }
 
     void setVec3UniformArray(const std::string& name, const std::vector<glm::vec3>& positions) const
     {
-        GLuint uniformLoc = glGetUniformLocation(_programId, name.c_str());
+        GLint uniformLoc = glGetUniformLocation(_programId, name.c_str());
         glUniform3fv(uniformLoc, positions.size(), reinterpret_cast<const GLfloat *>(positions.data()));
     }
 

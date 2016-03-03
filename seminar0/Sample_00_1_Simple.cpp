@@ -2,6 +2,7 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
+#include <vector>
 
 //Функция обратного вызова для обработки событий клавиатуры
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -87,6 +88,8 @@ int main()
     //Устанавливаем настройки: 0й атрибут, 3 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 0 - сдвиг от начала
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
 
+    glBindVertexArray(0);
+
     //=========================================================
 
     //Вершинный шейдер
@@ -116,13 +119,14 @@ int main()
     {
         GLint errorLength;
         glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &errorLength);
+        
+        std::vector<char> errorMessage;
+        errorMessage.resize(errorLength);
 
-        GLchar* log = new GLchar[errorLength];
-        glGetShaderInfoLog(vs, errorLength, 0, log);
+        glGetShaderInfoLog(vs, errorLength, 0, errorMessage.data());
 
-        std::cerr << "Failed to compile the shader:\n" << log << std::endl;
-
-        delete[] log;
+        std::cerr << "Failed to compile the shader:\n" << errorMessage.data() << std::endl;
+        
         exit(1);
     }
 
@@ -156,12 +160,13 @@ int main()
         GLint errorLength;
         glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &errorLength);
 
-        GLchar* log = new GLchar[errorLength];
-        glGetShaderInfoLog(fs, errorLength, 0, log);
+        std::vector<char> errorMessage;
+        errorMessage.resize(errorLength);
 
-        std::cerr << "Failed to compile the shader:\n" << log << std::endl;
+        glGetShaderInfoLog(fs, errorLength, 0, errorMessage.data());
 
-        delete[] log;
+        std::cerr << "Failed to compile the shader:\n" << errorMessage.data() << std::endl;
+
         exit(1);
     }
 
@@ -185,12 +190,13 @@ int main()
         GLint errorLength;
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &errorLength);
 
-        GLchar* log = new GLchar[errorLength];
-        glGetProgramInfoLog(program, errorLength, 0, log);
+        std::vector<char> errorMessage;
+        errorMessage.resize(errorLength);
 
-        std::cerr << "Failed to link the program:\n" << log << std::endl;
+        glGetProgramInfoLog(program, errorLength, 0, errorMessage.data());
 
-        delete[] log;
+        std::cerr << "Failed to link the program:\n" << errorMessage.data() << std::endl;
+
         exit(1);
     }
 
@@ -223,6 +229,15 @@ int main()
 
         glfwSwapBuffers(window); //Переключаем передний и задний буферы
     }
+
+    //Удаляем созданные объекты OpenGL
+    glDeleteProgram(program);
+    glDeleteShader(vs);
+    glDeleteShader(fs);
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+
+    glfwTerminate();
 
     return 0;
 }
