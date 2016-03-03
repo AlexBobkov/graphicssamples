@@ -36,6 +36,16 @@ public:
     */
     virtual void handleKey(int key, int scancode, int action, int mods);
 
+    /**
+    Обрабатывает движение мышки
+    */
+    virtual void handleMouseMove(double xpos, double ypos);
+
+    /**
+    Обрабатывает колесико мыши
+    */
+    virtual void handleScroll(double xoffset, double yoffset);
+
 protected:
     /**
     Инициализирует графический контекст
@@ -93,15 +103,12 @@ protected:
     double _thetaAng;
     double _r;
 
-    double _oldTime; //Время на предыдущем кадре
+    //Время на предыдущем кадре
+    double _oldTime;
 
-    //Вспомогальные переменные для управления виртуальной камерой
-    bool _rotateLeft;
-    bool _rotateRight;
-    bool _rotateUp;
-    bool _rotateDown;
-    bool _radiusInc;
-    bool _radiusDec;
+    //Положение курсора мыши на предыдущем кадре
+    double _oldXPos;
+    double _oldYPos;
 
     bool _hasGUI;
 };

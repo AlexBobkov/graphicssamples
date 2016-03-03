@@ -33,6 +33,20 @@ public:
         _shader->createProgram("shaders2/shader.vert", "shaders2/shader.frag");
     }
 
+    void update() override
+    {
+        Application::update();
+
+        //Вращаем кролика
+        float angle = (float)glfwGetTime();
+
+        glm::mat4 mat;
+        mat = glm::translate(mat, glm::vec3(0.0f, 0.5f, 0.0));
+        mat = glm::rotate(mat, angle, glm::vec3(0.0f, 0.0f, 1.0f));
+                
+        _bunny->setModelMatrix(mat);
+    }
+
     void draw() override
     {
         Application::draw();
@@ -44,19 +58,20 @@ public:
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        _shader->use(); //Устанавливаем шейдер
+        //Устанавливаем шейдер
+        _shader->use();
 
+        //Устанавливаем общие юниформ-переменные
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
+        //Рисуем первый меш
         _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
-        _cube->draw(); //Рисуем первый меш
-
-        float angle = (float)glfwGetTime();
-        _bunny->setModelMatrix(glm::rotate(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0)), angle, glm::vec3(0.0f, 0.0f, 1.0f))); //Изменяем матрицу модели второго меша
-
+        _cube->draw(); 
+        
+        //Рисуем второй меш
         _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
-        _bunny->draw(); //Рисуем второй меш
+        _bunny->draw();
     }
 };
 

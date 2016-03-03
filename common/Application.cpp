@@ -10,7 +10,6 @@
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-
     app->handleKey(key, scancode, action, mods);
 }
 
@@ -24,26 +23,26 @@ void mouseButtonPressedCallback(GLFWwindow* window, int button, int action, int 
 
 void mouseCursosPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
+    app->handleMouseMove(xpos, ypos);    
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
+    app->handleScroll(xoffset, yoffset);
 }
 
 //======================================
 
 Application::Application(bool hasGUI) :
 _oldTime(0.0),
-_rotateLeft(false),
-_rotateRight(false),
 _phiAng(0.0),
-_rotateUp(false),
-_rotateDown(false),
 _thetaAng(0.0),
-_radiusInc(false),
-_radiusDec(false),
 _r(5.0),
-_hasGUI(hasGUI)
+_hasGUI(hasGUI),
+_oldXPos(0),
+_oldYPos(0)
 {
 }
 
@@ -169,59 +168,29 @@ void Application::handleKey(int key, int scancode, int action, int mods)
         if (key == GLFW_KEY_ESCAPE)
         {
             glfwSetWindowShouldClose(_window, GL_TRUE);
-        }
-        else if (key == GLFW_KEY_A)
-        {
-            _rotateLeft = true;
-        }
-        else if (key == GLFW_KEY_D)
-        {
-            _rotateRight = true;
-        }
-        else if (key == GLFW_KEY_W)
-        {
-            _rotateUp = true;
-        }
-        else if (key == GLFW_KEY_S)
-        {
-            _rotateDown = true;
-        }
-        else if (key == GLFW_KEY_R)
-        {
-            _radiusInc = true;
-        }
-        else if (key == GLFW_KEY_F)
-        {
-            _radiusDec = true;
-        }
+        }        
     }
-    else if (action == GLFW_RELEASE)
+}
+
+void Application::handleMouseMove(double xpos, double ypos)
+{
+    int state = glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT);
+    if (state == GLFW_PRESS)
     {
-        if (key == GLFW_KEY_A)
-        {
-            _rotateLeft = false;
-        }
-        else if (key == GLFW_KEY_D)
-        {
-            _rotateRight = false;
-        }
-        else if (key == GLFW_KEY_W)
-        {
-            _rotateUp = false;
-        }
-        else if (key == GLFW_KEY_S)
-        {
-            _rotateDown = false;
-        }
-        else if (key == GLFW_KEY_R)
-        {
-            _radiusInc = false;
-        }
-        else if (key == GLFW_KEY_F)
-        {
-            _radiusDec = false;
-        }
+        double dx = xpos - _oldXPos;
+        double dy = ypos - _oldYPos;
+
+        _phiAng -= dx * 0.005;
+        _thetaAng += dy * 0.005;
     }
+
+    _oldXPos = xpos;
+    _oldYPos = ypos;
+}
+
+void Application::handleScroll(double xoffset, double yoffset)
+{
+    _r += _r * yoffset * 0.05;
 }
 
 void Application::update()
@@ -229,32 +198,36 @@ void Application::update()
     double dt = glfwGetTime() - _oldTime;
     _oldTime = glfwGetTime();
 
-    double speed = 1.0;
+    //-----------------------------------------
 
-    if (_rotateLeft)
+    double speed = 1.0;
+        
+    if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS)
     {
         _phiAng -= speed * dt;
     }
-    if (_rotateRight)
+    if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS)
     {
         _phiAng += speed * dt;
     }
-    if (_rotateUp)
+    if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS)
     {
         _thetaAng += speed * dt;
     }
-    if (_rotateDown)
+    if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS)
     {
         _thetaAng -= speed * dt;
     }
-    if (_radiusInc)
+    if (glfwGetKey(_window, GLFW_KEY_R) == GLFW_PRESS)
     {
         _r += _r * dt;
     }
-    if (_radiusDec)
+    if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS)
     {
         _r -= _r * dt;
     }
+
+    //-----------------------------------------
 
     _thetaAng = glm::clamp(_thetaAng, -glm::pi<double>() * 0.49, glm::pi<double>() * 0.49);
 
@@ -274,7 +247,7 @@ void Application::update()
 }
 
 void Application::draw()
-{
+{    
 }
 
 //====================================================
