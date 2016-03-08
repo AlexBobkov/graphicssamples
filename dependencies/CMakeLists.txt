@@ -43,6 +43,7 @@ if (UNIX)
 		GIT_REPOSITORY https://github.com/g-truc/glm.git
 		GIT_TAG        0.9.7.2
 		CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
+			"-DCMAKE_INSTALL_LIBDIR:STRING=lib"
 	)
 	
 	ExternalProject_Add(Assimp
