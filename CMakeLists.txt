@@ -24,7 +24,7 @@ else ()
 	message("Set DEPENDENCIES_ROOT variable")
 endif ()
 		
-find_package(OculusSDK)
+find_package(OculusSDK QUIET)
 if (OCULUS_SDK_LIBRARIES)
 	include_directories(${INCLUDE_DIRECTORIES} ${OCULUS_SDK_INCLUDE_DIRS})
 endif ()
