@@ -24,7 +24,7 @@ void mouseButtonPressedCallback(GLFWwindow* window, int button, int action, int 
 void mouseCursosPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-    app->handleMouseMove(xpos, ypos);    
+    //app->handleMouseMove(xpos, ypos); //Временно отключил
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)

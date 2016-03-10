@@ -48,6 +48,7 @@ void main()
 
 			float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 			blinnTerm = pow(blinnTerm, material.shininess); //регулируем размер блика
+			
 			color += light[i].Ls * material.Ks * blinnTerm;
 		}
 	}

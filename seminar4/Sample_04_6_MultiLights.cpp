@@ -34,9 +34,8 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //Маркер для источника света
 
-    //Идентификатор шейдерной программы
     ShaderProgramPtr _shader;
     ShaderProgramPtr _markerShader;
 
@@ -101,6 +100,37 @@ public:
         _material.diffuse = glm::vec3(1.0, 1.0, 0.0);
         _material.specular = glm::vec3(1.0, 1.0, 1.0);
         _material.shininess = 128.0f;
+    }
+
+    void updateGUI() override
+    {
+        Application::updateGUI();
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
+
+            if (ImGui::CollapsingHeader("Light"))
+            {
+                ImGui::ColorEdit3("ambient", glm::value_ptr(_light[0].ambient));
+                ImGui::ColorEdit3("diffuse", glm::value_ptr(_light[0].diffuse));
+                ImGui::ColorEdit3("specular", glm::value_ptr(_light[0].specular));
+
+                ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
+                ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
+                ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
+            }
+
+            if (ImGui::CollapsingHeader("Rabbit material"))
+            {
+                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_material.ambient));
+                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_material.diffuse));
+                ImGui::ColorEdit3("mat specular", glm::value_ptr(_material.specular));
+                ImGui::SliderFloat("shininess", &_material.shininess, 0.1f, 255.0f);
+            }
+        }
+        ImGui::End();
     }
 
     void draw() override

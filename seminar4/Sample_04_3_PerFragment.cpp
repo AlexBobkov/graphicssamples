@@ -15,22 +15,23 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //Маркер для источника света
 
-    //Идентификатор шейдерной программы
     ShaderProgramPtr _shaderPerVertex;
     ShaderProgramPtr _shaderPerFragment;
     ShaderProgramPtr _markerShader;
 
+    //Координаты источника света
     float _lr;
     float _phi;
     float _theta;
 
-    //переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
+    //Параметры источника света
     glm::vec3 _lightAmbientColor;
     glm::vec3 _lightDiffuseColor;
     glm::vec3 _lightSpecularColor;
 
+    //Параметры материала
     glm::vec3 _rabbitAmbientColor;
     glm::vec3 _rabbitDiffuseColor;
     glm::vec3 _rabbitSpecularColor;

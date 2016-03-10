@@ -17,13 +17,15 @@ public:
 
     ShaderProgramPtr _shader;
 
+    //Координаты источника света
     float _phi;
     float _theta;
 
-    //переменные, которые содержат значения, которые будут записаны в uniform-переменные шейдеров
+    //Параметры источника света
     glm::vec3 _lightAmbientColor;
     glm::vec3 _lightDiffuseColor;
 
+    //Параметры материала
     glm::vec3 _rabbitAmbientColor;
     glm::vec3 _rabbitDiffuseColor;
 
