@@ -36,5 +36,6 @@ MAKE_SAMPLE(Sample_03_1_Shaders)
 MAKE_SAMPLE(Sample_03_2_Points)
 MAKE_SAMPLE(Sample_03_3_Lines)
 MAKE_SAMPLE(Sample_03_4_ScreenSpaceQuad)
+MAKE_SAMPLE(Sample_03_5_UBO)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar3/shaders3 DESTINATION ${CMAKE_INSTALL_PREFIX})
