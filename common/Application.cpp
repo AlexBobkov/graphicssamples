@@ -24,7 +24,7 @@ void mouseButtonPressedCallback(GLFWwindow* window, int button, int action, int 
 void mouseCursosPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-    //app->handleMouseMove(xpos, ypos); //Временно отключил
+    app->handleMouseMove(xpos, ypos);
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
@@ -174,6 +174,11 @@ void Application::handleKey(int key, int scancode, int action, int mods)
 
 void Application::handleMouseMove(double xpos, double ypos)
 {
+    if (ImGui::IsMouseHoveringAnyWindow())
+    {
+        return;
+    }
+
     int state = glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT);
     if (state == GLFW_PRESS)
     {
