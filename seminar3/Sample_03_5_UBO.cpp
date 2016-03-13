@@ -51,10 +51,40 @@ public:
 
         //Обновляем содержимое Uniform Buffer Object
 
+#if 0
+        //Вариант с glMapBuffer
         glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
         GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
         memcpy(p, &_camera, sizeof(_camera));
         glUnmapBuffer(GL_UNIFORM_BUFFER);
+#elif 0
+        //Вариант с glBufferSubData
+        glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(_camera), &_camera);
+#else
+        //Вариант для буферов, у которых layout отличается от std140
+
+        //Имена юниформ-переменных
+        const char* names[2] =
+        {
+            "viewMatrix",
+            "projectionMatrix"
+        };
+
+        GLuint index[2];
+        GLint offset[2];
+
+        //Запрашиваем индексы 2х юниформ-переменных
+        glGetUniformIndices(_shader->id(), 2, names, index);
+
+        //Зная индексы, запрашиваем сдвиги для 2х юниформ-переменных
+        glGetActiveUniformsiv(_shader->id(), 2, index, GL_UNIFORM_OFFSET, offset);
+        
+        //Устанавливаем значения 2х юниформ-перменных по отдельности
+        glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
+        glBufferSubData(GL_UNIFORM_BUFFER, offset[0], sizeof(_camera.viewMatrix), &_camera.viewMatrix);
+        glBufferSubData(GL_UNIFORM_BUFFER, offset[1], sizeof(_camera.projMatrix), &_camera.projMatrix);
+#endif
     }
     
     void draw() override
