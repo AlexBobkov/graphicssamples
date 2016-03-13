@@ -71,7 +71,7 @@ void main()
 		fresnel *= (1.0 - material.F0);
 		fresnel += material.F0;
 
-		color += light.Ls * (fresnel * geoAtt * roughness) / (NdotV * NdotL * 3.14);
+		color += light.Ls * NdotL * (fresnel * geoAtt * roughness) / (NdotV * NdotL * 3.14);
 	}
 
 	fragColor = vec4(color, 1.0); //просто копируем

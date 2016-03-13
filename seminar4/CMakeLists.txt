@@ -31,9 +31,6 @@ set(SHADER_FILES
 	
 	shaders4/manyLights.vert
 	shaders4/manyLights.frag
-	
-	shaders4/marker.vert
-	shaders4/marker.frag
 )
 
 source_group("Shaders" FILES	

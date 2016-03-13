@@ -47,6 +47,7 @@ add_subdirectory(seminar10)
 add_subdirectory(seminar11)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/images/ DESTINATION ${CMAKE_INSTALL_PREFIX}/images)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/shaders/ DESTINATION ${CMAKE_INSTALL_PREFIX}/shaders)
 
 # Здесь нужные библиотеки (dll) копируются из папки с зависимостями в папку install для примеров
 if (WIN32)

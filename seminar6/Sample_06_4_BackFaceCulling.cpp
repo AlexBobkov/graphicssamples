@@ -72,7 +72,7 @@ public:
         _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
 
         _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders4/marker.vert", "shaders4/marker.frag");
+        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
