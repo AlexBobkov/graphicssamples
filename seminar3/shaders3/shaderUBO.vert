@@ -5,7 +5,7 @@
 
 #version 330
 
-layout (std140) uniform shaderData
+layout (std140) uniform Matrices
 { 
   mat4 viewMatrix;
   mat4 projectionMatrix;

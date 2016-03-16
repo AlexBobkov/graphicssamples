@@ -43,5 +43,6 @@ MAKE_SAMPLE(Sample_04_3_PerFragment)
 MAKE_SAMPLE(Sample_04_4_Attenuation)
 MAKE_SAMPLE(Sample_04_5_CookTorrance)
 MAKE_SAMPLE(Sample_04_6_MultiLights)
+MAKE_SAMPLE(Sample_04_7_LightingUBO)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar4/shaders4 DESTINATION ${CMAKE_INSTALL_PREFIX})

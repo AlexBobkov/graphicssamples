@@ -104,7 +104,7 @@ public:
         _shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        unsigned int blockIndex = glGetUniformBlockIndex(_shader->id(), "shader_data");        
+        unsigned int blockIndex = glGetUniformBlockIndex(_shader->id(), "Matrices");        
         glUniformBlockBinding(_shader->id(), blockIndex, 0); //0я точка привязки
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
