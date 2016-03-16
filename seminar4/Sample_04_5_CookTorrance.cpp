@@ -31,9 +31,9 @@ public:
     glm::vec3 _lightSpecularColor;
 
     //Параметры материала
-    glm::vec3 _rabbitAmbientColor;
-    glm::vec3 _rabbitDiffuseColor;
-    glm::vec3 _rabbitSpecularColor;
+    glm::vec3 _bunnyAmbientColor;
+    glm::vec3 _bunnyDiffuseColor;
+    glm::vec3 _bunnySpecularColor;
     float _roughnessValue;
     float _F0;
 
@@ -75,9 +75,9 @@ public:
         _lightSpecularColor = glm::vec3(1.0, 1.0, 1.0);
 
         //Инициализация материала кролика
-        _rabbitAmbientColor = glm::vec3(1.0, 1.0, 0.0);
-        _rabbitDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
-        _rabbitSpecularColor = glm::vec3(1.0, 1.0, 1.0);
+        _bunnyAmbientColor = glm::vec3(1.0, 1.0, 0.0);
+        _bunnyDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
+        _bunnySpecularColor = glm::vec3(1.0, 1.0, 1.0);
         _roughnessValue = 0.3f;
         _F0 = 0.8f;
     }
@@ -104,9 +104,9 @@ public:
 
             if (ImGui::CollapsingHeader("Rabbit material"))
             {
-                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_rabbitAmbientColor));
-                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_rabbitDiffuseColor));
-                ImGui::ColorEdit3("mat specular", glm::value_ptr(_rabbitSpecularColor));
+                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_bunnyAmbientColor));
+                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_bunnyDiffuseColor));
+                ImGui::ColorEdit3("mat specular", glm::value_ptr(_bunnySpecularColor));
 
                 ImGui::SliderFloat("roughness", &_roughnessValue, 0.01f, 1.0f);
                 ImGui::SliderFloat("F0", &_F0, 0.01f, 1.0f);
@@ -172,9 +172,9 @@ public:
             _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
-            _shader->setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
-            _shader->setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
-            _shader->setVec3Uniform("material.Ks", glm::vec3(_rabbitSpecularColor));
+            _shader->setVec3Uniform("material.Ka", glm::vec3(_bunnyAmbientColor));
+            _shader->setVec3Uniform("material.Kd", glm::vec3(_bunnyDiffuseColor));
+            _shader->setVec3Uniform("material.Ks", glm::vec3(_bunnySpecularColor));
             _shader->setFloatUniform("material.roughnessValue", _roughnessValue);
             _shader->setFloatUniform("material.F0", _F0);
 

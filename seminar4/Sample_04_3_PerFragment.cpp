@@ -32,10 +32,10 @@ public:
     glm::vec3 _lightSpecularColor;
 
     //Параметры материала
-    glm::vec3 _rabbitAmbientColor;
-    glm::vec3 _rabbitDiffuseColor;
-    glm::vec3 _rabbitSpecularColor;
-    float _rabbitShininess;
+    glm::vec3 _bunnyAmbientColor;
+    glm::vec3 _bunnyDiffuseColor;
+    glm::vec3 _bunnySpecularColor;
+    float _bunnyShininess;
 
     void makeScene() override
     {
@@ -78,10 +78,10 @@ public:
         _lightSpecularColor = glm::vec3(1.0, 1.0, 1.0);
 
         //Инициализация материала кролика
-        _rabbitAmbientColor = glm::vec3(1.0, 1.0, 0.0);
-        _rabbitDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
-        _rabbitSpecularColor = glm::vec3(1.0, 1.0, 1.0);
-        _rabbitShininess = 128.0f;
+        _bunnyAmbientColor = glm::vec3(1.0, 1.0, 0.0);
+        _bunnyDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
+        _bunnySpecularColor = glm::vec3(1.0, 1.0, 1.0);
+        _bunnyShininess = 128.0f;
     }
 
     void updateGUI() override
@@ -106,10 +106,10 @@ public:
 
             if (ImGui::CollapsingHeader("Rabbit material"))
             {
-                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_rabbitAmbientColor));
-                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_rabbitDiffuseColor));
-                ImGui::ColorEdit3("mat specular", glm::value_ptr(_rabbitSpecularColor));
-                ImGui::SliderFloat("shininess", &_rabbitShininess, 0.1f, 255.0f);
+                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_bunnyAmbientColor));
+                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_bunnyDiffuseColor));
+                ImGui::ColorEdit3("mat specular", glm::value_ptr(_bunnySpecularColor));
+                ImGui::SliderFloat("shininess", &_bunnyShininess, 0.1f, 255.0f);
             }
         }
         ImGui::End();
@@ -151,7 +151,7 @@ public:
                 _shaderPerVertex->setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
                 _shaderPerVertex->setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
                 _shaderPerVertex->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-                _shaderPerVertex->setFloatUniform("material.shininess", _rabbitShininess);
+                _shaderPerVertex->setFloatUniform("material.shininess", _bunnyShininess);
 
                 _cube->draw();
             }
@@ -163,7 +163,7 @@ public:
                 _shaderPerVertex->setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
                 _shaderPerVertex->setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
                 _shaderPerVertex->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-                _shaderPerVertex->setFloatUniform("material.shininess", _rabbitShininess);
+                _shaderPerVertex->setFloatUniform("material.shininess", _bunnyShininess);
 
                 _sphere->draw();
             }
@@ -172,10 +172,10 @@ public:
                 _shaderPerVertex->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
                 _shaderPerVertex->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
-                _shaderPerVertex->setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
-                _shaderPerVertex->setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
-                _shaderPerVertex->setVec3Uniform("material.Ks", glm::vec3(_rabbitSpecularColor));
-                _shaderPerVertex->setFloatUniform("material.shininess", _rabbitShininess);
+                _shaderPerVertex->setVec3Uniform("material.Ka", glm::vec3(_bunnyAmbientColor));
+                _shaderPerVertex->setVec3Uniform("material.Kd", glm::vec3(_bunnyDiffuseColor));
+                _shaderPerVertex->setVec3Uniform("material.Ks", glm::vec3(_bunnySpecularColor));
+                _shaderPerVertex->setFloatUniform("material.shininess", _bunnyShininess);
 
                 _bunny->draw();
             }
@@ -205,7 +205,7 @@ public:
                 _shaderPerFragment->setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
                 _shaderPerFragment->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
                 _shaderPerFragment->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-                _shaderPerFragment->setFloatUniform("material.shininess", _rabbitShininess);
+                _shaderPerFragment->setFloatUniform("material.shininess", _bunnyShininess);
 
                 _cube->draw();
             }
@@ -217,7 +217,7 @@ public:
                 _shaderPerFragment->setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
                 _shaderPerFragment->setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
                 _shaderPerFragment->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-                _shaderPerFragment->setFloatUniform("material.shininess", _rabbitShininess);
+                _shaderPerFragment->setFloatUniform("material.shininess", _bunnyShininess);
 
                 _sphere->draw();
             }
@@ -226,10 +226,10 @@ public:
                 _shaderPerFragment->setMat4Uniform("modelMatrix", glm::translate(_bunny->modelMatrix(), glm::vec3(1.5f, 0.0f, 0.0f)));
                 _shaderPerFragment->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
-                _shaderPerFragment->setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
-                _shaderPerFragment->setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
-                _shaderPerFragment->setVec3Uniform("material.Ks", glm::vec3(_rabbitSpecularColor));
-                _shaderPerFragment->setFloatUniform("material.shininess", _rabbitShininess);
+                _shaderPerFragment->setVec3Uniform("material.Ka", glm::vec3(_bunnyAmbientColor));
+                _shaderPerFragment->setVec3Uniform("material.Kd", glm::vec3(_bunnyDiffuseColor));
+                _shaderPerFragment->setVec3Uniform("material.Ks", glm::vec3(_bunnySpecularColor));
+                _shaderPerFragment->setFloatUniform("material.shininess", _bunnyShininess);
 
                 _bunny->draw();
             }

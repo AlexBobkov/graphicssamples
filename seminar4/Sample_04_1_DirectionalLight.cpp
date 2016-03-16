@@ -26,8 +26,8 @@ public:
     glm::vec3 _lightDiffuseColor;
 
     //Параметры материала
-    glm::vec3 _rabbitAmbientColor;
-    glm::vec3 _rabbitDiffuseColor;
+    glm::vec3 _bunnyAmbientColor;
+    glm::vec3 _bunnyDiffuseColor;
 
     void makeScene() override
     {
@@ -60,8 +60,8 @@ public:
         _lightDiffuseColor = glm::vec3(0.8, 0.8, 0.8);
 
         //Инициализация материала кролика
-        _rabbitAmbientColor = glm::vec3(1.0, 1.0, 0.0);
-        _rabbitDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
+        _bunnyAmbientColor = glm::vec3(1.0, 1.0, 0.0);
+        _bunnyDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
     }
 
     void updateGUI() override
@@ -84,8 +84,8 @@ public:
 
             if (ImGui::CollapsingHeader("Rabbit material"))
             {
-                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_rabbitAmbientColor));
-                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_rabbitDiffuseColor));
+                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_bunnyAmbientColor));
+                ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_bunnyDiffuseColor));
             }
         }
         ImGui::End();
@@ -139,8 +139,8 @@ public:
             _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
-            _shader->setVec3Uniform("material.Ka", glm::vec3(_rabbitAmbientColor));
-            _shader->setVec3Uniform("material.Kd", glm::vec3(_rabbitDiffuseColor));
+            _shader->setVec3Uniform("material.Ka", glm::vec3(_bunnyAmbientColor));
+            _shader->setVec3Uniform("material.Kd", glm::vec3(_bunnyDiffuseColor));
 
             _bunny->draw();
         }
