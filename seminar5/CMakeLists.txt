@@ -28,5 +28,6 @@ MAKE_SAMPLE(Sample_05_1_Texturing)
 MAKE_SAMPLE(Sample_05_2_Magnification)
 MAKE_SAMPLE(Sample_05_3_Minification)
 MAKE_SAMPLE(Sample_05_4_Specular)
+MAKE_SAMPLE(Sample_05_5_LookupTexture)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar5/shaders5 DESTINATION ${CMAKE_INSTALL_PREFIX})
