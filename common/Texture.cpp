@@ -138,8 +138,6 @@ namespace
             return;
         }
 
-        invertY(image, width, height, 3);
-
         texture->setTexImage2D(target, 0, GL_RGB8, width, height, GL_RGB, GL_UNSIGNED_BYTE, image);
 
         SOIL_free_image_data(image);

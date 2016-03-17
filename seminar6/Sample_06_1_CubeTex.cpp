@@ -154,6 +154,10 @@ public:
             _skyboxShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
             _skyboxShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
+            //ƒл€ преобразовани€ координат в текстурные координаты нужна матрица дл€ поворота осей YZ на 90 градусов и отражени€ оси Y.
+            glm::mat3 textureMatrix = glm::mat3(glm::scale(glm::rotate(glm::mat4(), -glm::pi<float>() * 0.5f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(1.0f, -1.0f, 1.0f)));
+            _skyboxShader->setMat3Uniform("textureMatrix", textureMatrix);
+
             glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
             _cubeTex->bind();
             glBindSampler(0, _cubeTexSampler);
@@ -172,7 +176,7 @@ public:
         //«агружаем на видеокарту значени€ юниформ-переменных
         _commonShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _commonShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
+                        
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
