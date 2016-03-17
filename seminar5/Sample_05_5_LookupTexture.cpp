@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -7,16 +8,8 @@
 #include <sstream>
 #include <vector>
 
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
-
 /**
-Пример с текстурированием разных 3д-моделей
+Пример использования lookup-текстуры
 */
 class SampleApplication : public Application
 {
@@ -25,7 +18,7 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //Маркер для источника света
 
     //Идентификатор шейдерной программы
     ShaderProgramPtr _shader;

@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 Пример с текстурированием разных 3д-моделей
@@ -25,7 +18,7 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //Маркер для источника света
 
     //Идентификатор шейдерной программы
     ShaderProgramPtr _shader;
@@ -142,11 +135,9 @@ public:
         _shader->setVec3Uniform("light.Ld", _light.diffuse);
         _shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        _worldTexture->bind();
-
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         glBindSampler(0, _sampler);
-
+        _worldTexture->bind();
         _shader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку

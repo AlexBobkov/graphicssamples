@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 С клавиатуры происходит переключение вариантов минификации. Кнопки 1-6.
@@ -23,11 +16,8 @@ class SampleApplication : public Application
 public:
     MeshPtr _ground;
 
-    MeshPtr _marker; //Меш - маркер для источника света
-
     //Идентификатор шейдерной программы
     ShaderProgramPtr _shader;
-    ShaderProgramPtr _markerShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -62,16 +52,11 @@ public:
 
         _ground = makeGroundPlane(50.0f, 50.0f);
 
-        _marker = makeSphere(0.1f);
-
         //=========================================================
         //Инициализация шейдеров
 
         _shader = std::make_shared<ShaderProgram>();
         _shader->createProgram("shaders5/texture.vert", "shaders5/texture.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -215,8 +200,7 @@ public:
         _shader->setVec3Uniform("light.Ld", _light.diffuse);
         _shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _chessTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         if (_minificationType == 0)
         {
             glBindSampler(0, _samplerMinNearest);
@@ -241,6 +225,7 @@ public:
         {
             glBindSampler(0, _samplerMinMipLinearLinearAnisotropy);
         }
+        _chessTex->bind();
         _shader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
@@ -249,15 +234,6 @@ public:
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _ground->modelMatrix()))));
 
             _ground->draw();
-        }
-
-        //Рисуем маркеры для всех источников света		
-        {
-            _markerShader->use();
-
-            _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
-            _markerShader->setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
-            _marker->draw();
         }
 
         //Отсоединяем сэмплер и шейдерную программу

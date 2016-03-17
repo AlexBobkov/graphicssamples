@@ -7,6 +7,7 @@ set(SRC_FILES
 
 set(HEADER_FILES
 	${PROJECT_SOURCE_DIR}/common/Application.hpp
+	${PROJECT_SOURCE_DIR}/common/LightInfo.hpp
 	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 	${PROJECT_SOURCE_DIR}/common/ShaderProgram.hpp
 	${PROJECT_SOURCE_DIR}/common/Texture.hpp
