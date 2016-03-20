@@ -1,5 +1,3 @@
-#define _USE_MATH_DEFINES
-
 #include <Mesh.hpp>
 
 #include <assimp/cimport.h>
@@ -19,13 +17,13 @@ MeshPtr makeSphere(float radius, unsigned int N)
 
     for (unsigned int i = 0; i < M; i++)
     {
-        float theta = (float)M_PI * i / M;
-        float theta1 = (float)M_PI * (i + 1) / M;
+        float theta = (float)glm::pi<float>() * i / M;
+        float theta1 = (float)glm::pi<float>() * (i + 1) / M;
 
         for (unsigned int j = 0; j < N; j++)
         {
-            float phi = 2.0f * (float)M_PI * j / N + (float)M_PI;
-            float phi1 = 2.0f * (float)M_PI * (j + 1) / N + (float)M_PI;
+            float phi = 2.0f * (float)glm::pi<float>() * j / N + (float)glm::pi<float>();
+            float phi1 = 2.0f * (float)glm::pi<float>() * (j + 1) / N + (float)glm::pi<float>();
 
             //Первый треугольник, образующий квад
             vertices.push_back(glm::vec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius));

@@ -8,7 +8,7 @@
 #include <GL/glew.h>
 
 #include <string>
-#include <set>
+#include <map>
 #include <memory>
 
 /**
@@ -113,7 +113,7 @@ public:
     */
     void setAttribute(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLuint offset, const DataBufferPtr& buffer)
     {
-        _buffers.insert(buffer); //чтобы буфер не был удален раньше модели
+        _buffers[index] = buffer; //чтобы буфер не был удален раньше модели
 
         glBindVertexArray(_vao);
 
@@ -185,7 +185,7 @@ protected:
     GLuint _vao;
 
     ///Буферы с данными - храним здесь, чтобы они не были удалены раньше модели
-    std::set<DataBufferPtr> _buffers;
+    std::map<GLuint, DataBufferPtr> _buffers;
 
     ///Тип геометрического примитива
     GLuint _primitiveType;
