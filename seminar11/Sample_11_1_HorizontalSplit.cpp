@@ -84,7 +84,7 @@ public:
         //Инициализация шейдеров
 
         _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
+        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения

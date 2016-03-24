@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 2 виртуальный камеры и 2 вьюпорта
@@ -72,7 +65,7 @@ public:
         //Инициализация шейдеров
 
         _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
+        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
 
         _markerShader = std::make_shared<ShaderProgram>();
         _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
@@ -177,9 +170,13 @@ public:
             _skyboxShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
             _skyboxShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-            glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-            _cubeTex->bind();
+            //Для преобразования координат в текстурные координаты нужна матрица для поворота осей YZ на 90 градусов и отражения оси Y.
+            glm::mat3 textureMatrix = glm::mat3(glm::scale(glm::rotate(glm::mat4(), -glm::pi<float>() * 0.5f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(1.0f, -1.0f, 1.0f)));
+            _skyboxShader->setMat3Uniform("textureMatrix", textureMatrix);
+
+            glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0            
             glBindSampler(0, _cubeTexSampler);
+            _cubeTex->bind();
             _skyboxShader->setIntUniform("cubeTex", 0);
 
             glDepthMask(GL_FALSE); //Отключаем запись в буфер глубины
@@ -204,9 +201,9 @@ public:
         _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
         _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         _commonShader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку

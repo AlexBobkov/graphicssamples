@@ -191,19 +191,19 @@ public:
         //Инициализация шейдеров
 
         _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
+        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
         
         _instancingNoMatrixShader = std::make_shared<ShaderProgram>();
-        _instancingNoMatrixShader->createProgram("shaders10/instancingNoMatrix.vert", "shaders6/common.frag");
+        _instancingNoMatrixShader->createProgram("shaders10/instancingNoMatrix.vert", "shaders/common.frag");
 
         _instancingUniformShader = std::make_shared<ShaderProgram>();
-        _instancingUniformShader->createProgram("shaders10/instancingUniform.vert", "shaders6/common.frag");
+        _instancingUniformShader->createProgram("shaders10/instancingUniform.vert", "shaders/common.frag");
 
         _instancingTextureShader = std::make_shared<ShaderProgram>();
-        _instancingTextureShader->createProgram("shaders10/instancingTexture.vert", "shaders6/common.frag");
+        _instancingTextureShader->createProgram("shaders10/instancingTexture.vert", "shaders/common.frag");
 
         _instancingDivisorShader = std::make_shared<ShaderProgram>();
-        _instancingDivisorShader->createProgram("shaders10/instancingDivisor.vert", "shaders6/common.frag");
+        _instancingDivisorShader->createProgram("shaders10/instancingDivisor.vert", "shaders/common.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения

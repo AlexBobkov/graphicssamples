@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 Пример с проективной текстурой
@@ -43,7 +36,6 @@ public:
     TexturePtr _brickTex;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
     GLuint _projSampler;
 
     float _projR;
@@ -104,13 +96,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         glGenSamplers(1, &_projSampler);
         glSamplerParameteri(_projSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -199,14 +184,14 @@ public:
             _projectorShader->setMat4Uniform("projScaleBiasMatrix", projScaleBiasMatrix);
         }
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         _projectorShader->setIntUniform("diffuseTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        _worldTex->bind();
+        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
         glBindSampler(1, _projSampler);
+        _worldTex->bind();
         _projectorShader->setIntUniform("projTex", 1);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку

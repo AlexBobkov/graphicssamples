@@ -125,7 +125,7 @@ public:
         //Инициализация шейдеров
 
         _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders6/common.vert", "shaders6/common.frag");
+        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
 
         _markerShader = std::make_shared<ShaderProgram>();
         _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
