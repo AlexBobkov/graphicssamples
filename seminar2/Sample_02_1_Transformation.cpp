@@ -20,6 +20,8 @@ public:
     {
         Application::makeScene();
 
+        _cameraMover = std::make_shared<FreeCameraMover>();
+
         //Создаем меш с кубом
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));

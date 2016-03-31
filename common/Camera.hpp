@@ -60,6 +60,9 @@ protected:
 
 typedef std::shared_ptr<CameraMover> CameraMoverPtr;
 
+/**
+Положение камеры задается в сферических координатах. Камера всегда смотрит в центр сферы.
+*/
 class OrbitCameraMover : public CameraMover
 {
 public:
@@ -76,6 +79,30 @@ protected:
     double _phiAng;
     double _thetaAng;
     double _r;
+
+    //Положение курсора мыши на предыдущем кадре
+    double _oldXPos;
+    double _oldYPos;
+};
+
+/**
+Камера всегда летит вперед
+*/
+class FreeCameraMover : public CameraMover
+{
+public:
+    FreeCameraMover();
+    ~FreeCameraMover() override {}
+
+    void handleKey(GLFWwindow* window, int key, int scancode, int action, int mods) override;
+    void handleMouseMove(GLFWwindow* window, double xpos, double ypos) override;
+    void handleScroll(GLFWwindow* window, double xoffset, double yoffset) override;
+    void update(GLFWwindow* window, double dt) override;
+
+protected:
+    //Положение виртуальный камеры задается в сферических координат
+    glm::vec3 _pos;
+    glm::quat _rot;
 
     //Положение курсора мыши на предыдущем кадре
     double _oldXPos;
