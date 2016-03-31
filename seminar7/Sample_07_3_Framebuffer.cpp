@@ -47,6 +47,7 @@ public:
     CameraInfo _fbCamera;
 
     bool _showDebugQuad = false;
+    bool _blitFramebuffer = false;
 
     void initFramebuffer()
     {
@@ -97,6 +98,7 @@ public:
         Application::makeScene();
 
         _showDebugQuad = false;
+        _blitFramebuffer = false;
 
         //=========================================================
         //Создание и загрузка мешей		
@@ -181,6 +183,7 @@ public:
             }
 
             ImGui::Checkbox("Show debug quad", &_showDebugQuad);
+            ImGui::Checkbox("Blit framebuffer", &_blitFramebuffer);
         }
         ImGui::End();
     }
@@ -305,6 +308,13 @@ public:
             _markerShader->setMat4Uniform("mvpMatrix", camera.projMatrix * camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
             _markerShader->setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
             _marker->draw();
+        }
+
+        if (_blitFramebuffer)
+        {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferId);
+            glBlitFramebuffer(0, 0, _fbWidth, _fbHeight, width - 500, 0, width, 500, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
         }
 
         if (_showDebugQuad)
