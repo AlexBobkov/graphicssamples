@@ -37,12 +37,8 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 
 Application::Application(bool hasGUI) :
 _oldTime(0.0),
-_phiAng(0.0),
-_thetaAng(0.0),
-_r(5.0),
 _hasGUI(hasGUI),
-_oldXPos(0),
-_oldYPos(0)
+_cameraMover(std::make_shared<OrbitCameraMover>())
 {
 }
 
@@ -170,6 +166,8 @@ void Application::handleKey(int key, int scancode, int action, int mods)
             glfwSetWindowShouldClose(_window, GL_TRUE);
         }        
     }
+
+    _cameraMover->handleKey(_window, key, scancode, action, mods);
 }
 
 void Application::handleMouseMove(double xpos, double ypos)
@@ -179,23 +177,12 @@ void Application::handleMouseMove(double xpos, double ypos)
         return;
     }
 
-    int state = glfwGetMouseButton(_window, GLFW_MOUSE_BUTTON_LEFT);
-    if (state == GLFW_PRESS)
-    {
-        double dx = xpos - _oldXPos;
-        double dy = ypos - _oldYPos;
-
-        _phiAng -= dx * 0.005;
-        _thetaAng += dy * 0.005;
-    }
-
-    _oldXPos = xpos;
-    _oldYPos = ypos;
+    _cameraMover->handleMouseMove(_window, xpos, ypos);
 }
 
 void Application::handleScroll(double xoffset, double yoffset)
 {
-    _r += _r * yoffset * 0.05;
+    _cameraMover->handleScroll(_window, xoffset, yoffset);
 }
 
 void Application::update()
@@ -205,50 +192,8 @@ void Application::update()
 
     //-----------------------------------------
 
-    double speed = 1.0;
-        
-    if (glfwGetKey(_window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        _phiAng -= speed * dt;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        _phiAng += speed * dt;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        _thetaAng += speed * dt;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        _thetaAng -= speed * dt;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_R) == GLFW_PRESS)
-    {
-        _r += _r * dt;
-    }
-    if (glfwGetKey(_window, GLFW_KEY_F) == GLFW_PRESS)
-    {
-        _r -= _r * dt;
-    }
-
-    //-----------------------------------------
-
-    _thetaAng = glm::clamp(_thetaAng, -glm::pi<double>() * 0.49, glm::pi<double>() * 0.49);
-
-    //Вычисляем положение виртуальной камеры в мировой системе координат по формуле сферических координат
-    glm::vec3 pos = glm::vec3(glm::cos(_phiAng) * glm::cos(_thetaAng), glm::sin(_phiAng) * glm::cos(_thetaAng), glm::sin(_thetaAng) + 0.5f) * (float)_r;
-
-    //Обновляем матрицу вида
-    _camera.viewMatrix = glm::lookAt(pos, glm::vec3(0.0f, 0.0f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    //-----------------------------------------
-
-    int width, height;
-    glfwGetFramebufferSize(_window, &width, &height);
-
-    //Обновляем матрицу проекции на случай, если размеры окна изменились
-    _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 100.f);
+    _cameraMover->update(_window, dt);
+    _camera = _cameraMover->cameraInfo();
 }
 
 void Application::draw()

@@ -1,11 +1,13 @@
 set(SRC_FILES	
 	${PROJECT_SOURCE_DIR}/common/Application.cpp
+	${PROJECT_SOURCE_DIR}/common/Camera.cpp
 	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
 	${PROJECT_SOURCE_DIR}/common/ShaderProgram.cpp
 )
 
 set(HEADER_FILES
 	${PROJECT_SOURCE_DIR}/common/Application.hpp
+	${PROJECT_SOURCE_DIR}/common/Camera.hpp
 	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
 	${PROJECT_SOURCE_DIR}/common/ShaderProgram.hpp
 )
