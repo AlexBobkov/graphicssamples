@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 Пример с копированием буфера глубины в текстуру
@@ -46,11 +39,14 @@ public:
     GLuint _depthTexId;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
+
+    bool _showDebugQuad;
 
     void makeScene() override
     {
         Application::makeScene();
+
+        _showDebugQuad = true;
 
         //=========================================================
         //Создание и загрузка мешей		
@@ -109,13 +105,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     }
 
     void updateGUI() override
@@ -137,6 +126,8 @@ public:
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
+
+            ImGui::Checkbox("Show depth quad", &_showDebugQuad);
         }
         ImGui::End();
     }
@@ -171,9 +162,9 @@ public:
         _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
         _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         _commonShader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
@@ -215,6 +206,7 @@ public:
         }
 
         //Копируем буфер глубины в текстуру и выводим в прямоугольник на экране
+        if (_showDebugQuad)
         {
             glBindTexture(GL_TEXTURE_2D, _depthTexId);
             glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 0, 0, width, height, 0);

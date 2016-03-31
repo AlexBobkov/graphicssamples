@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 Пример с рендерингом во множество буферов цвета одновременно
@@ -46,7 +39,6 @@ public:
     TexturePtr _brickTex;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
 
     GLuint _framebufferId;
     unsigned int _fbWidth;
@@ -61,11 +53,11 @@ public:
         _fbWidth = 1024;
         _fbHeight = 1024;
 
-
         //Создаем фреймбуфер
         glGenFramebuffers(1, &_framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
+        //----------------------------
 
         //Создаем текстуру, куда будет осуществляться рендеринг	
         glGenTextures(1, &_renderAmbientTexId);
@@ -75,6 +67,8 @@ public:
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _renderAmbientTexId, 0);
 
+        //----------------------------
+
         //Создаем текстуру, куда будет осуществляться рендеринг	
         glGenTextures(1, &_renderDiffuseTexId);
         glBindTexture(GL_TEXTURE_2D, _renderDiffuseTexId);
@@ -82,6 +76,8 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, _renderDiffuseTexId, 0);
+
+        //----------------------------
 
         //Создаем текстуру, куда будет осуществляться рендеринг	
         glGenTextures(1, &_renderSpecularTexId);
@@ -91,6 +87,7 @@ public:
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, _renderSpecularTexId, 0);
 
+        //----------------------------
 
         //Создаем буфер глубины для фреймбуфера
         GLuint depthRenderBuffer;
@@ -99,6 +96,7 @@ public:
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _fbWidth, _fbHeight);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
 
+        //----------------------------
 
         //Указываем куда именно мы будем рендерить		
         GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -173,15 +171,8 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
         //=========================================================
-        //Инициализация фреймбуфера и 2й виртуальной камеры - для рендеринга в текстуру
+        //Инициализация фреймбуфера для рендеринга в текстуру
 
         initFramebuffer();
     }

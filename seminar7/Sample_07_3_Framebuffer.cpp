@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 Пример с рендерингом в текстуру
@@ -25,6 +18,8 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
     MeshPtr _ground;
+
+    MeshPtr _quad;
 
     MeshPtr _marker; //Меш - маркер для источника света
 
@@ -44,7 +39,6 @@ public:
     GLuint _renderTexId;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
 
     GLuint _framebufferId;
     unsigned int _fbWidth;
@@ -52,16 +46,18 @@ public:
 
     CameraInfo _fbCamera;
 
+    bool _showDebugQuad = false;
+
     void initFramebuffer()
     {
         _fbWidth = 1024;
         _fbHeight = 1024;
 
-
         //Создаем фреймбуфер
         glGenFramebuffers(1, &_framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
+        //----------------------------
 
         //Создаем текстуру, куда будет осуществляться рендеринг	
         glGenTextures(1, &_renderTexId);
@@ -71,6 +67,7 @@ public:
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _renderTexId, 0);
 
+        //----------------------------
 
         //Создаем буфер глубины для фреймбуфера
         GLuint depthRenderBuffer;
@@ -80,6 +77,7 @@ public:
 
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
 
+        //----------------------------
 
         //Указываем куда именно мы будем рендерить		
         GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
@@ -98,6 +96,8 @@ public:
     {
         Application::makeScene();
 
+        _showDebugQuad = false;
+
         //=========================================================
         //Создание и загрузка мешей		
 
@@ -113,6 +113,8 @@ public:
         _ground = makeGroundPlane(5.0f, 2.0f);
 
         _marker = makeSphere(0.1f);
+
+        _quad = makeScreenAlignedQuad();
 
         //=========================================================
         //Инициализация шейдеров
@@ -149,13 +151,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
         //=========================================================
         //Инициализация фреймбуфера и 2й виртуальной камеры - для рендеринга в текстуру
 
@@ -184,6 +179,8 @@ public:
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
+
+            ImGui::Checkbox("Show debug quad", &_showDebugQuad);
         }
         ImGui::End();
     }
@@ -217,9 +214,9 @@ public:
         _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
         _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         _commonShader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
@@ -267,9 +264,9 @@ public:
         _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
         _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _renderTexId);
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        glBindTexture(GL_TEXTURE_2D, _renderTexId);
         _commonShader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
@@ -308,6 +305,20 @@ public:
             _markerShader->setMat4Uniform("mvpMatrix", camera.projMatrix * camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
             _markerShader->setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
             _marker->draw();
+        }
+
+        if (_showDebugQuad)
+        {
+            _quadShader->use();
+
+            glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+            glBindTexture(GL_TEXTURE_2D, _renderTexId);
+            glBindSampler(0, _sampler);
+            _quadShader->setIntUniform("tex", 0);
+
+            glViewport(0, 0, 500, 500);
+
+            _quad->draw();
         }
 
         //Отсоединяем сэмплер и шейдерную программу

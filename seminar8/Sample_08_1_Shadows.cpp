@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -6,14 +7,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
 
 /**
 Пример с тенями
@@ -49,7 +42,6 @@ public:
     TexturePtr _brickTex;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
     GLuint _depthSampler;
     GLuint _depthSamplerLinear;
 
@@ -68,18 +60,19 @@ public:
         _fbWidth = 1024;
         _fbHeight = 1024;
 
-
         //Создаем фреймбуфер
         glGenFramebuffers(1, &_framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
+        //----------------------------
 
-        ////Создаем текстуру, куда будем впоследствии копировать буфер глубины
+        //Создаем текстуру, куда будем впоследствии копировать буфер глубины
         glGenTextures(1, &_depthTexId);
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _fbWidth, _fbHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexId, 0);
 
+        //----------------------------
 
         //Указываем куда именно мы будем рендерить		
         GLenum buffers[] = { GL_NONE };
@@ -164,13 +157,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -331,9 +317,9 @@ public:
             shader->setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
         }
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
