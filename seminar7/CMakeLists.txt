@@ -20,12 +20,6 @@ set(SHADER_FILES
 	
 	shaders7/mrt.vert	
 	shaders7/mrt.frag
-
-	shaders7/quadDepth.vert	
-	shaders7/quadDepth.frag
-
-	shaders7/quadColor.vert
-	shaders7/quadColor.frag	
 )
 
 source_group("Shaders" FILES	

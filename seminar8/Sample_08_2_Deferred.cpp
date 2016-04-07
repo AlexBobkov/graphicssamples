@@ -166,10 +166,10 @@ public:
         //Инициализация шейдеров
 
         _quadDepthShader = std::make_shared<ShaderProgram>();
-        _quadDepthShader->createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+        _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
 
         _quadColorShader = std::make_shared<ShaderProgram>();
-        _quadColorShader->createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
+        _quadColorShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
 
         _renderToGBufferShader = std::make_shared<ShaderProgram>();
         _renderToGBufferShader->createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
