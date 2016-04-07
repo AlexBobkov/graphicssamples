@@ -140,6 +140,9 @@ void FreeCameraMover::update(GLFWwindow* window, double dt)
 
     //Получаем текущее направление "вперед" в мировой системе координат
     glm::vec3 forwDir = glm::vec3(0.0f, 0.0f, -1.0f) * _rot;
+
+    //Получаем текущее направление "вправо" в мировой системе координат
+    glm::vec3 rightDir = glm::vec3(1.0f, 0.0f, 0.0f) * _rot;
         
     //Двигаем камеру вперед/назад
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -149,6 +152,14 @@ void FreeCameraMover::update(GLFWwindow* window, double dt)
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
         _pos -= forwDir * speed * static_cast<float>(dt);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        _pos -= rightDir * speed * static_cast<float>(dt);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        _pos += rightDir * speed * static_cast<float>(dt);
     }
 
     //-----------------------------------------
