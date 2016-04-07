@@ -8,37 +8,32 @@
 #include <sstream>
 #include <vector>
 
-float frand()
+namespace
 {
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
+    float frand()
+    {
+        return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    }
 
-//Удобная функция для вычисления цвета из линейной палитры от синего до красного
-void getColorFromLinearPalette(float value, float& r, float& g, float& b)
-{
-    if (value < 0.25f)
+    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
+    glm::vec3 getColorFromLinearPalette(float value)
     {
-        r = 0.0f;
-        g = value * 4.0f;
-        b = 1.0f;
-    }
-    else if (value < 0.5f)
-    {
-        r = 0.0f;
-        g = 1.0f;
-        b = (0.5f - value) * 4.0f;
-    }
-    else if (value < 0.75f)
-    {
-        r = (value - 0.5f) * 4.0f;
-        g = 1.0f;
-        b = 0.0f;
-    }
-    else
-    {
-        r = 1.0f;
-        g = (1.0f - value) * 4.0f;
-        b = 0.0f;
+        if (value < 0.25f)
+        {
+            return glm::vec3(0.0f, value * 4.0f, 1.0f);
+        }
+        else if (value < 0.5f)
+        {
+            return glm::vec3(0.0f, 1.0f, (0.5f - value) * 4.0f);
+        }
+        else if (value < 0.75f)
+        {
+            return glm::vec3((value - 0.5f) * 4.0f, 1.0f, 0.0f);
+        }
+        else
+        {
+            return glm::vec3(1.0f, (1.0f - value) * 4.0f, 0.0f);
+        }
     }
 }
 
@@ -223,13 +218,12 @@ public:
         for (int i = 0; i < Klights; i++)
         {
             LightInfo light;
-
-            float r, g, b;
-            getColorFromLinearPalette(frand(), r, g, b);
+                        
+            glm::vec3 color = getColorFromLinearPalette(frand());
 
             light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 10.0);
-            light.ambient = glm::vec3(0.0 * r, 0.0 * g, 0.0 * b);
-            light.diffuse = glm::vec3(0.4 * r, 0.4 * g, 0.4 * b);
+            light.ambient = color * 0.0f;
+            light.diffuse = color * 0.4f;
             light.specular = glm::vec3(0.5, 0.5, 0.5);
 
             _lights.push_back(light);

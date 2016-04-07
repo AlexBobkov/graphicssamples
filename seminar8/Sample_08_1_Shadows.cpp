@@ -24,7 +24,6 @@ public:
     MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
-    ShaderProgramPtr _commonShader;
     ShaderProgramPtr _markerShader;
     ShaderProgramPtr _quadShader;
     ShaderProgramPtr _renderToShadowMapShader;
@@ -117,9 +116,6 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
         _markerShader = std::make_shared<ShaderProgram>();
         _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
@@ -177,8 +173,7 @@ public:
         glSamplerParameterfv(_depthSamplerLinear, GL_TEXTURE_BORDER_COLOR, border);
         glSamplerParameteri(_depthSamplerLinear, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glSamplerParameteri(_depthSamplerLinear, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-
+        
         //=========================================================
         //Инициализация фреймбуфера для рендера теневой карты
 

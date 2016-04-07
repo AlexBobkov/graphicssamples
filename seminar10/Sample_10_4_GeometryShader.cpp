@@ -44,7 +44,6 @@ public:
     TexturePtr _particleTex;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
     GLuint _depthSampler;
 
     float _oldTime;
@@ -101,13 +100,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 

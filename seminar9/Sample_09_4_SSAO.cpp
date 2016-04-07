@@ -34,11 +34,7 @@ public:
 
     MeshPtr _quad;
 
-    MeshPtr _marker; //Меш - маркер для источника света
-
     //Идентификатор шейдерной программы
-    ShaderProgramPtr _commonShader;
-    ShaderProgramPtr _markerShader;
     ShaderProgramPtr _quadDepthShader;
     ShaderProgramPtr _quadColorShader;
     ShaderProgramPtr _renderToShadowMapShader;
@@ -66,7 +62,6 @@ public:
 
     GLuint _sampler;
     GLuint _repeatSampler;
-    GLuint _cubeTexSampler;
     GLuint _depthSampler;
 
     bool _applyEffect;
@@ -249,18 +244,10 @@ public:
 
         _ground = makeGroundPlane(5.0f, 2.0f);
 
-        _marker = makeSphere(0.1f);
-
         _quad = makeScreenAlignedQuad();
 
         //=========================================================
         //Инициализация шейдеров
-
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
         _quadDepthShader = std::make_shared<ShaderProgram>();
         _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
@@ -329,13 +316,6 @@ public:
         glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
