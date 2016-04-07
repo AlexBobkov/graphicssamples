@@ -262,8 +262,8 @@ public:
         glClear(GL_DEPTH_BUFFER_BIT);
 
         _renderToShadowMapShader->use();
-        _renderToShadowMapShader->setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
-        _renderToShadowMapShader->setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
+        _renderToShadowMapShader->setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
+        _renderToShadowMapShader->setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
 
         if (_cullFrontFaces)
         {
