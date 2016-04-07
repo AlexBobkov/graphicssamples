@@ -61,6 +61,10 @@ public:
     float _phi;
     float _theta;
 
+    float _attenuation0;
+    float _attenuation1;
+    float _attenuation2;
+
     LightInfo _light;
 
     TexturePtr _brickTex;
@@ -88,6 +92,9 @@ public:
 
     SampleApplication() :
         Application(),
+        _attenuation0(1.0f),
+        _attenuation1(0.0f),
+        _attenuation2(0.0f),
         _fbWidth(1024),
         _fbHeight(1024),
         _Npositions(100),
@@ -96,7 +103,6 @@ public:
         _Kcurrent(0),
         _showDebugQuads(false)
     {
-
     }
 
     void initFramebuffer()
@@ -165,7 +171,7 @@ public:
         _bunny = loadFromFile("models/bunny.obj");
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        _ground = makeGroundPlane(5.0f, 2.0f);
+        _ground = makeGroundPlane(10.0f, 2.0f);
 
         _quad = makeScreenAlignedQuad();
 
@@ -194,6 +200,9 @@ public:
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
+        _light.attenuation0 = _attenuation0;
+        _light.attenuation1 = _attenuation1;
+        _light.attenuation2 = _attenuation2;
 
         //=========================================================
         //«агрузка и создание текстур
@@ -233,6 +242,9 @@ public:
             light.ambient = color * 0.0f;
             light.diffuse = color * 0.4f;
             light.specular = glm::vec3(0.5, 0.5, 0.5);
+            light.attenuation0 = _attenuation0;
+            light.attenuation1 = _attenuation1;
+            light.attenuation2 = _attenuation2;
 
             _lights.push_back(light);
         }
@@ -256,10 +268,14 @@ public:
                 ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
+
+                ImGui::SliderFloat("attenuation0", &_attenuation0, 1.0f, 10.0f);
+                ImGui::SliderFloat("attenuation1", &_attenuation1, 0.0f, 1.0f);
+                ImGui::SliderFloat("attenuation2", &_attenuation2, 0.0f, 1.0f);
             }
 
             ImGui::SliderInt("Mesh count", &_Ncurrent, 0, _Npositions);
-            ImGui::SliderInt("Light count", &_Kcurrent, 0, _Ncurrent);
+            ImGui::SliderInt("Light count", &_Kcurrent, 0, _Klights);
 
             ImGui::Checkbox("Show depth quad", &_showDebugQuads);
         }
@@ -353,12 +369,17 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
 
+        //ѕараметры затухани€ сделаем общими дл€ всех источников света
+        shader->setFloatUniform("light.a0", _attenuation0);
+        shader->setFloatUniform("light.a1", _attenuation1);
+        shader->setFloatUniform("light.a2", _attenuation2);
+
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
         shader->setVec3Uniform("light.La", _light.ambient);
         shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
+        shader->setVec3Uniform("light.Ls", _light.specular);        
 
         _quad->draw(); //main light
 
