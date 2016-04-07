@@ -37,11 +37,16 @@ public:
 
     bool _backFaceCull;
 
+    SampleApplication() :
+        Application(),
+        _backFaceCull(true)
+    {
+    }
+
     void makeScene() override
     {
         Application::makeScene();
 
-        _backFaceCull = false;
 
         //=========================================================
         //Создание и загрузка мешей		
@@ -69,7 +74,7 @@ public:
         //=========================================================
         //Инициализация значений переменных освщения
         _lr = 10.0;
-        _phi = 2.65f;
+        _phi = 0.0f;
         _theta = 0.48f;
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;

@@ -78,19 +78,31 @@ public:
 
     bool _showDebugQuads;
 
-    int Npositions;
-    int Ncurrent;
+    int _Npositions;
+    int _Ncurrent;
     std::vector<glm::vec3> _positions;
 
-    int Klights;
-    int Kcurrent;
+    int _Klights;
+    int _Kcurrent;
     std::vector<LightInfo> _lights;
+
+    SampleApplication() :
+        Application(),
+        _fbWidth(1024),
+        _fbHeight(1024),
+        _Npositions(100),
+        _Ncurrent(0),
+        _Klights(100),
+        _Kcurrent(0),
+        _showDebugQuads(false)
+    {
+
+    }
 
     void initFramebuffer()
     {
         _fbWidth = 1024;
         _fbHeight = 1024;
-
 
         //Создаем фреймбуфер
         glGenFramebuffers(1, &_framebufferId);
@@ -203,19 +215,15 @@ public:
         //=========================================================
         srand((int)(glfwGetTime() * 1000));
 
-        Npositions = 100;
-        Ncurrent = 0;
         float size = 20.0f;
-        for (int i = 0; i < Npositions; i++)
+        for (int i = 0; i < _Npositions; i++)
         {
             _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
         }
 
         //=========================================================
-        Klights = 100;
-        Kcurrent = 0;
         size = 30.0f;
-        for (int i = 0; i < Klights; i++)
+        for (int i = 0; i < _Klights; i++)
         {
             LightInfo light;
                         
@@ -250,8 +258,8 @@ public:
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
 
-            ImGui::SliderInt("Mesh count", &Ncurrent, 0, 100);
-            ImGui::SliderInt("Light count", &Kcurrent, 0, 100);
+            ImGui::SliderInt("Mesh count", &_Ncurrent, 0, _Npositions);
+            ImGui::SliderInt("Light count", &_Kcurrent, 0, _Ncurrent);
 
             ImGui::Checkbox("Show depth quad", &_showDebugQuads);
         }
@@ -354,7 +362,7 @@ public:
 
         _quad->draw(); //main light
 
-        for (int i = 0; i < Kcurrent; i++)
+        for (int i = 0; i < _Kcurrent; i++)
         {
             glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
 
@@ -396,7 +404,7 @@ public:
 
         _bunny->draw();
 
-        for (int i = 0; i < Ncurrent; i++)
+        for (int i = 0; i < _Ncurrent; i++)
         {
             glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _positions[i]);
 

@@ -361,6 +361,7 @@ public:
         shader->setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
 
         glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
         glCullFace(GL_FRONT);
 
         drawScene(shader, lightCamera);
@@ -448,8 +449,6 @@ public:
 
     void drawScene(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
-        glFrontFace(GL_CW);
-
         shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
 
@@ -464,8 +463,6 @@ public:
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
 
         _ground->draw();
-
-        glFrontFace(GL_CCW);
 
         shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));
