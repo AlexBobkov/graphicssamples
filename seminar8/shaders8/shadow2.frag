@@ -51,7 +51,7 @@ void main()
 	float visibility = 1.0;
 	for (int i = 0; i < 4; i++)
 	{		
-		visibility -= 0.2 * (1.0 - texture(shadowTex, vec3(shadowCoords.xy + poissonDisk[i] / radiusInv, shadowCoords.z)));
+		visibility -= 0.25 * (1.0 - texture(shadowTex, vec3(shadowCoords.xy + poissonDisk[i] / radiusInv, shadowCoords.z)));
 	}
 	
 	//===============================
