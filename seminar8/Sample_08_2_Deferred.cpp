@@ -50,11 +50,15 @@ public:
 
     MeshPtr _quad;
 
+    MeshPtr _lightSphere; //Маркер для источника света
+
     //Идентификатор шейдерной программы
     ShaderProgramPtr _quadDepthShader;
     ShaderProgramPtr _quadColorShader;
     ShaderProgramPtr _renderToGBufferShader;
     ShaderProgramPtr _renderDeferredShader;
+    ShaderProgramPtr _renderDeferredSphereShader;
+    ShaderProgramPtr _renderDeferredSphereDebugShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -64,6 +68,9 @@ public:
     float _attenuation0;
     float _attenuation1;
     float _attenuation2;
+
+    float _minIntensity;
+    float _maxRadius;
 
     LightInfo _light;
 
@@ -90,11 +97,15 @@ public:
     int _Kcurrent;
     std::vector<LightInfo> _lights;
 
+    int _renderMode = 0; //0 - quads, 1 - spheres, 2 - debug spheres
+
     SampleApplication() :
         Application(),
         _attenuation0(1.0f),
         _attenuation1(0.0f),
-        _attenuation2(0.0f),
+        _attenuation2(0.05f),
+        _minIntensity(0.1f),
+        _maxRadius(1.0f),
         _fbWidth(1024),
         _fbHeight(1024),
         _Npositions(100),
@@ -175,6 +186,8 @@ public:
 
         _quad = makeScreenAlignedQuad();
 
+        _lightSphere = makeSphere(1.0f);
+
         //=========================================================
         //Инициализация шейдеров
 
@@ -189,6 +202,12 @@ public:
 
         _renderDeferredShader = std::make_shared<ShaderProgram>();
         _renderDeferredShader->createProgram("shaders8/deferred.vert", "shaders8/deferred.frag");
+
+        _renderDeferredSphereShader = std::make_shared<ShaderProgram>();
+        _renderDeferredSphereShader->createProgram("shaders8/deferredSphere.vert", "shaders8/deferredSphere.frag");
+
+        _renderDeferredSphereDebugShader = std::make_shared<ShaderProgram>();
+        _renderDeferredSphereDebugShader->createProgram("shaders8/deferredSphere.vert", "shaders8/deferredSphereDebug.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -238,7 +257,7 @@ public:
                         
             glm::vec3 color = getColorFromLinearPalette(frand());
 
-            light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 10.0);
+            light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 3.0);
             light.ambient = color * 0.0f;
             light.diffuse = color * 0.4f;
             light.specular = glm::vec3(0.5, 0.5, 0.5);
@@ -272,12 +291,18 @@ public:
                 ImGui::SliderFloat("attenuation0", &_attenuation0, 1.0f, 10.0f);
                 ImGui::SliderFloat("attenuation1", &_attenuation1, 0.0f, 1.0f);
                 ImGui::SliderFloat("attenuation2", &_attenuation2, 0.0f, 1.0f);
+
+                ImGui::Text("Sphere radius %.1f", _maxRadius);
             }
 
             ImGui::SliderInt("Mesh count", &_Ncurrent, 0, _Npositions);
             ImGui::SliderInt("Light count", &_Kcurrent, 0, _Klights);
 
             ImGui::Checkbox("Show depth quad", &_showDebugQuads);
+
+            ImGui::RadioButton("Render quads", &_renderMode, 0);
+            ImGui::RadioButton("Render spheres", &_renderMode, 1);
+            ImGui::RadioButton("Render debug spheres", &_renderMode, 2);
         }
         ImGui::End();
     }
@@ -305,7 +330,19 @@ public:
     void draw() override
     {
         drawToGBuffer(_camera);
-        drawToScreen(_renderDeferredShader, _camera);
+
+        if (_renderMode == 0)
+        {
+            drawToScreen(_renderDeferredShader, _camera);
+        }
+        else if (_renderMode == 1)
+        {
+            drawSpheresToScreen(_renderDeferredSphereShader, _camera);
+        }
+        else
+        {
+            drawDebugSpheresToScreen(_renderDeferredSphereDebugShader, _camera);
+        }
 
         if (_showDebugQuads)
         {
@@ -396,6 +433,146 @@ public:
         }
 
         glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+
+        //Отсоединяем сэмплер и шейдерную программу
+        glBindSampler(0, 0);
+        glUseProgram(0);
+    }
+
+    void drawSpheresToScreen(const ShaderProgramPtr& shader, const CameraInfo& camera)
+    {
+        //Получаем текущие размеры экрана и выставлям вьюпорт
+        int width, height;
+        glfwGetFramebufferSize(_window, &width, &height);
+
+        glViewport(0, 0, width, height);
+
+        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDisable(GL_DEPTH_TEST);
+
+        shader->use();
+        shader->setMat4Uniform("viewMatrix", camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", camera.projMatrix);
+
+        shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
+
+        shader->setFloatUniform("screenWidth", (float)width);
+        shader->setFloatUniform("screenHeight", (float)height);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glBindTexture(GL_TEXTURE_2D, _normalsTexId);
+        glBindSampler(0, _sampler);
+        shader->setIntUniform("normalsTex", 0);
+
+        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
+        glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
+        glBindSampler(1, _sampler);
+        shader->setIntUniform("diffuseTex", 1);
+
+        glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
+        glBindTexture(GL_TEXTURE_2D, _depthTexId);
+        glBindSampler(2, _sampler);
+        shader->setIntUniform("depthTex", 2);
+        
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_FRONT);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+
+        //-----------------------------------
+
+        float D = _attenuation1 * _attenuation1 - 4.0 * _attenuation2 * (_attenuation0 - 1 / _minIntensity);
+        if (D > 0.0)
+        {
+            _maxRadius = (-_attenuation1 + sqrt(D)) / (2.0 * _attenuation2);
+           
+            //-----------------------------------
+
+            //Параметры затухания сделаем общими для всех источников света
+            shader->setFloatUniform("light.a0", _attenuation0);
+            shader->setFloatUniform("light.a1", _attenuation1);
+            shader->setFloatUniform("light.a2", _attenuation2);
+
+            glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
+
+            shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+            shader->setVec3Uniform("light.La", _light.ambient);
+            shader->setVec3Uniform("light.Ld", _light.diffuse);
+            shader->setVec3Uniform("light.Ls", _light.specular);
+
+            glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), _light.position), glm::vec3(_maxRadius, _maxRadius, _maxRadius));
+            shader->setMat4Uniform("modelMatrix", modelMatrix);
+
+            _lightSphere->draw(); //main light
+
+            for (int i = 0; i < _Kcurrent; i++)
+            {
+                glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
+
+                shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+                shader->setVec3Uniform("light.La", _lights[i].ambient);
+                shader->setVec3Uniform("light.Ld", _lights[i].diffuse);
+                shader->setVec3Uniform("light.Ls", _lights[i].specular);
+
+                glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), _lights[i].position), glm::vec3(_maxRadius, _maxRadius, _maxRadius));
+                shader->setMat4Uniform("modelMatrix", modelMatrix);
+
+                _lightSphere->draw();
+            }
+        }
+
+        //-----------------------------------
+
+        glDisable(GL_BLEND);
+        glDisable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+
+        //Отсоединяем сэмплер и шейдерную программу
+        glBindSampler(0, 0);
+        glUseProgram(0);
+    }
+
+    void drawDebugSpheresToScreen(const ShaderProgramPtr& shader, const CameraInfo& camera)
+    {
+        //Получаем текущие размеры экрана и выставлям вьюпорт
+        int width, height;
+        glfwGetFramebufferSize(_window, &width, &height);
+
+        glViewport(0, 0, width, height);
+
+        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDisable(GL_DEPTH_TEST);
+
+        shader->use();
+        shader->setMat4Uniform("viewMatrix", camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", camera.projMatrix);
+
+        float D = _attenuation1 * _attenuation1 - 4.0 * _attenuation2 * (_attenuation0 - 1 / _minIntensity);
+        if (D > 0.0)
+        {
+            _maxRadius = (-_attenuation1 + sqrt(D)) / (2.0 * _attenuation2);
+
+            glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), _light.position), glm::vec3(_maxRadius, _maxRadius, _maxRadius));
+            shader->setMat4Uniform("modelMatrix", modelMatrix);
+
+            _lightSphere->draw(); //main light
+
+            for (int i = 0; i < _Kcurrent; i++)
+            {
+                glm::mat4 modelMatrix = glm::scale(glm::translate(glm::mat4(1.0f), _lights[i].position), glm::vec3(_maxRadius, _maxRadius, _maxRadius));
+                shader->setMat4Uniform("modelMatrix", modelMatrix);
+
+                _lightSphere->draw();
+            }
+        }
+
         glEnable(GL_DEPTH_TEST);
 
         //Отсоединяем сэмплер и шейдерную программу
