@@ -34,11 +34,7 @@ public:
 
     MeshPtr _quad;
 
-    MeshPtr _marker; //Меш - маркер для источника света
-
     //Идентификатор шейдерной программы
-    ShaderProgramPtr _commonShader;
-    ShaderProgramPtr _markerShader;
     ShaderProgramPtr _quadDepthShader;
     ShaderProgramPtr _quadColorShader;
     ShaderProgramPtr _renderToShadowMapShader;
@@ -58,7 +54,6 @@ public:
     TexturePtr _brickGammaTex;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
     GLuint _depthSampler;
 
     bool _applyEffect;
@@ -152,24 +147,16 @@ public:
 
         _ground = makeGroundPlane(5.0f, 2.0f);
 
-        _marker = makeSphere(0.1f);
-
         _quad = makeScreenAlignedQuad();
 
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
-
         _quadDepthShader = std::make_shared<ShaderProgram>();
-        _quadDepthShader->createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+        _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
 
         _quadColorShader = std::make_shared<ShaderProgram>();
-        _quadColorShader->createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
+        _quadColorShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
         
         _renderToShadowMapShader = std::make_shared<ShaderProgram>();
         _renderToShadowMapShader->createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
@@ -206,13 +193,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -381,6 +361,7 @@ public:
         shader->setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
 
         glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
         glCullFace(GL_FRONT);
 
         drawScene(shader, lightCamera);
@@ -468,8 +449,6 @@ public:
 
     void drawScene(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
-        glFrontFace(GL_CW);
-
         shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
 
@@ -484,8 +463,6 @@ public:
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
 
         _ground->draw();
-
-        glFrontFace(GL_CCW);
 
         shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));

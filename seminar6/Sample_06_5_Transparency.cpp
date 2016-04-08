@@ -176,7 +176,7 @@ public:
         if (backFaceCullEnabled)
         {
             glEnable(GL_CULL_FACE);
-            glFrontFace(GL_CW);
+            glFrontFace(GL_CCW);
             glCullFace(GL_BACK);
         }
 
@@ -215,8 +215,6 @@ public:
 
             _sphere->draw();
         }
-
-        glFrontFace(GL_CCW); //bunny has another front face orientation :(
 
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);

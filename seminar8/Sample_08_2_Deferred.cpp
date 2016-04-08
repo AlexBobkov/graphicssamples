@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -7,50 +8,37 @@
 #include <sstream>
 #include <vector>
 
-struct LightInfo
+namespace
 {
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
+    float frand()
+    {
+        return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    }
 
-float frand()
-{
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
-
-//Удобная функция для вычисления цвета из линейной палитры от синего до красного
-void getColorFromLinearPalette(float value, float& r, float& g, float& b)
-{
-    if (value < 0.25f)
+    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
+    glm::vec3 getColorFromLinearPalette(float value)
     {
-        r = 0.0f;
-        g = value * 4.0f;
-        b = 1.0f;
-    }
-    else if (value < 0.5f)
-    {
-        r = 0.0f;
-        g = 1.0f;
-        b = (0.5f - value) * 4.0f;
-    }
-    else if (value < 0.75f)
-    {
-        r = (value - 0.5f) * 4.0f;
-        g = 1.0f;
-        b = 0.0f;
-    }
-    else
-    {
-        r = 1.0f;
-        g = (1.0f - value) * 4.0f;
-        b = 0.0f;
+        if (value < 0.25f)
+        {
+            return glm::vec3(0.0f, value * 4.0f, 1.0f);
+        }
+        else if (value < 0.5f)
+        {
+            return glm::vec3(0.0f, 1.0f, (0.5f - value) * 4.0f);
+        }
+        else if (value < 0.75f)
+        {
+            return glm::vec3((value - 0.5f) * 4.0f, 1.0f, 0.0f);
+        }
+        else
+        {
+            return glm::vec3(1.0f, (1.0f - value) * 4.0f, 0.0f);
+        }
     }
 }
 
 /**
-Пример с тенями
+Пример с отложенным рендерингом
 */
 class SampleApplication : public Application
 {
@@ -62,11 +50,7 @@ public:
 
     MeshPtr _quad;
 
-    MeshPtr _marker; //Меш - маркер для источника света
-
     //Идентификатор шейдерной программы
-    ShaderProgramPtr _commonShader;
-    ShaderProgramPtr _markerShader;
     ShaderProgramPtr _quadDepthShader;
     ShaderProgramPtr _quadColorShader;
     ShaderProgramPtr _renderToGBufferShader;
@@ -77,12 +61,15 @@ public:
     float _phi;
     float _theta;
 
+    float _attenuation0;
+    float _attenuation1;
+    float _attenuation2;
+
     LightInfo _light;
 
     TexturePtr _brickTex;
 
     GLuint _sampler;
-    GLuint _cubeTexSampler;
 
     GLuint _framebufferId;
 
@@ -95,30 +82,47 @@ public:
 
     bool _showDebugQuads;
 
-    int Npositions;
-    int Ncurrent;
+    int _Npositions;
+    int _Ncurrent;
     std::vector<glm::vec3> _positions;
 
-    int Klights;
-    int Kcurrent;
+    int _Klights;
+    int _Kcurrent;
     std::vector<LightInfo> _lights;
+
+    SampleApplication() :
+        Application(),
+        _attenuation0(1.0f),
+        _attenuation1(0.0f),
+        _attenuation2(0.0f),
+        _fbWidth(1024),
+        _fbHeight(1024),
+        _Npositions(100),
+        _Ncurrent(0),
+        _Klights(100),
+        _Kcurrent(0),
+        _showDebugQuads(false)
+    {
+    }
 
     void initFramebuffer()
     {
         _fbWidth = 1024;
         _fbHeight = 1024;
 
-
         //Создаем фреймбуфер
         glGenFramebuffers(1, &_framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
+        //----------------------------
 
         //Создаем текстуру, куда будет осуществляться рендеринг нормалей
         glGenTextures(1, &_normalsTexId);
         glBindTexture(GL_TEXTURE_2D, _normalsTexId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _normalsTexId, 0);
+
+        //----------------------------
 
         //Создаем текстуру, куда будет осуществляться рендеринг диффузного цвета
         glGenTextures(1, &_diffuseTexId);
@@ -126,12 +130,15 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, _diffuseTexId, 0);
 
+        //----------------------------
+
         //Создаем текстуру, куда будем впоследствии копировать буфер глубины
         glGenTextures(1, &_depthTexId);
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, _fbWidth, _fbHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, _fbWidth, _fbHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexId, 0);
 
+        //----------------------------
 
         //Указываем куда именно мы будем рендерить		
         GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -164,26 +171,18 @@ public:
         _bunny = loadFromFile("models/bunny.obj");
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        _ground = makeGroundPlane(5.0f, 2.0f);
-
-        _marker = makeSphere(0.1f);
+        _ground = makeGroundPlane(10.0f, 2.0f);
 
         _quad = makeScreenAlignedQuad();
 
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
-
         _quadDepthShader = std::make_shared<ShaderProgram>();
-        _quadDepthShader->createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+        _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
 
         _quadColorShader = std::make_shared<ShaderProgram>();
-        _quadColorShader->createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
+        _quadColorShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
 
         _renderToGBufferShader = std::make_shared<ShaderProgram>();
         _renderToGBufferShader->createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
@@ -201,6 +200,9 @@ public:
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
+        _light.attenuation0 = _attenuation0;
+        _light.attenuation1 = _attenuation1;
+        _light.attenuation2 = _attenuation2;
 
         //=========================================================
         //Загрузка и создание текстур
@@ -214,13 +216,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glGenSamplers(1, &_cubeTexSampler);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glSamplerParameteri(_cubeTexSampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
         //=========================================================
         //Инициализация фреймбуфера для рендера теневой карты
 
@@ -229,29 +224,27 @@ public:
         //=========================================================
         srand((int)(glfwGetTime() * 1000));
 
-        Npositions = 100;
-        Ncurrent = 0;
         float size = 20.0f;
-        for (int i = 0; i < Npositions; i++)
+        for (int i = 0; i < _Npositions; i++)
         {
             _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
         }
 
         //=========================================================
-        Klights = 100;
-        Kcurrent = 0;
         size = 30.0f;
-        for (int i = 0; i < Klights; i++)
+        for (int i = 0; i < _Klights; i++)
         {
             LightInfo light;
-
-            float r, g, b;
-            getColorFromLinearPalette(frand(), r, g, b);
+                        
+            glm::vec3 color = getColorFromLinearPalette(frand());
 
             light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 10.0);
-            light.ambient = glm::vec3(0.0 * r, 0.0 * g, 0.0 * b);
-            light.diffuse = glm::vec3(0.4 * r, 0.4 * g, 0.4 * b);
+            light.ambient = color * 0.0f;
+            light.diffuse = color * 0.4f;
             light.specular = glm::vec3(0.5, 0.5, 0.5);
+            light.attenuation0 = _attenuation0;
+            light.attenuation1 = _attenuation1;
+            light.attenuation2 = _attenuation2;
 
             _lights.push_back(light);
         }
@@ -275,10 +268,14 @@ public:
                 ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
+
+                ImGui::SliderFloat("attenuation0", &_attenuation0, 1.0f, 10.0f);
+                ImGui::SliderFloat("attenuation1", &_attenuation1, 0.0f, 1.0f);
+                ImGui::SliderFloat("attenuation2", &_attenuation2, 0.0f, 1.0f);
             }
 
-            ImGui::SliderInt("Mesh count", &Ncurrent, 0, 100);
-            ImGui::SliderInt("Light count", &Kcurrent, 0, 100);
+            ImGui::SliderInt("Mesh count", &_Ncurrent, 0, _Npositions);
+            ImGui::SliderInt("Light count", &_Kcurrent, 0, _Klights);
 
             ImGui::Checkbox("Show depth quad", &_showDebugQuads);
         }
@@ -328,9 +325,9 @@ public:
         _renderToGBufferShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         _renderToGBufferShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         _renderToGBufferShader->setIntUniform("diffuseTex", 0);
 
         drawScene(_renderToGBufferShader, camera);
@@ -352,14 +349,7 @@ public:
 
         shader->use();
         shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
-
-        glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
-
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
-
+                
         glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
         glBindTexture(GL_TEXTURE_2D, _normalsTexId);
         glBindSampler(0, _sampler);
@@ -379,9 +369,21 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
 
+        //Параметры затухания сделаем общими для всех источников света
+        shader->setFloatUniform("light.a0", _attenuation0);
+        shader->setFloatUniform("light.a1", _attenuation1);
+        shader->setFloatUniform("light.a2", _attenuation2);
+
+        glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
+
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);        
+
         _quad->draw(); //main light
 
-        for (unsigned int i = 0; i < Kcurrent; i++)
+        for (int i = 0; i < _Kcurrent; i++)
         {
             glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
 
@@ -423,7 +425,7 @@ public:
 
         _bunny->draw();
 
-        for (unsigned int i = 0; i < Ncurrent; i++)
+        for (int i = 0; i < _Ncurrent; i++)
         {
             glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _positions[i]);
 
@@ -449,6 +451,8 @@ public:
 
         _quad->draw();
 
+        //----------------------------
+
         glViewport(500, 0, 500, 500);
 
         _quadColorShader->use();
@@ -459,6 +463,8 @@ public:
         _quadColorShader->setIntUniform("tex", 0);
 
         _quad->draw();
+
+        //----------------------------
 
         glViewport(1000, 0, 500, 500);
 

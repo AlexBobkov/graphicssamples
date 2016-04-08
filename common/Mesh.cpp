@@ -27,29 +27,29 @@ MeshPtr makeSphere(float radius, unsigned int N)
 
             //Первый треугольник, образующий квад
             vertices.push_back(glm::vec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius));
-            vertices.push_back(glm::vec3(cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius));
             vertices.push_back(glm::vec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius));
-
+            vertices.push_back(glm::vec3(cos(phi1) * sin(theta) * radius, sin(phi1) * sin(theta) * radius, cos(theta) * radius));
+            
             normals.push_back(glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)));
-            normals.push_back(glm::vec3(cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta)));
             normals.push_back(glm::vec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)));
-
+            normals.push_back(glm::vec3(cos(phi1) * sin(theta), sin(phi1) * sin(theta), cos(theta)));
+            
             texcoords.push_back(glm::vec2((float)j / N, 1.0f - (float)i / M));
-            texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)i / M));
             texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M));
+            texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)i / M));            
 
             //Второй треугольник, образующий квад
             vertices.push_back(glm::vec3(cos(phi) * sin(theta) * radius, sin(phi) * sin(theta) * radius, cos(theta) * radius));
-            vertices.push_back(glm::vec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius));
             vertices.push_back(glm::vec3(cos(phi) * sin(theta1) * radius, sin(phi) * sin(theta1) * radius, cos(theta1) * radius));
+            vertices.push_back(glm::vec3(cos(phi1) * sin(theta1) * radius, sin(phi1) * sin(theta1) * radius, cos(theta1) * radius));            
 
             normals.push_back(glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)));
-            normals.push_back(glm::vec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)));
             normals.push_back(glm::vec3(cos(phi) * sin(theta1), sin(phi) * sin(theta1), cos(theta1)));
+            normals.push_back(glm::vec3(cos(phi1) * sin(theta1), sin(phi1) * sin(theta1), cos(theta1)));            
 
             texcoords.push_back(glm::vec2((float)j / N, 1.0f - (float)i / M));
-            texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M));
             texcoords.push_back(glm::vec2((float)j / N, 1.0f - (float)(i + 1) / M));
+            texcoords.push_back(glm::vec2((float)(j + 1) / N, 1.0f - (float)(i + 1) / M));            
         }
     }
 
@@ -82,159 +82,159 @@ MeshPtr makeCube(float size)
 
     //front 1
     vertices.push_back(glm::vec3(size, -size, size));
-    vertices.push_back(glm::vec3(size, size, size));
     vertices.push_back(glm::vec3(size, size, -size));
-
+    vertices.push_back(glm::vec3(size, size, size));
+    
     normals.push_back(glm::vec3(1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(1.0, 0.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 1.0));
     texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));    
 
     //front 2
     vertices.push_back(glm::vec3(size, -size, size));
-    vertices.push_back(glm::vec3(size, size, -size));
     vertices.push_back(glm::vec3(size, -size, -size));
+    vertices.push_back(glm::vec3(size, size, -size));
 
     normals.push_back(glm::vec3(1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(1.0, 0.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 0.0));
     texcoords.push_back(glm::vec2(0.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));    
 
     //left 1
     vertices.push_back(glm::vec3(-size, -size, size));
-    vertices.push_back(glm::vec3(size, -size, size));
     vertices.push_back(glm::vec3(size, -size, -size));
+    vertices.push_back(glm::vec3(size, -size, size));    
 
     normals.push_back(glm::vec3(0.0, -1.0, 0.0));
     normals.push_back(glm::vec3(0.0, -1.0, 0.0));
     normals.push_back(glm::vec3(0.0, -1.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 1.0));
     texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 1.0));    
 
     //left 2
     vertices.push_back(glm::vec3(-size, -size, size));
-    vertices.push_back(glm::vec3(size, -size, -size));
     vertices.push_back(glm::vec3(-size, -size, -size));
+    vertices.push_back(glm::vec3(size, -size, -size));    
 
     normals.push_back(glm::vec3(0.0, -1.0, 0.0));
     normals.push_back(glm::vec3(0.0, -1.0, 0.0));
     normals.push_back(glm::vec3(0.0, -1.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 0.0));
     texcoords.push_back(glm::vec2(0.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));    
 
     //top 1
     vertices.push_back(glm::vec3(-size, size, size));
-    vertices.push_back(glm::vec3(size, size, size));
     vertices.push_back(glm::vec3(size, -size, size));
+    vertices.push_back(glm::vec3(size, size, size));    
 
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 1.0));
     texcoords.push_back(glm::vec2(1.0, 0.0));
-
+    texcoords.push_back(glm::vec2(1.0, 1.0));
+    
     //top 2
     vertices.push_back(glm::vec3(-size, size, size));
-    vertices.push_back(glm::vec3(size, -size, size));
     vertices.push_back(glm::vec3(-size, -size, size));
+    vertices.push_back(glm::vec3(size, -size, size));    
 
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 0.0));
     texcoords.push_back(glm::vec2(0.0, 0.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));    
 
     //back 1
     vertices.push_back(glm::vec3(-size, -size, size));
-    vertices.push_back(glm::vec3(-size, size, -size));
     vertices.push_back(glm::vec3(-size, size, size));
+    vertices.push_back(glm::vec3(-size, size, -size));    
 
     normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 0.0));
     texcoords.push_back(glm::vec2(1.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));    
 
     //back 2
     vertices.push_back(glm::vec3(-size, -size, size));
-    vertices.push_back(glm::vec3(-size, -size, -size));
     vertices.push_back(glm::vec3(-size, size, -size));
+    vertices.push_back(glm::vec3(-size, -size, -size));    
 
     normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
     normals.push_back(glm::vec3(-1.0, 0.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(0.0, 0.0));
     texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));    
 
     //right 1
     vertices.push_back(glm::vec3(-size, size, size));
-    vertices.push_back(glm::vec3(size, size, -size));
     vertices.push_back(glm::vec3(size, size, size));
+    vertices.push_back(glm::vec3(size, size, -size));    
 
     normals.push_back(glm::vec3(0.0, 1.0, 0.0));
     normals.push_back(glm::vec3(0.0, 1.0, 0.0));
     normals.push_back(glm::vec3(0.0, 1.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 0.0));
     texcoords.push_back(glm::vec2(1.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));    
 
     //right 2
     vertices.push_back(glm::vec3(-size, size, size));
-    vertices.push_back(glm::vec3(-size, size, -size));
     vertices.push_back(glm::vec3(+size, size, -size));
+    vertices.push_back(glm::vec3(-size, size, -size));    
 
     normals.push_back(glm::vec3(0.0, 1.0, 0.0));
     normals.push_back(glm::vec3(0.0, 1.0, 0.0));
     normals.push_back(glm::vec3(0.0, 1.0, 0.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(0.0, 0.0));
     texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));    
 
     //bottom 1
     vertices.push_back(glm::vec3(-size, size, -size));
-    vertices.push_back(glm::vec3(size, -size, -size));
     vertices.push_back(glm::vec3(size, size, -size));
-
+    vertices.push_back(glm::vec3(size, -size, -size));
+    
     normals.push_back(glm::vec3(0.0, 0.0, -1.0));
     normals.push_back(glm::vec3(0.0, 0.0, -1.0));
     normals.push_back(glm::vec3(0.0, 0.0, -1.0));
 
-    texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(0.0, 1.0));    
     texcoords.push_back(glm::vec2(1.0, 1.0));
+    texcoords.push_back(glm::vec2(1.0, 0.0));
 
     //bottom 2
     vertices.push_back(glm::vec3(-size, size, -size));
-    vertices.push_back(glm::vec3(-size, -size, -size));
     vertices.push_back(glm::vec3(size, -size, -size));
+    vertices.push_back(glm::vec3(-size, -size, -size));    
 
     normals.push_back(glm::vec3(0.0, 0.0, -1.0));
     normals.push_back(glm::vec3(0.0, 0.0, -1.0));
     normals.push_back(glm::vec3(0.0, 0.0, -1.0));
 
     texcoords.push_back(glm::vec2(0.0, 1.0));
-    texcoords.push_back(glm::vec2(0.0, 0.0));
     texcoords.push_back(glm::vec2(1.0, 0.0));
+    texcoords.push_back(glm::vec2(0.0, 0.0));    
 
     //----------------------------------------
 
@@ -263,13 +263,13 @@ MeshPtr makeScreenAlignedQuad()
 
     //front 1
     vertices.push_back(glm::vec3(-1.0, 1.0, 0.0));
-    vertices.push_back(glm::vec3(1.0, 1.0, 0.0));
     vertices.push_back(glm::vec3(1.0, -1.0, 0.0));
+    vertices.push_back(glm::vec3(1.0, 1.0, 0.0));    
 
     //front 2
     vertices.push_back(glm::vec3(-1.0, 1.0, 0.0));
-    vertices.push_back(glm::vec3(1.0, -1.0, 0.0));
     vertices.push_back(glm::vec3(-1.0, -1.0, 0.0));
+    vertices.push_back(glm::vec3(1.0, -1.0, 0.0));    
 
     //----------------------------------------
 
@@ -292,29 +292,29 @@ MeshPtr makeGroundPlane(float size, float numTiles)
 
     //front 1
     vertices.push_back(glm::vec3(-size, size, 0.0));
-    vertices.push_back(glm::vec3(size, size, 0.0));
     vertices.push_back(glm::vec3(size, -size, 0.0));
+    vertices.push_back(glm::vec3(size, size, 0.0));    
 
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
 
     texcoords.push_back(glm::vec2(-numTiles, numTiles));
-    texcoords.push_back(glm::vec2(numTiles, numTiles));
     texcoords.push_back(glm::vec2(numTiles, -numTiles));
+    texcoords.push_back(glm::vec2(numTiles, numTiles));    
 
     //front 2
     vertices.push_back(glm::vec3(-size, size, 0.0));
-    vertices.push_back(glm::vec3(size, -size, 0.0));
     vertices.push_back(glm::vec3(-size, -size, 0.0));
+    vertices.push_back(glm::vec3(size, -size, 0.0));    
 
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
     normals.push_back(glm::vec3(0.0, 0.0, 1.0));
 
     texcoords.push_back(glm::vec2(-numTiles, numTiles));
-    texcoords.push_back(glm::vec2(numTiles, -numTiles));
     texcoords.push_back(glm::vec2(-numTiles, -numTiles));
+    texcoords.push_back(glm::vec2(numTiles, -numTiles));    
 
     //----------------------------------------
 

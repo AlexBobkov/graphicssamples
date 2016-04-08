@@ -12,6 +12,9 @@ struct LightInfo
 	vec3 La; //цвет и интенсивность окружающего света
 	vec3 Ld; //цвет и интенсивность диффузного света
 	vec3 Ls; //цвет и интенсивность бликового света
+	float a0;
+	float a1;
+	float a2;
 };
 uniform LightInfo light;
 
@@ -26,7 +29,7 @@ void main()
 {	
 	vec3 diffuseColor = texture(diffuseTex, texCoord).rgb;
 	
-	if (all(lessThan(diffuseColor, vec3(0.1))))
+	if (all(equal(diffuseColor, vec3(0.0))))
 	{
 		discard;
 	}
@@ -38,20 +41,20 @@ void main()
 			
 	vec3 normalColor = texture(normalsTex, texCoord).rgb;	
 	vec3 normal = normalize(normalColor * 2.0 - 1.0);
-		
-	vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
 	
 	vec3 lightDirCamSpace = normalize(light.pos - posCamSpace.xyz); //направление на источник света	
 
 	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 	
 	float distance = length(light.pos - posCamSpace.xyz);
-	float attenuationCoef = 1.0 / (1.0 + 0.1 * distance);
+	float attenuationCoef = 1.0 / (light.a0 + light.a1 * distance + light.a2 * distance * distance);
 
 	vec3 color = diffuseColor * (light.La + light.Ld * NdotL) * attenuationCoef;
 
 	if (NdotL > 0.0)
-	{			
+	{
+		vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))	
+	
 		vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
 
 		float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				

@@ -24,7 +24,6 @@ public:
     MeshPtr _marker; //Меш - маркер для источника света
 
     //Идентификатор шейдерной программы
-    ShaderProgramPtr _commonShader;
     ShaderProgramPtr _markerShader;
     ShaderProgramPtr _quadShader;
     ShaderProgramPtr _renderToShadowMapShader;
@@ -117,14 +116,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
         _markerShader = std::make_shared<ShaderProgram>();
         _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
         _quadShader = std::make_shared<ShaderProgram>();
-        _quadShader->createProgram("shaders7/quadDepth.vert", "shaders7/quadDepth.frag");
+        _quadShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
 
         _renderToShadowMapShader = std::make_shared<ShaderProgram>();
         _renderToShadowMapShader->createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
@@ -177,8 +173,7 @@ public:
         glSamplerParameterfv(_depthSamplerLinear, GL_TEXTURE_BORDER_COLOR, border);
         glSamplerParameteri(_depthSamplerLinear, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glSamplerParameteri(_depthSamplerLinear, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
-
+        
         //=========================================================
         //Инициализация фреймбуфера для рендера теневой карты
 
@@ -267,12 +262,13 @@ public:
         glClear(GL_DEPTH_BUFFER_BIT);
 
         _renderToShadowMapShader->use();
-        _renderToShadowMapShader->setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
-        _renderToShadowMapShader->setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
+        _renderToShadowMapShader->setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
+        _renderToShadowMapShader->setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
 
         if (_cullFrontFaces)
         {
             glEnable(GL_CULL_FACE);
+            glFrontFace(GL_CCW);
             glCullFace(GL_FRONT);
         }
 
@@ -346,8 +342,6 @@ public:
 
     void drawScene(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
-        glFrontFace(GL_CW);
-
         shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
 
@@ -362,8 +356,6 @@ public:
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
 
         _ground->draw();
-
-        glFrontFace(GL_CCW);
 
         shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));

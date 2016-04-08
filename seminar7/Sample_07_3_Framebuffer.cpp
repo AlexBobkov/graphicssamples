@@ -128,7 +128,7 @@ public:
         _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
         _quadShader = std::make_shared<ShaderProgram>();
-        _quadShader->createProgram("shaders7/quadColor.vert", "shaders7/quadColor.frag");
+        _quadShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
