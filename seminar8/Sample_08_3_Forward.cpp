@@ -48,13 +48,12 @@ public:
     MeshPtr _bunny;
     MeshPtr _ground;
 
-    MeshPtr _quad;
+    MeshPtr _marker; //Маркер для источника света
 
     //Идентификатор шейдерной программы
-    ShaderProgramPtr _quadDepthShader;
-    ShaderProgramPtr _quadColorShader;
-    ShaderProgramPtr _renderToGBufferShader;
-    ShaderProgramPtr _renderDeferredShader;
+    ShaderProgramPtr _prepassShader;
+    ShaderProgramPtr _mainShader;
+    ShaderProgramPtr _markerShader;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -71,17 +70,6 @@ public:
 
     GLuint _sampler;
 
-    GLuint _framebufferId;
-
-    GLuint _depthTexId;
-    GLuint _normalsTexId;
-    GLuint _diffuseTexId;
-
-    unsigned int _fbWidth;
-    unsigned int _fbHeight;
-
-    bool _showDebugQuads;
-
     int _Npositions;
     int _Ncurrent;
     std::vector<glm::vec3> _positions;
@@ -94,70 +82,17 @@ public:
         Application(),
         _attenuation0(1.0f),
         _attenuation1(0.0f),
-        _attenuation2(0.0f),
-        _fbWidth(1024),
-        _fbHeight(1024),
+        _attenuation2(0.05f),
         _Npositions(100),
         _Ncurrent(0),
         _Klights(100),
-        _Kcurrent(0),
-        _showDebugQuads(false)
+        _Kcurrent(0)
     {
-    }
-
-    void initFramebuffer()
-    {
-        _fbWidth = 1024;
-        _fbHeight = 1024;
-
-        //Создаем фреймбуфер
-        glGenFramebuffers(1, &_framebufferId);
-        glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
-
-        //----------------------------
-
-        //Создаем текстуру, куда будет осуществляться рендеринг нормалей
-        glGenTextures(1, &_normalsTexId);
-        glBindTexture(GL_TEXTURE_2D, _normalsTexId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _normalsTexId, 0);
-
-        //----------------------------
-
-        //Создаем текстуру, куда будет осуществляться рендеринг диффузного цвета
-        glGenTextures(1, &_diffuseTexId);
-        glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, _diffuseTexId, 0);
-
-        //----------------------------
-
-        //Создаем текстуру, куда будем впоследствии копировать буфер глубины
-        glGenTextures(1, &_depthTexId);
-        glBindTexture(GL_TEXTURE_2D, _depthTexId);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, _fbWidth, _fbHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _depthTexId, 0);
-
-        //----------------------------
-
-        //Указываем куда именно мы будем рендерить		
-        GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-        glDrawBuffers(2, buffers);
-
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        {
-            std::cerr << "Failed to setup framebuffer\n";
-            exit(1);
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void makeScene() override
     {
         Application::makeScene();
-
-        _showDebugQuads = false;
 
         //=========================================================
         //Создание и загрузка мешей		
@@ -173,22 +108,19 @@ public:
 
         _ground = makeGroundPlane(10.0f, 2.0f);
 
-        _quad = makeScreenAlignedQuad();
+        _marker = makeSphere(0.1f);
 
         //=========================================================
         //Инициализация шейдеров
 
-        _quadDepthShader = std::make_shared<ShaderProgram>();
-        _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
+        _prepassShader = std::make_shared<ShaderProgram>();
+        _prepassShader->createProgram("shaders8/forwardLightingPrepass.vert", "shaders8/forwardLightingPrepass.frag");
 
-        _quadColorShader = std::make_shared<ShaderProgram>();
-        _quadColorShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
+        _mainShader = std::make_shared<ShaderProgram>();
+        _mainShader->createProgram("shaders8/forwardLighting.vert", "shaders8/forwardLighting.frag");
 
-        _renderToGBufferShader = std::make_shared<ShaderProgram>();
-        _renderToGBufferShader->createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
-
-        _renderDeferredShader = std::make_shared<ShaderProgram>();
-        _renderDeferredShader->createProgram("shaders8/deferred.vert", "shaders8/deferred.frag");
+        _markerShader = std::make_shared<ShaderProgram>();
+        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -217,17 +149,12 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         //=========================================================
-        //Инициализация фреймбуфера для рендера G-буфераы
-
-        initFramebuffer();
-
-        //=========================================================
         srand((int)(glfwGetTime() * 1000));
 
         float size = 20.0f;
         for (int i = 0; i < _Npositions; i++)
         {
-            _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
+            _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 1.0));
         }
 
         //=========================================================
@@ -238,7 +165,7 @@ public:
                         
             glm::vec3 color = getColorFromLinearPalette(frand());
 
-            light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 10.0);
+            light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 3.0);
             light.ambient = color * 0.0f;
             light.diffuse = color * 0.4f;
             light.specular = glm::vec3(0.5, 0.5, 0.5);
@@ -276,23 +203,8 @@ public:
 
             ImGui::SliderInt("Mesh count", &_Ncurrent, 0, _Npositions);
             ImGui::SliderInt("Light count", &_Kcurrent, 0, _Klights);
-
-            ImGui::Checkbox("Show depth quad", &_showDebugQuads);
         }
         ImGui::End();
-    }
-
-    void handleKey(int key, int scancode, int action, int mods) override
-    {
-        Application::handleKey(key, scancode, action, mods);
-
-        if (action == GLFW_PRESS)
-        {
-            if (key == GLFW_KEY_Z)
-            {
-                _showDebugQuads = !_showDebugQuads;
-            }
-        }
     }
 
     void update()
@@ -304,39 +216,10 @@ public:
 
     void draw() override
     {
-        drawToGBuffer(_camera);
-        drawToScreen(_renderDeferredShader, _camera);
-
-        if (_showDebugQuads)
-        {
-            drawDebug();
-        }
+        drawToScreen(_camera);
     }
 
-    void drawToGBuffer(const CameraInfo& camera)
-    {
-        //=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========
-        glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
-
-        glViewport(0, 0, _fbWidth, _fbHeight);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        _renderToGBufferShader->use();
-        _renderToGBufferShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
-        _renderToGBufferShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
-
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        glBindSampler(0, _sampler);
-        _brickTex->bind();
-        _renderToGBufferShader->setIntUniform("diffuseTex", 0);
-
-        drawScene(_renderToGBufferShader, camera);
-
-        glUseProgram(0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); //Отключаем фреймбуфер
-    }
-
-    void drawToScreen(const ShaderProgramPtr& shader, const CameraInfo& camera)
+    void drawToScreen(const CameraInfo& camera)
     {
         //Получаем текущие размеры экрана и выставлям вьюпорт
         int width, height;
@@ -347,63 +230,84 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        shader->use();
-        shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
+        //-----------------------------------------------------
+
+        glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+        _prepassShader->use();
+        _prepassShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
+        _prepassShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
                 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindTexture(GL_TEXTURE_2D, _normalsTexId);
+        drawScene(_prepassShader, _camera, glm::vec3(), false);
+
+        glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+        //-----------------------------------------------------
+
+        _mainShader->use();
+        _mainShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
+        _mainShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
+                
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
-        shader->setIntUniform("normalsTex", 0);
+        _brickTex->bind();
+        _mainShader->setIntUniform("diffuseTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
-        glBindSampler(1, _sampler);
-        shader->setIntUniform("diffuseTex", 1);
-
-        glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
-        glBindTexture(GL_TEXTURE_2D, _depthTexId);
-        glBindSampler(2, _sampler);
-        shader->setIntUniform("depthTex", 2);
-
-        glDisable(GL_DEPTH_TEST);
+        glDepthFunc(GL_EQUAL);
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
 
         //Параметры затухания сделаем общими для всех источников света
-        shader->setFloatUniform("light.a0", _attenuation0);
-        shader->setFloatUniform("light.a1", _attenuation1);
-        shader->setFloatUniform("light.a2", _attenuation2);
+        _mainShader->setFloatUniform("light.a0", _attenuation0);
+        _mainShader->setFloatUniform("light.a1", _attenuation1);
+        _mainShader->setFloatUniform("light.a2", _attenuation2);
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);        
+        _mainShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        _mainShader->setVec3Uniform("light.La", _light.ambient);
+        _mainShader->setVec3Uniform("light.Ld", _light.diffuse);
+        _mainShader->setVec3Uniform("light.Ls", _light.specular);
 
-        _quad->draw(); //main light
+        drawScene(_mainShader, _camera, _light.position, true);
 
         for (int i = 0; i < _Kcurrent; i++)
         {
             glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
 
-            shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-            shader->setVec3Uniform("light.La", _lights[i].ambient);
-            shader->setVec3Uniform("light.Ld", _lights[i].diffuse);
-            shader->setVec3Uniform("light.Ls", _lights[i].specular);
+            _mainShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+            _mainShader->setVec3Uniform("light.La", _lights[i].ambient);
+            _mainShader->setVec3Uniform("light.Ld", _lights[i].diffuse);
+            _mainShader->setVec3Uniform("light.Ls", _lights[i].specular);
 
-            _quad->draw();
+            drawScene(_mainShader, _camera, _lights[i].position, true);
         }
 
         glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+
+        //Рисуем маркеры для всех источников света		
+        {
+            _markerShader->use();
+
+            _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _light.position));
+            _markerShader->setVec4Uniform("color", glm::vec4(_light.diffuse, 1.0f));
+            _marker->draw();
+
+            for (unsigned int i = 0; i < _Kcurrent; i++)
+            {
+                _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), _lights[i].position));
+                _markerShader->setVec4Uniform("color", glm::vec4(_lights[i].diffuse, 1.0f));
+                _marker->draw();
+            }
+        }
 
         //Отсоединяем сэмплер и шейдерную программу
         glBindSampler(0, 0);
         glUseProgram(0);
     }
 
-    void drawScene(const ShaderProgramPtr& shader, const CameraInfo& camera)
+    void drawScene(const ShaderProgramPtr& shader, const CameraInfo& camera, const glm::vec3& colorPos, bool checkDistance)
     {
         shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
@@ -427,58 +331,16 @@ public:
 
         for (int i = 0; i < _Ncurrent; i++)
         {
-            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _positions[i]);
+            if (!checkDistance || (_positions[i] - colorPos).length() < 5.0f)
+            {
+                glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _positions[i]);
 
-            shader->setMat4Uniform("modelMatrix", modelMatrix);
-            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * modelMatrix))));
+                shader->setMat4Uniform("modelMatrix", modelMatrix);
+                shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * modelMatrix))));
 
-            _bunny->draw();
+                _cube->draw();
+            }
         }
-    }
-
-    void drawDebug()
-    {
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        glViewport(0, 0, 500, 500);
-
-        _quadDepthShader->use();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _depthTexId);
-        glBindSampler(0, _sampler);
-        _quadDepthShader->setIntUniform("tex", 0);
-
-        _quad->draw();
-
-        //----------------------------
-
-        glViewport(500, 0, 500, 500);
-
-        _quadColorShader->use();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _normalsTexId);
-        glBindSampler(0, _sampler);
-        _quadColorShader->setIntUniform("tex", 0);
-
-        _quad->draw();
-
-        //----------------------------
-
-        glViewport(1000, 0, 500, 500);
-
-        _quadColorShader->use();
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
-        glBindSampler(0, _sampler);
-        _quadColorShader->setIntUniform("tex", 0);
-
-        _quad->draw();
-
-        glBindSampler(0, 0);
-        glUseProgram(0);
     }
 };
 

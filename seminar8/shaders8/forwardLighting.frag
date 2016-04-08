@@ -8,6 +8,9 @@ struct LightInfo
 	vec3 La; //цвет и интенсивность окружающего света
 	vec3 Ld; //цвет и интенсивность диффузного света
 	vec3 Ls; //цвет и интенсивность бликового света
+	float a0;
+	float a1;
+	float a2;
 };
 uniform LightInfo light;
 
@@ -30,9 +33,11 @@ void main()
 
 	vec3 normal = normalize(normalCamSpace); //нормализуем нормаль после интерполяции
 	
+	float attenuationCoef = 1.0 / (light.a0 + light.a1 * distance + light.a2 * distance * distance);
+	
 	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
-	vec3 color = diffuseColor * (light.La + light.Ld * NdotL);
+	vec3 color = diffuseColor * (light.La + light.Ld * NdotL) * attenuationCoef;
 
 	if (NdotL > 0.0)
 	{			
@@ -42,7 +47,7 @@ void main()
 		float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 		blinnTerm = pow(blinnTerm, shininess); //регулируем размер блика
 		
-		color += light.Ls * Ks * blinnTerm;
+		color += light.Ls * Ks * blinnTerm * attenuationCoef;
 	}
 
 	fragColor = vec4(color, 0.5);
