@@ -24,7 +24,9 @@ void main()
 
 	vec3 sharpColor = texture(tex, texCoord).rgb;
 	vec3 blurColor = texture(blurTex, texCoord).rgb;
-	vec3 color = mix(sharpColor, blurColor, clamp(abs(focalDistance + pos.z) / focalRange, 0.0, 1.0));
+	
+	float alpha = clamp(abs(focalDistance + pos.z) / focalRange, 0.0, 1.0);
+	vec3 color = mix(sharpColor, blurColor, alpha);
 
 	fragColor = vec4(color, 1.0);
 }
