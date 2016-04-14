@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Framebuffer.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
@@ -7,19 +8,6 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
-
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
-
-float frand()
-{
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
 
 /**
 Пример эффекта Screen Space Ambient Occlusion
@@ -41,11 +29,6 @@ public:
     ShaderProgramPtr _renderToGBufferShader;
     ShaderProgramPtr _renderDeferredShader;
     ShaderProgramPtr _renderDeferredWithSSAOShader;
-    ShaderProgramPtr _gammaShader;
-    ShaderProgramPtr _brightShader;
-    ShaderProgramPtr _horizBlurShader;
-    ShaderProgramPtr _vertBlurShader;
-    ShaderProgramPtr _toneMappingShader;
     ShaderProgramPtr _ssaoShader;
 
     //Переменные для управления положением одного источника света
@@ -53,7 +36,6 @@ public:
     float _phi;
     float _theta;
 
-    float _lightIntensity;
     LightInfo _light;
     CameraInfo _lightCamera;
 
@@ -66,14 +48,15 @@ public:
 
     bool _applyEffect;
 
+    float _attBias;
+    float _attScale;
+    float _radius;
+
     bool _showGBufferDebug;
     bool _showShadowDebug;
     bool _showDeferredDebug;
-    bool _showHDRDebug;
     bool _showSSAODebug;
-
-    float _exposure; //Параметр алгоритма ToneMapping
-
+    
     FramebufferPtr _gbufferFB;
     TexturePtr _depthTex;
     TexturePtr _normalsTex;
@@ -85,24 +68,27 @@ public:
     FramebufferPtr _deferredFB;
     TexturePtr _deferredTex;
 
-    FramebufferPtr _brightFB;
-    TexturePtr _brightTex;
-
-    FramebufferPtr _horizBlurFB;
-    TexturePtr _horizBlurTex;
-
-    FramebufferPtr _vertBlurFB;
-    TexturePtr _vertBlurTex;
-
-    FramebufferPtr _toneMappingFB;
-    TexturePtr _toneMappingTex;
-
     FramebufferPtr _ssaoFB;
     TexturePtr _ssaoTex;
 
     //Старые размеры экрана
     int _oldWidth;
     int _oldHeight;
+
+    SampleApplication() :
+        Application(),
+        _oldWidth(1024),
+        _oldHeight(1024),
+        _applyEffect(true),
+        _showGBufferDebug(false),
+        _showShadowDebug(false),
+        _showDeferredDebug(false),
+        _showSSAODebug(false),
+        _attBias(0.0),
+        _attScale(2.0),
+        _radius(0.1f)
+    {
+    }
 
     void initFramebuffers()
     {
@@ -138,67 +124,11 @@ public:
 
         _deferredFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _deferredTex = _deferredFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
+        _deferredTex = _deferredFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
 
         _deferredFB->initDrawBuffers();
 
         if (!_deferredFB->valid())
-        {
-            std::cerr << "Failed to setup framebuffer\n";
-            exit(1);
-        }
-
-        //=========================================================
-
-        _brightFB = std::make_shared<Framebuffer>(512, 512); //В 2 раза меньше
-
-        _brightTex = _brightFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
-
-        _brightFB->initDrawBuffers();
-
-        if (!_brightFB->valid())
-        {
-            std::cerr << "Failed to setup framebuffer\n";
-            exit(1);
-        }
-
-        //=========================================================
-
-        _horizBlurFB = std::make_shared<Framebuffer>(512, 512); //В 2 раза меньше
-
-        _horizBlurTex = _horizBlurFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
-
-        _horizBlurFB->initDrawBuffers();
-
-        if (!_horizBlurFB->valid())
-        {
-            std::cerr << "Failed to setup framebuffer\n";
-            exit(1);
-        }
-
-        //=========================================================
-
-        _vertBlurFB = std::make_shared<Framebuffer>(512, 512); //В 2 раза меньше
-
-        _vertBlurTex = _vertBlurFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
-
-        _vertBlurFB->initDrawBuffers();
-
-        if (!_vertBlurFB->valid())
-        {
-            std::cerr << "Failed to setup framebuffer\n";
-            exit(1);
-        }
-
-        //=========================================================
-
-        _toneMappingFB = std::make_shared<Framebuffer>(1024, 1024);
-
-        _toneMappingTex = _toneMappingFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
-
-        _toneMappingFB->initDrawBuffers();
-
-        if (!_toneMappingFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
@@ -222,13 +152,6 @@ public:
     void makeScene() override
     {
         Application::makeScene();
-
-        _applyEffect = true;
-        _showGBufferDebug = false;
-        _showShadowDebug = false;
-        _showDeferredDebug = false;
-        _showHDRDebug = false;
-        _showSSAODebug = false;
 
         //=========================================================
         //Создание и загрузка мешей		
@@ -267,21 +190,6 @@ public:
         _renderDeferredWithSSAOShader = std::make_shared<ShaderProgram>();
         _renderDeferredWithSSAOShader->createProgram("shaders9/deferred.vert", "shaders9/deferredWithSSAO.frag");
 
-        _gammaShader = std::make_shared<ShaderProgram>();
-        _gammaShader->createProgram("shaders9/quad.vert", "shaders9/gamma.frag");
-
-        _brightShader = std::make_shared<ShaderProgram>();
-        _brightShader->createProgram("shaders9/quad.vert", "shaders9/bright.frag");
-
-        _horizBlurShader = std::make_shared<ShaderProgram>();
-        _horizBlurShader->createProgram("shaders9/quad.vert", "shaders9/horizblur.frag");
-
-        _vertBlurShader = std::make_shared<ShaderProgram>();
-        _vertBlurShader->createProgram("shaders9/quad.vert", "shaders9/vertblur.frag");
-
-        _toneMappingShader = std::make_shared<ShaderProgram>();
-        _toneMappingShader->createProgram("shaders9/quad.vert", "shaders9/tonemapping.frag");
-
         _ssaoShader = std::make_shared<ShaderProgram>();
         _ssaoShader->createProgram("shaders9/quad.vert", "shaders9/ssao.frag");
 
@@ -290,8 +198,6 @@ public:
         _lr = 10.0;
         _phi = 0.0f;
         _theta = 0.48f;
-
-        _lightIntensity = 1.0f;
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
@@ -335,8 +241,6 @@ public:
         //Инициализация фреймбуфера для рендера теневой карты
 
         initFramebuffers();
-
-        _exposure = 1.0f;
     }
 
     void updateGUI() override
@@ -361,12 +265,13 @@ public:
 
             ImGui::Checkbox("Apply SSAO", &_applyEffect);
 
-            ImGui::SliderFloat("Exposure", &_exposure, 0.01f, 10.0f);
+            ImGui::SliderFloat("Bias", &_attBias, 0.0f, 1.0f);
+            ImGui::SliderFloat("Scale", &_attScale, 0.0f, 5.0f);
+            ImGui::SliderFloat("Radius", &_radius, 0.01f, 1.0f);
 
             ImGui::Checkbox("Show G-buffer debug", &_showGBufferDebug);
             ImGui::Checkbox("Show shadow debug", &_showShadowDebug);
             ImGui::Checkbox("Show deferred debug", &_showDeferredDebug);
-            ImGui::Checkbox("Show HDR debug", &_showHDRDebug);
             ImGui::Checkbox("Show SSAO debug", &_showSSAODebug);
         }
         ImGui::End();
@@ -394,10 +299,6 @@ public:
             {
                 _showDeferredDebug = !_showDeferredDebug;
             }
-            else if (key == GLFW_KEY_V)
-            {
-                _showHDRDebug = !_showHDRDebug;
-            }
             else if (key == GLFW_KEY_B)
             {
                 _showSSAODebug = !_showSSAODebug;
@@ -414,19 +315,13 @@ public:
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
         //Если размер окна изменился, то изменяем размеры фреймбуферов - перевыделяем память под текстуры
-
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
         if (width != _oldWidth || height != _oldHeight)
         {
             _gbufferFB->resize(width, height);
             _deferredFB->resize(width, height);
-
-            _brightFB->resize(width / 2, height / 2);
-            _horizBlurFB->resize(width / 2, height / 2);
-            _vertBlurFB->resize(width / 2, height / 2);
-            _toneMappingFB->resize(width, height);
-
+            
             _ssaoFB->resize(width, height);
 
             _oldWidth = width;
@@ -455,15 +350,7 @@ public:
             drawDeferred(_deferredFB, _renderDeferredShader, _camera, _lightCamera);
         }
 
-        //Получаем текстуру с яркими областями
-        drawProcessTexture(_brightFB, _brightShader, _deferredTex, _deferredFB->width(), _deferredFB->height());
-
-        //Выполняем размытие текстуры с яркими областями
-        drawProcessTexture(_horizBlurFB, _horizBlurShader, _brightTex, _brightFB->width(), _brightFB->height());
-        drawProcessTexture(_vertBlurFB, _vertBlurShader, _horizBlurTex, _horizBlurFB->width(), _horizBlurFB->height());
-
-        drawToneMapping(_toneMappingFB, _toneMappingShader);
-        drawToScreen(_gammaShader, _toneMappingTex);
+        drawToScreen(_quadColorShader, _deferredTex);
 
         //Отладочный рендер текстур
         drawDebug();
@@ -480,9 +367,9 @@ public:
         shader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         shader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _repeatSampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         drawScene(shader, camera);
@@ -500,8 +387,8 @@ public:
         glClear(GL_DEPTH_BUFFER_BIT);
 
         shader->use();
-        shader->setMat4Uniform("viewMatrix", lightCamera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", lightCamera.projMatrix);
+        shader->setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
+        shader->setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
 
         glEnable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
@@ -530,9 +417,9 @@ public:
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient * _lightIntensity);
-        shader->setVec3Uniform("light.Ld", _light.diffuse * _lightIntensity);
-        shader->setVec3Uniform("light.Ls", _light.specular * _lightIntensity);
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
 
         shader->setMat4Uniform("lightViewMatrix", lightCamera.viewMatrix);
         shader->setMat4Uniform("lightProjectionMatrix", lightCamera.projMatrix);
@@ -540,29 +427,29 @@ public:
         glm::mat4 projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
         shader->setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _normalsTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _normalsTex->bind();
         shader->setIntUniform("normalsTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        _diffuseTex->bind();
+        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
         glBindSampler(1, _sampler);
+        _diffuseTex->bind();
         shader->setIntUniform("diffuseTex", 1);
 
         glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
-        _depthTex->bind();
         glBindSampler(2, _sampler);
+        _depthTex->bind();
         shader->setIntUniform("depthTex", 2);
 
-        glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3
-        _shadowTex->bind();
+        glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3        
         glBindSampler(3, _depthSampler);
+        _shadowTex->bind();
         shader->setIntUniform("shadowTex", 3);
 
-        glActiveTexture(GL_TEXTURE4);  //текстурный юнит 4
-        _ssaoTex->bind();
+        glActiveTexture(GL_TEXTURE4);  //текстурный юнит 4        
         glBindSampler(4, _sampler);
+        _ssaoTex->bind();
         shader->setIntUniform("ssaoTex", 4);
 
         _quad->draw();
@@ -583,66 +470,19 @@ public:
         shader->setMat4Uniform("projMatrix", camera.projMatrix);
         shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _depthTex->bind();
+        shader->setFloatUniform("attBias", _attBias);
+        shader->setFloatUniform("attScale", _attScale);
+        shader->setFloatUniform("radius", _radius);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _depthTex->bind();
         shader->setIntUniform("depthTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        _rotateTex->bind();
+        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
         glBindSampler(1, _repeatSampler);
+        _rotateTex->bind();
         shader->setIntUniform("rotateTex", 1);
-
-        _quad->draw();
-
-        glUseProgram(0);
-
-        fb->unbind();
-    }
-
-    void drawProcessTexture(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const TexturePtr& inputTexture, int inputTexWidth, int inputTexHeight)
-    {
-        fb->bind();
-
-        glViewport(0, 0, fb->width(), fb->height());
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        shader->use();
-
-        shader->setVec2Uniform("texSize", glm::vec2(inputTexWidth, inputTexHeight));
-
-        glActiveTexture(GL_TEXTURE0);
-        inputTexture->bind();
-        glBindSampler(0, _sampler);
-        shader->setIntUniform("tex", 0);
-
-        _quad->draw();
-
-        glUseProgram(0);
-
-        fb->unbind();
-    }
-
-    void drawToneMapping(const FramebufferPtr& fb, const ShaderProgramPtr& shader)
-    {
-        fb->bind();
-
-        glViewport(0, 0, fb->width(), fb->height());
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        shader->use();
-
-        shader->setFloatUniform("exposure", _exposure);
-
-        glActiveTexture(GL_TEXTURE0);
-        _deferredTex->bind();
-        glBindSampler(0, _sampler);
-        shader->setIntUniform("tex", 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        _vertBlurTex->bind();
-        glBindSampler(1, _sampler);
-        shader->setIntUniform("bloomTex", 1);
 
         _quad->draw();
 
@@ -662,12 +502,16 @@ public:
 
         shader->use();
 
-        glActiveTexture(GL_TEXTURE0);
-        inputTexture->bind();
+        glActiveTexture(GL_TEXTURE0);        
         glBindSampler(0, _sampler);
+        inputTexture->bind();
         shader->setIntUniform("tex", 0);
 
+        glEnable(GL_FRAMEBUFFER_SRGB); //Включает гамма-коррекцию
+
         _quad->draw();
+
+        glDisable(GL_FRAMEBUFFER_SRGB);
 
         //Отсоединяем сэмплер и шейдерную программу
         glBindSampler(0, 0);
@@ -717,12 +561,6 @@ public:
         {
             drawQuad(_quadColorShader, _deferredTex, 0, 0, size, size);
         }
-        else if (_showHDRDebug)
-        {
-            drawQuad(_quadColorShader, _brightTex, 0, 0, size, size);
-            drawQuad(_quadColorShader, _horizBlurTex, size, 0, size, size);
-            drawQuad(_quadColorShader, _vertBlurTex, size * 2, 0, size, size);
-        }
         else if (_showSSAODebug)
         {
             drawQuad(_quadColorShader, _ssaoTex, 0, 0, size, size);
@@ -738,9 +576,9 @@ public:
 
         shader->use();
 
-        glActiveTexture(GL_TEXTURE0);
-        texture->bind();
+        glActiveTexture(GL_TEXTURE0);        
         glBindSampler(0, _sampler);
+        texture->bind();
         shader->setIntUniform("tex", 0);
 
         _quad->draw();

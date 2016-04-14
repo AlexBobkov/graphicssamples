@@ -88,6 +88,7 @@ public:
         Application(),
         _oldWidth(1024),
         _oldHeight(1024),
+        _lightIntensity(1.0f),
         _applyEffect(true),
         _showGBufferDebug(false),
         _showShadowDebug(false),
@@ -321,6 +322,8 @@ public:
                 ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
+
+                ImGui::SliderFloat("intensity", &_lightIntensity, 0.0f, 5.0f);
             }
 
             ImGui::Checkbox("Apply HDR", &_applyEffect);
@@ -403,11 +406,11 @@ public:
         drawDeferred(_deferredFB, _renderDeferredShader, _camera, _lightCamera);
 
         //Получаем текстуру с яркими областями
-        drawProcessTexture(_brightFB, _brightShader, _deferredTex, _deferredFB->width(), _deferredFB->height());
+        drawProcessTexture(_brightFB, _brightShader, _deferredTex);
 
         //Выполняем размытие текстуры с яркими областями
-        drawProcessTexture(_horizBlurFB, _horizBlurShader, _brightTex, _brightFB->width(), _brightFB->height());
-        drawProcessTexture(_vertBlurFB, _vertBlurShader, _horizBlurTex, _horizBlurFB->width(), _horizBlurFB->height());
+        drawProcessTexture(_horizBlurFB, _horizBlurShader, _brightTex);
+        drawProcessTexture(_vertBlurFB, _vertBlurShader, _horizBlurTex);
 
         if (_applyEffect)
         {
@@ -521,7 +524,7 @@ public:
         fb->unbind();
     }
 
-    void drawProcessTexture(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const TexturePtr& inputTexture, int inputTexWidth, int inputTexHeight)
+    void drawProcessTexture(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const TexturePtr& inputTexture)
     {
         fb->bind();
 
@@ -529,8 +532,6 @@ public:
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader->use();
-
-        shader->setVec2Uniform("texSize", glm::vec2(inputTexWidth, inputTexHeight));
 
         glActiveTexture(GL_TEXTURE0);        
         glBindSampler(0, _sampler);

@@ -6,6 +6,10 @@ uniform sampler2D rotateTex; //Текстура со случайными зна
 uniform mat4 projMatrix;
 uniform mat4 projMatrixInverse;
 
+uniform float attBias;
+uniform float attScale;
+uniform float radius;
+
 in vec2 texCoord; //текстурные координаты (интерполированы между вершинами треугольника)
 
 out vec4 fragColor; //выходной цвет фрагмента
@@ -23,9 +27,6 @@ vec4 rndTable[8] = vec4[8]
 	vec4 (  0.5,  0.5,  0.5, 0.0 )
 );
 
-const float attBias = 0.0;
-const float attScale = 2.0;
-
 void main()
 {
 	float mainFragDepth = texture(depthTex, texCoord).r;
@@ -42,7 +43,7 @@ void main()
 	{
 		vec3 sample = reflect(rndTable[i].xyz, plane); //отражаем лучи от случайной плоскости. Получаем случайные лучи
 
-		vec4 sampleP = projMatrix * vec4(pos.xyz + sample / 10.0, 1.0);
+		vec4 sampleP = projMatrix * vec4(pos.xyz + sample * radius, 1.0);
 		sampleP.xyz /= sampleP.w;
 		sampleP.xyz = sampleP.xyz * 0.5 + 0.5;
 		

@@ -39,8 +39,8 @@ void main()
 	
 	//-------------------------------
 
-	float depthColor = texture(depthTex, texCoord).r;
-	vec3 depthCoords = vec3(texCoord, depthColor) * 2.0 - 1.0;
+	float fragDepth = texture(depthTex, texCoord).r;
+	vec3 depthCoords = vec3(texCoord, fragDepth) * 2.0 - 1.0;
 	vec4 posCamSpace = projMatrixInverse * vec4(depthCoords, 1.0);	
 	posCamSpace.xyz /= posCamSpace.w;
 	

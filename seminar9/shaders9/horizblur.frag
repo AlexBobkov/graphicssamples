@@ -1,7 +1,6 @@
 #version 330
 
 uniform sampler2D tex;
-uniform vec2 texSize;
 
 in vec2 texCoord; //текстурные координаты (интерполированы между вершинами треугольника)
 
@@ -9,7 +8,8 @@ out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-    vec2 dx = vec2(1.0 / texSize.x, 0.000000); //шаг по горизонтали
+	vec2 size = textureSize(tex, 0);
+    vec2 dx = vec2(1.0 / size.x, 0.000000); //шаг по горизонтали
     vec2 sdx = dx;
     vec4 sum = texture(tex, texCoord) * 0.134598;
 
