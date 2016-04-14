@@ -32,24 +32,30 @@ void main()
 {	
 	vec3 diffuseColor = texture(diffuseTex, texCoord).rgb;
 	
-	if (all(lessThan(diffuseColor, vec3(0.1))))
+	if (all(equal(diffuseColor, vec3(0.0))))
 	{
 		discard;
 	}
+	
+	//-------------------------------
 
 	float depthColor = texture(depthTex, texCoord).r;
 	vec3 depthCoords = vec3(texCoord, depthColor) * 2.0 - 1.0;
 	vec4 posCamSpace = projMatrixInverse * vec4(depthCoords, 1.0);	
 	posCamSpace.xyz /= posCamSpace.w;
 	
+	//-------------------------------
+	
 	vec4 posWorldSpace = viewMatrixInverse * projMatrixInverse * vec4(depthCoords, 1.0);
 	vec4 shadowTexCoord = lightScaleBiasMatrix * lightProjectionMatrix * lightViewMatrix * posWorldSpace;
 	float visibility = textureProj(shadowTex, shadowTexCoord); //глубина ближайшего фрагмента в пространстве источника света
+	
+	//-------------------------------
 			
 	vec3 normalColor = texture(normalsTex, texCoord).rgb;	
 	vec3 normal = normalize(normalColor * 2.0 - 1.0);
-		
-	vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
+	
+	//-------------------------------
 	
 	vec3 lightDirCamSpace = normalize(light.pos - posCamSpace.xyz); //направление на источник света	
 
@@ -59,10 +65,12 @@ void main()
 
 	if (NdotL > 0.0)
 	{			
+		vec3 viewDirection = normalize(-posCamSpace.xyz); //направление на виртуальную камеру (она находится в точке (0.0, 0.0, 0.0))
 		vec3 halfVector = normalize(lightDirCamSpace.xyz + viewDirection); //биссектриса между направлениями на камеру и на источник света
 
 		float blinnTerm = max(dot(normal, halfVector), 0.0); //интенсивность бликового освещения по Блинну				
 		blinnTerm = pow(blinnTerm, shininess); //регулируем размер блика
+		
 		color += light.Ls * Ks * blinnTerm * visibility;
 	}
 

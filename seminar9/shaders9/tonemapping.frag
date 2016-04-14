@@ -16,6 +16,11 @@ void main()
 
 	vec3 color = texColor + bloomColor * 5.0;
 
+	//Вариант 1 (с экспозицией)
 	fragColor.rgb = vec3(1.0) - exp(-exposure * color); //tone mapping: HDR to LDR
+	
+	//Вариант 2 (Reinhard tone mapping)
+	//fragColor.rgb = color / (color + vec3(1.0));	
+	
 	fragColor.a = 1.0;
 }
