@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -12,94 +13,92 @@
 #include <vector>
 #include <deque>
 
-struct LightInfo
+namespace
 {
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
-
-float frand()
-{
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
-
-MeshPtr loadFromFileArray(const std::string& filename, const std::vector<glm::vec3>& positions)
-{
-    const struct aiScene* assimpScene = aiImportFile(filename.c_str(), aiProcess_Triangulate);
-
-    if (!assimpScene)
+    float frand()
     {
-        std::cerr << aiGetErrorString() << std::endl;
-        return std::make_shared<Mesh>();
+        return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    if (assimpScene->mNumMeshes == 0)
+    /**
+    Загружает 3д-модель, размножает её в буфере positions.size() раз, сдвигая координаты в мировой системе координат
+    */
+    MeshPtr loadFromFileArray(const std::string& filename, const std::vector<glm::vec3>& positions)
     {
-        std::cerr << "There is no meshes in file " << filename << std::endl;
-        return std::make_shared<Mesh>();
-    }
+        const struct aiScene* assimpScene = aiImportFile(filename.c_str(), aiProcess_Triangulate);
 
-    const struct aiMesh* assimpMesh = assimpScene->mMeshes[0];
-
-    if (!assimpMesh->HasPositions())
-    {
-        std::cerr << "This demo does not support meshes without positions\n";
-        return std::make_shared<Mesh>();
-    }
-
-    if (!assimpMesh->HasNormals())
-    {
-        std::cerr << "This demo does not support meshes without normals\n";
-        return std::make_shared<Mesh>();
-    }
-
-    if (!assimpMesh->HasTextureCoords(0))
-    {
-        std::cerr << "This demo does not support meshes without texcoords for texture unit 0\n";
-        return std::make_shared<Mesh>();
-    }
-
-    unsigned int instanceCount = positions.size();
-
-    std::vector<glm::vec3> vertices(assimpMesh->mNumVertices * instanceCount);
-    std::vector<glm::vec3> normals(assimpMesh->mNumVertices * instanceCount);
-    std::vector<glm::vec2> texcoords(assimpMesh->mNumVertices * instanceCount);
-
-    for (unsigned int k = 0; k < positions.size(); k++)
-    {
-        for (unsigned int i = 0; i < assimpMesh->mNumVertices; i++)
+        if (!assimpScene)
         {
-            const aiVector3D* vp = &(assimpMesh->mVertices[i]);
-            const aiVector3D* normal = &(assimpMesh->mNormals[i]);
-            const aiVector3D* tc = &(assimpMesh->mTextureCoords[0][i]);
-
-            vertices[i + k * assimpMesh->mNumVertices] = glm::vec3(vp->x, vp->y, vp->z) + positions[k];
-            normals[i + k * assimpMesh->mNumVertices] = glm::vec3(normal->x, normal->y, normal->z);
-            texcoords[i + k * assimpMesh->mNumVertices] = glm::vec2(tc->x, tc->y);
+            std::cerr << aiGetErrorString() << std::endl;
+            return std::make_shared<Mesh>();
         }
+
+        if (assimpScene->mNumMeshes == 0)
+        {
+            std::cerr << "There is no meshes in file " << filename << std::endl;
+            return std::make_shared<Mesh>();
+        }
+
+        const struct aiMesh* assimpMesh = assimpScene->mMeshes[0];
+
+        if (!assimpMesh->HasPositions())
+        {
+            std::cerr << "This demo does not support meshes without positions\n";
+            return std::make_shared<Mesh>();
+        }
+
+        if (!assimpMesh->HasNormals())
+        {
+            std::cerr << "This demo does not support meshes without normals\n";
+            return std::make_shared<Mesh>();
+        }
+
+        if (!assimpMesh->HasTextureCoords(0))
+        {
+            std::cerr << "This demo does not support meshes without texcoords for texture unit 0\n";
+            return std::make_shared<Mesh>();
+        }
+
+        unsigned int instanceCount = positions.size();
+
+        std::vector<glm::vec3> vertices(assimpMesh->mNumVertices * instanceCount);
+        std::vector<glm::vec3> normals(assimpMesh->mNumVertices * instanceCount);
+        std::vector<glm::vec2> texcoords(assimpMesh->mNumVertices * instanceCount);
+
+        for (unsigned int k = 0; k < positions.size(); k++)
+        {
+            for (unsigned int i = 0; i < assimpMesh->mNumVertices; i++)
+            {
+                const aiVector3D* vp = &(assimpMesh->mVertices[i]);
+                const aiVector3D* normal = &(assimpMesh->mNormals[i]);
+                const aiVector3D* tc = &(assimpMesh->mTextureCoords[0][i]);
+
+                vertices[i + k * assimpMesh->mNumVertices] = glm::vec3(vp->x, vp->y, vp->z) + positions[k];
+                normals[i + k * assimpMesh->mNumVertices] = glm::vec3(normal->x, normal->y, normal->z);
+                texcoords[i + k * assimpMesh->mNumVertices] = glm::vec2(tc->x, tc->y);
+            }
+        }
+
+        DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
+        buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
+
+        DataBufferPtr buf1 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
+        buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
+
+        DataBufferPtr buf2 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
+        buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
+
+        MeshPtr mesh = std::make_shared<Mesh>();
+        mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
+        mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
+        mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
+        mesh->setPrimitiveType(GL_TRIANGLES);
+        mesh->setVertexCount(vertices.size());
+
+        aiReleaseImport(assimpScene);
+
+        return mesh;
     }
-
-    DataBufferPtr buf0 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
-    buf0->setData(vertices.size() * sizeof(float) * 3, vertices.data());
-
-    DataBufferPtr buf1 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
-    buf1->setData(normals.size() * sizeof(float) * 3, normals.data());
-
-    DataBufferPtr buf2 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
-    buf2->setData(texcoords.size() * sizeof(float) * 2, texcoords.data());
-
-    MeshPtr mesh = std::make_shared<Mesh>();
-    mesh->setAttribute(0, 3, GL_FLOAT, GL_FALSE, 0, 0, buf0);
-    mesh->setAttribute(1, 3, GL_FLOAT, GL_FALSE, 0, 0, buf1);
-    mesh->setAttribute(2, 2, GL_FLOAT, GL_FALSE, 0, 0, buf2);
-    mesh->setPrimitiveType(GL_TRIANGLES);
-    mesh->setVertexCount(vertices.size());
-
-    aiReleaseImport(assimpScene);
-
-    return mesh;
 }
 
 /**
@@ -111,14 +110,9 @@ public:
     MeshPtr _teapot;
     MeshPtr _teapotArray;
     MeshPtr _teapotDivisor;
-
-    //Идентификатор шейдерной программы
-    ShaderProgramPtr _commonShader;
-    
-    ShaderProgramPtr _instancingNoMatrixShader;
-    ShaderProgramPtr _instancingUniformShader;
-    ShaderProgramPtr _instancingTextureShader;
-    ShaderProgramPtr _instancingDivisorShader;
+        
+    std::vector<ShaderProgramPtr> _shaders;
+    int _currentIndex = 0;
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -126,42 +120,25 @@ public:
     float _theta;
 
     LightInfo _light;
-    CameraInfo _lightCamera;
 
     TexturePtr _brickTex;
     TexturePtr _bufferTex;
 
     GLuint _sampler;
-    GLuint _depthSampler;
-
-    bool _noInstancing;
-    bool _staticInstancing;
-    bool _noMatrixInstancing;
-    bool _uniformInstancing;
-    bool _textureInstancing;
-    bool _divisorInstancing;
-
-    float _oldTime;
-    float _deltaTime;
-    float _fps;
-    std::deque<float> _fpsData;
+    
+    const unsigned int K = 500; //Количество инстансов
 
     std::vector<glm::vec3> _positions;
+    
+    SampleApplication() :
+        Application(),
+        _currentIndex(0)
+    {
+    }
 
     void makeScene() override
     {
         Application::makeScene();
-
-        _oldTime = 0.0;
-        _deltaTime = 0.0;
-        _fps = 0.0;
-
-        _noInstancing = true;
-        _staticInstancing = false;
-        _noMatrixInstancing = false;
-        _uniformInstancing = false;
-        _textureInstancing = false;
-        _divisorInstancing = false;
 
         //=========================================================
         //Создание и загрузка мешей
@@ -169,14 +146,17 @@ public:
         srand((int)(glfwGetTime() * 1000));
 
         float size = 50.0f;
-        for (int i = 0; i < 500; i++)
+        for (int i = 0; i < K; i++)
         {
             _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
         }
 
-        _teapot = loadFromFile("models/teapot.obj");
+        //----------------------------
 
+        _teapot = loadFromFile("models/teapot.obj");
         _teapotArray = loadFromFileArray("models/teapot.obj", _positions);
+
+        //----------------------------
 
         _teapotDivisor = loadFromFile("models/teapot.obj");
 
@@ -189,20 +169,25 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
+        _shaders.resize(6);
+
+        _shaders[0] = std::make_shared<ShaderProgram>();
+        _shaders[0]->createProgram("shaders/common.vert", "shaders/common.frag");
+
+        _shaders[1] = std::make_shared<ShaderProgram>();
+        _shaders[1]->createProgram("shaders/common.vert", "shaders/common.frag");
         
-        _instancingNoMatrixShader = std::make_shared<ShaderProgram>();
-        _instancingNoMatrixShader->createProgram("shaders10/instancingNoMatrix.vert", "shaders/common.frag");
+        _shaders[2] = std::make_shared<ShaderProgram>();
+        _shaders[2]->createProgram("shaders10/instancingNoMatrix.vert", "shaders/common.frag");
 
-        _instancingUniformShader = std::make_shared<ShaderProgram>();
-        _instancingUniformShader->createProgram("shaders10/instancingUniform.vert", "shaders/common.frag");
+        _shaders[3] = std::make_shared<ShaderProgram>();
+        _shaders[3]->createProgram("shaders10/instancingUniform.vert", "shaders/common.frag");
 
-        _instancingTextureShader = std::make_shared<ShaderProgram>();
-        _instancingTextureShader->createProgram("shaders10/instancingTexture.vert", "shaders/common.frag");
+        _shaders[4] = std::make_shared<ShaderProgram>();
+        _shaders[4]->createProgram("shaders10/instancingTexture.vert", "shaders/common.frag");
 
-        _instancingDivisorShader = std::make_shared<ShaderProgram>();
-        _instancingDivisorShader->createProgram("shaders10/instancingDivisor.vert", "shaders/common.frag");
+        _shaders[5] = std::make_shared<ShaderProgram>();
+        _shaders[5]->createProgram("shaders10/instancingDivisor.vert", "shaders/common.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -231,18 +216,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-        glGenSamplers(1, &_depthSampler);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glSamplerParameterfv(_depthSampler, GL_TEXTURE_BORDER_COLOR, border);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
     }
 
     void updateGUI() override
@@ -265,12 +238,12 @@ public:
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
 
-            ImGui::Checkbox("No instancing", &_noInstancing);
-            ImGui::Checkbox("Static instancing", &_staticInstancing);
-            ImGui::Checkbox("No matrix instancing", &_noMatrixInstancing);
-            ImGui::Checkbox("Uniform instancing", &_uniformInstancing);
-            ImGui::Checkbox("Texture instancing", &_textureInstancing);
-            ImGui::Checkbox("Divisor instancing", &_divisorInstancing);
+            ImGui::RadioButton("No instancing", &_currentIndex, 0);
+            ImGui::RadioButton("Static instancing", &_currentIndex, 1);
+            ImGui::RadioButton("No matrix instancing", &_currentIndex, 2);
+            ImGui::RadioButton("Uniform instancing", &_currentIndex, 3);
+            ImGui::RadioButton("Texture instancing", &_currentIndex, 4);
+            ImGui::RadioButton("Divisor instancing", &_currentIndex, 5);
         }
         ImGui::End();
     }
@@ -283,50 +256,28 @@ public:
         {
             if (key == GLFW_KEY_1)
             {
-                _noInstancing = !_noInstancing;
+                _currentIndex = 0;
             }
             else if (key == GLFW_KEY_2)
             {
-                _staticInstancing = !_staticInstancing;
+                _currentIndex = 1;
             }
             else if (key == GLFW_KEY_3)
             {
-                _noMatrixInstancing = !_noMatrixInstancing;
+                _currentIndex = 2;
             }
             else if (key == GLFW_KEY_4)
             {
-                _uniformInstancing = !_uniformInstancing;
+                _currentIndex = 3;
             }
             else if (key == GLFW_KEY_5)
             {
-                _textureInstancing = !_textureInstancing;
+                _currentIndex = 4;
             }
             else if (key == GLFW_KEY_6)
             {
-                _divisorInstancing = !_divisorInstancing;
+                _currentIndex = 5;
             }
-        }
-    }
-
-    void computeFPS()
-    {
-        _deltaTime = glfwGetTime() - _oldTime;
-        _oldTime = glfwGetTime();
-        _fpsData.push_back(1 / _deltaTime);
-        while (_fpsData.size() > 10)
-        {
-            _fpsData.pop_front();
-        }
-
-        _fps = 0.0;
-        if (_fpsData.size() > 0)
-        {
-            for (unsigned int i = 0; i < _fpsData.size(); i++)
-            {
-                _fps += _fpsData[i];
-            }
-            _fps /= _fpsData.size();
-            _fps = floor(_fps);
         }
     }
 
@@ -335,10 +286,6 @@ public:
         Application::update();
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
-        _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
-
-        computeFPS();
     }
 
     void draw() override
@@ -352,29 +299,29 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (_noInstancing || _staticInstancing)
+        if (_currentIndex == 0 || _currentIndex == 1)
         {
-            drawScene(_commonShader);
+            drawScene(_shaders[_currentIndex]);
         }
 
-        if (_noMatrixInstancing)
+        if (_currentIndex == 2)
         {
-            drawNoMatrixInstancedScene(_instancingNoMatrixShader);
+            drawNoMatrixInstancedScene(_shaders[_currentIndex]);
         }
 
-        if (_uniformInstancing)
+        if (_currentIndex == 3)
         {
-            drawUniformInstancedScene(_instancingUniformShader);
+            drawUniformInstancedScene(_shaders[_currentIndex]);
         }
 
-        if (_textureInstancing)
+        if (_currentIndex == 4)
         {
-            drawTextureInstancedScene(_instancingTextureShader);
+            drawTextureInstancedScene(_shaders[_currentIndex]);
         }
 
-        if (_divisorInstancing)
+        if (_currentIndex == 5)
         {
-            drawDivisorInstancedScene(_instancingDivisorShader);
+            drawDivisorInstancedScene(_shaders[_currentIndex]);
         }
 
         //Отсоединяем сэмплер и шейдерную программу
@@ -396,12 +343,12 @@ public:
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
-        if (_noInstancing)
+        if (_currentIndex == 0)
         {
             for (unsigned int i = 0; i < _positions.size(); i++)
             {
@@ -414,7 +361,7 @@ public:
             }
         }
 
-        if (_staticInstancing)
+        if (_currentIndex == 1)
         {
             glm::mat4 modelMatrix = glm::mat4(1.0);
 
@@ -439,9 +386,9 @@ public:
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
@@ -465,9 +412,9 @@ public:
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         shader->setVec3UniformArray("positions", _positions);
@@ -493,9 +440,9 @@ public:
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
@@ -523,9 +470,9 @@ public:
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);

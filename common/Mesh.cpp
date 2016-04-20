@@ -71,6 +71,8 @@ MeshPtr makeSphere(float radius, unsigned int N)
     mesh->setPrimitiveType(GL_TRIANGLES);
     mesh->setVertexCount(vertices.size());
 
+    std::cout << "Sphere is created with " << vertices.size() << " vertices\n";
+
     return mesh;
 }
 
@@ -254,6 +256,8 @@ MeshPtr makeCube(float size)
     mesh->setPrimitiveType(GL_TRIANGLES);
     mesh->setVertexCount(vertices.size());
 
+    std::cout << "Cube is created with " << vertices.size() << " vertices\n";
+
     return mesh;
 }
 
@@ -389,7 +393,9 @@ MeshPtr loadFromFile(const std::string& filename)
     mesh->setPrimitiveType(GL_TRIANGLES);
     mesh->setVertexCount(assimpMesh->mNumVertices);
 
-    aiReleaseImport(assimpScene);
+    std::cout << "Mesh " << filename << " is loaded with " << assimpMesh->mNumVertices << " vertices\n";
 
+    aiReleaseImport(assimpScene);
+        
     return mesh;
 }
