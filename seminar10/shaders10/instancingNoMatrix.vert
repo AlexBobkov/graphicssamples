@@ -16,9 +16,12 @@ out vec3 normalCamSpace; //нормаль в системе координат �
 out vec4 posCamSpace; //координаты вершины в системе координат камеры
 out vec2 texCoord; //текстурные координаты
 
+const int Rows = 30;
+const int Columns = 30;
+
 void main()
 {
-	vec3 modelPos = vec3(gl_InstanceID / 50 - 25, gl_InstanceID % 50 - 25, 0.0);	
+	vec3 modelPos = vec3(gl_InstanceID / Columns - Columns / 2, gl_InstanceID % Rows - Rows / 2, 0.0);	
 	
 	texCoord = vertexTexCoord;
 

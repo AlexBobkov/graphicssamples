@@ -109,6 +109,18 @@ namespace
 class SampleApplication : public Application
 {
 public:
+    enum Mode : int
+    {
+        NO_INSTANCING,
+        BATCH,
+        NO_MATRIX,
+        UNIFORM,
+        UBO,
+        SSBO,
+        TEXTURE,
+        DIVISOR        
+    };
+
     MeshPtr _teapot;
     MeshPtr _teapotArray;
     MeshPtr _teapotDivisor;
@@ -119,7 +131,7 @@ public:
     //------------------------
         
     std::vector<ShaderProgramPtr> _shaders;
-    int _currentIndex = 0;
+    Mode _currentMode;
 
     //------------------------
 
@@ -146,7 +158,7 @@ public:
     
     SampleApplication() :
         Application(),
-        _currentIndex(0)
+        _currentMode(NO_INSTANCING)
     {
     }
 
@@ -187,7 +199,7 @@ public:
         srand((int)(glfwGetTime() * 1000));
 
         float size = 50.0f;
-        for (int i = 0; i < K; i++)
+        for (unsigned int i = 0; i < K; i++)
         {
             _positionsVec3.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
             _positionsVec4.push_back(glm::vec4(_positionsVec3.back(), 0.0));
@@ -237,29 +249,29 @@ public:
 
         _shaders.resize(8);
 
-        _shaders[0] = std::make_shared<ShaderProgram>();
-        _shaders[0]->createProgram("shaders/common.vert", "shaders/common.frag");
+        _shaders[NO_INSTANCING] = std::make_shared<ShaderProgram>();
+        _shaders[NO_INSTANCING]->createProgram("shaders/common.vert", "shaders/common.frag");
 
-        _shaders[1] = std::make_shared<ShaderProgram>();
-        _shaders[1]->createProgram("shaders/common.vert", "shaders/common.frag");
+        _shaders[BATCH] = std::make_shared<ShaderProgram>();
+        _shaders[BATCH]->createProgram("shaders/common.vert", "shaders/common.frag");
         
-        _shaders[2] = std::make_shared<ShaderProgram>();
-        _shaders[2]->createProgram("shaders10/instancingNoMatrix.vert", "shaders/common.frag");
+        _shaders[NO_MATRIX] = std::make_shared<ShaderProgram>();
+        _shaders[NO_MATRIX]->createProgram("shaders10/instancingNoMatrix.vert", "shaders/common.frag");
 
-        _shaders[3] = std::make_shared<ShaderProgram>();
-        _shaders[3]->createProgram("shaders10/instancingUniform.vert", "shaders/common.frag");
+        _shaders[UNIFORM] = std::make_shared<ShaderProgram>();
+        _shaders[UNIFORM]->createProgram("shaders10/instancingUniform.vert", "shaders/common.frag");
 
-        _shaders[4] = std::make_shared<ShaderProgram>();
-        _shaders[4]->createProgram("shaders10/instancingTexture.vert", "shaders/common.frag");
+        _shaders[UBO] = std::make_shared<ShaderProgram>();
+        _shaders[UBO]->createProgram("shaders10/instancingUBO.vert", "shaders/common.frag");
 
-        _shaders[5] = std::make_shared<ShaderProgram>();
-        _shaders[5]->createProgram("shaders10/instancingDivisor.vert", "shaders/common.frag");
+        _shaders[SSBO] = std::make_shared<ShaderProgram>();
+        _shaders[SSBO]->createProgram("shaders10/instancingSSBO.vert", "shaders/common.frag");
 
-        _shaders[6] = std::make_shared<ShaderProgram>();
-        _shaders[6]->createProgram("shaders10/instancingSSBO.vert", "shaders/common.frag");
+        _shaders[TEXTURE] = std::make_shared<ShaderProgram>();
+        _shaders[TEXTURE]->createProgram("shaders10/instancingTexture.vert", "shaders/common.frag");
 
-        _shaders[7] = std::make_shared<ShaderProgram>();
-        _shaders[7]->createProgram("shaders10/instancingUBO.vert", "shaders/common.frag");
+        _shaders[DIVISOR] = std::make_shared<ShaderProgram>();
+        _shaders[DIVISOR]->createProgram("shaders10/instancingDivisor.vert", "shaders/common.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -305,14 +317,14 @@ public:
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
 
-            ImGui::RadioButton("No instancing", &_currentIndex, 0);
-            ImGui::RadioButton("Static instancing", &_currentIndex, 1);
-            ImGui::RadioButton("No matrix instancing", &_currentIndex, 2);
-            ImGui::RadioButton("Uniform instancing", &_currentIndex, 3);
-            ImGui::RadioButton("Texture instancing", &_currentIndex, 4);
-            ImGui::RadioButton("Divisor instancing", &_currentIndex, 5);
-            ImGui::RadioButton("SSBO instancing", &_currentIndex, 6);
-            ImGui::RadioButton("UBO instancing", &_currentIndex, 7);
+            ImGui::RadioButton("No instancing", reinterpret_cast<int*>(&_currentMode), NO_INSTANCING);
+            ImGui::RadioButton("Batch", reinterpret_cast<int*>(&_currentMode), BATCH);
+            ImGui::RadioButton("No matrix", reinterpret_cast<int*>(&_currentMode), NO_MATRIX);
+            ImGui::RadioButton("Uniform", reinterpret_cast<int*>(&_currentMode), UNIFORM);
+            ImGui::RadioButton("UBO", reinterpret_cast<int*>(&_currentMode), UBO);
+            ImGui::RadioButton("SSBO", reinterpret_cast<int*>(&_currentMode), SSBO);
+            ImGui::RadioButton("Texture", reinterpret_cast<int*>(&_currentMode), TEXTURE);
+            ImGui::RadioButton("Divisor", reinterpret_cast<int*>(&_currentMode), DIVISOR);
         }
         ImGui::End();
     }
@@ -325,27 +337,35 @@ public:
         {
             if (key == GLFW_KEY_1)
             {
-                _currentIndex = 0;
+                _currentMode = NO_INSTANCING;
             }
             else if (key == GLFW_KEY_2)
             {
-                _currentIndex = 1;
+                _currentMode = BATCH;
             }
             else if (key == GLFW_KEY_3)
             {
-                _currentIndex = 2;
+                _currentMode = NO_MATRIX;
             }
             else if (key == GLFW_KEY_4)
             {
-                _currentIndex = 3;
+                _currentMode = UNIFORM;
             }
             else if (key == GLFW_KEY_5)
             {
-                _currentIndex = 4;
+                _currentMode = UBO;
             }
             else if (key == GLFW_KEY_6)
             {
-                _currentIndex = 5;
+                _currentMode = SSBO;
+            }
+            else if (key == GLFW_KEY_7)
+            {
+                _currentMode = TEXTURE;
+            }
+            else if (key == GLFW_KEY_8)
+            {
+                _currentMode = DIVISOR;
             }
         }
     }
@@ -368,40 +388,7 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (_currentIndex == 0 || _currentIndex == 1 || _currentIndex == 5)
-        {
-            drawScene(_shaders[_currentIndex]);
-        }
-
-        if (_currentIndex == 2)
-        {
-            drawNoMatrixInstancedScene(_shaders[_currentIndex]);
-        }
-
-        if (_currentIndex == 3)
-        {
-            drawUniformInstancedScene(_shaders[_currentIndex]);
-        }
-
-        if (_currentIndex == 4)
-        {
-            drawTextureInstancedScene(_shaders[_currentIndex]);
-        }
-
-        if (_currentIndex == 5)
-        {
-            drawDivisorInstancedScene(_shaders[_currentIndex]);
-        }
-
-        if (_currentIndex == 6)
-        {
-            drawSSBOInstancedScene(_shaders[_currentIndex]);
-        }
-
-        if (_currentIndex == 7)
-        {
-            drawUBOInstancedScene(_shaders[_currentIndex]);
-        }
+        drawScene(_shaders[_currentMode]);
 
         //Отсоединяем сэмплер и шейдерную программу
         glBindSampler(0, 0);
@@ -427,7 +414,7 @@ public:
         _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
-        if (_currentIndex == 0)
+        if (_currentMode == NO_INSTANCING)
         {
             for (unsigned int i = 0; i < _positionsVec3.size(); i++)
             {
@@ -439,7 +426,7 @@ public:
                 _teapot->draw();
             }
         }
-        else if (_currentIndex == 1)
+        else if (_currentMode == BATCH)
         {
             glm::mat4 modelMatrix = glm::mat4(1.0);
 
@@ -448,7 +435,7 @@ public:
 
             _teapotArray->draw();
         }
-        else if (_currentIndex == 5) //divisor
+        else if (_currentMode == DIVISOR)
         {
             glm::mat4 modelMatrix = glm::mat4(1.0);
 
@@ -457,174 +444,35 @@ public:
 
             _teapotDivisor->drawInstanced(_positionsVec3.size());
         }
-    }
+        else
+        {
+            if (_currentMode == UNIFORM)
+            {
+                shader->setVec3UniformArray("positions", _positionsVec3);
+            }
+            else if (_currentMode == UBO)
+            {
+                unsigned int uboIndex = glGetUniformBlockIndex(shader->id(), "Positions");
+                glUniformBlockBinding(shader->id(), uboIndex, 0); //0я точка привязки
+            }
+            else if (_currentMode == SSBO)
+            {
+                unsigned int ssboIndex = glGetProgramResourceIndex(shader->id(), GL_SHADER_STORAGE_BLOCK, "Positions");
+                glShaderStorageBlockBinding(shader->id(), ssboIndex, 0); //0я точка привязки
+            }
+            else if (_currentMode == TEXTURE)
+            {
+                glActiveTexture(GL_TEXTURE1);
+                _bufferTex->bind();
+                shader->setIntUniform("texBuf", 1);
+            }
 
-    void drawNoMatrixInstancedScene(const ShaderProgramPtr& shader)
-    {
-        shader->use();
+            glm::mat4 modelMatrix = glm::mat4(1.0);
+            shader->setMat4Uniform("modelMatrix", modelMatrix);
+            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        //Загружаем на видеокарту значения юниформ-переменных
-        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
-        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
-
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        glBindSampler(0, _sampler);
-        _brickTex->bind();
-        shader->setIntUniform("diffuseTex", 0);
-
-        glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader->setMat4Uniform("modelMatrix", modelMatrix);
-        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-
-        _teapot->drawInstanced(_positionsVec3.size());
-    }
-
-    void drawUniformInstancedScene(const ShaderProgramPtr& shader)
-    {
-        shader->use();
-
-        //Загружаем на видеокарту значения юниформ-переменных
-        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
-        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
-
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        glBindSampler(0, _sampler);
-        _brickTex->bind();
-        shader->setIntUniform("diffuseTex", 0);
-
-        shader->setVec3UniformArray("positions", _positionsVec3);
-
-        glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader->setMat4Uniform("modelMatrix", modelMatrix);
-        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-
-        _teapot->drawInstanced(_positionsVec3.size());
-    }
-
-    void drawTextureInstancedScene(const ShaderProgramPtr& shader)
-    {
-        shader->use();
-
-        //Загружаем на видеокарту значения юниформ-переменных
-        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
-        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
-
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        glBindSampler(0, _sampler);
-        _brickTex->bind();
-        shader->setIntUniform("diffuseTex", 0);
-
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
-        _bufferTex->bind();
-        shader->setIntUniform("texBuf", 1);
-
-        glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader->setMat4Uniform("modelMatrix", modelMatrix);
-        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-
-        _teapot->drawInstanced(_positionsVec3.size());
-    }
-
-    void drawDivisorInstancedScene(const ShaderProgramPtr& shader)
-    {
-        shader->use();
-
-        //Загружаем на видеокарту значения юниформ-переменных
-        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
-        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
-
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        glBindSampler(0, _sampler);
-        _brickTex->bind();
-        shader->setIntUniform("diffuseTex", 0);
-
-        glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader->setMat4Uniform("modelMatrix", modelMatrix);
-        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-
-        _teapotDivisor->drawInstanced(_positionsVec3.size());
-    }
-
-    void drawSSBOInstancedScene(const ShaderProgramPtr& shader)
-    {
-        shader->use();
-
-        //Загружаем на видеокарту значения юниформ-переменных
-        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
-        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
-
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        glBindSampler(0, _sampler);
-        _brickTex->bind();
-        shader->setIntUniform("diffuseTex", 0);
-                
-        unsigned int ssboIndex = glGetProgramResourceIndex(shader->id(), GL_SHADER_STORAGE_BLOCK, "Positions");        
-        glShaderStorageBlockBinding(shader->id(), ssboIndex, 0); //0я точка привязки
-
-        glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader->setMat4Uniform("modelMatrix", modelMatrix);
-        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-
-        _teapot->drawInstanced(_positionsVec3.size());
-    }
-
-    void drawUBOInstancedScene(const ShaderProgramPtr& shader)
-    {
-        shader->use();
-
-        //Загружаем на видеокарту значения юниформ-переменных
-        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
-        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        shader->setVec3Uniform("light.La", _light.ambient);
-        shader->setVec3Uniform("light.Ld", _light.diffuse);
-        shader->setVec3Uniform("light.Ls", _light.specular);
-
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        glBindSampler(0, _sampler);
-        _brickTex->bind();
-        shader->setIntUniform("diffuseTex", 0);
-
-        unsigned int uboIndex = glGetUniformBlockIndex(shader->id(), "Positions");
-        glUniformBlockBinding(shader->id(), uboIndex, 0); //0я точка привязки
-
-        glm::mat4 modelMatrix = glm::mat4(1.0);
-        shader->setMat4Uniform("modelMatrix", modelMatrix);
-        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
-
-        _teapot->drawInstanced(_positionsVec3.size());
+            _teapot->drawInstanced(_positionsVec3.size());
+        }
     }
 };
 
