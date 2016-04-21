@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -8,32 +9,27 @@
 #include <vector>
 #include <deque>
 
-const int numParticles = 1000;
-const float emitterSize = 1.0;
-const float lifeTime = 3.0;
-
-struct Particle
+namespace
 {
-    glm::vec3 position;
-    glm::vec3 velocity;
-    float startTime;
-};
+    const int numParticles = 1000;
+    const float emitterSize = 1.0;
+    const float lifeTime = 3.0;
 
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
+    struct Particle
+    {
+        glm::vec3 position;
+        glm::vec3 velocity;
+        float startTime;
+    };
 
-float frand()
-{
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    float frand()
+    {
+        return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+    }
 }
 
 /**
-Инстансинг
+Пример с системой частиц с Transform Feedback
 */
 class SampleApplication : public Application
 {
@@ -45,16 +41,13 @@ public:
     TexturePtr _particleTex;
 
     GLuint _sampler;
-    GLuint _depthSampler;
 
     float _oldTime;
     float _deltaTime;
-    float _fps;
-    std::deque<float> _fpsData;
 
     std::vector<Particle> _particles;
-    std::vector<float> _particlePositions;
-    std::vector<float> _particleVelocities;
+    std::vector<glm::vec3> _particlePositions;
+    std::vector<glm::vec3> _particleVelocities;
     std::vector<float> _particleTimes;
 
     GLuint _particleVaoTF[2];
@@ -66,14 +59,19 @@ public:
     int _tfIndex;
     bool _firstTime;
 
+    SampleApplication() :
+        Application(),
+        _oldTime(0.0),
+        _deltaTime(0.0),
+        _tfIndex(0),
+        _firstTime(true)
+    {
+    }
+
     void makeScene() override
     {
         Application::makeScene();
-
-        _oldTime = 0.0;
-        _deltaTime = 0.0;
-        _fps = 0.0;
-
+        
         //=========================================================
         //Создание и загрузка мешей		
 
@@ -90,17 +88,8 @@ public:
         fs->createFromFile("shaders10/particle.frag");
         _transformFeedbackPass1Shader->attachShader(fs);
 
-        std::vector<std::string> attribs;
-        attribs.push_back("position");
-        attribs.push_back("velocity");
-        attribs.push_back("particleTime");
-
-        GLchar** attribStrings = new GLchar*[attribs.size()];
-        for (unsigned int i = 0; i < attribs.size(); i++)
-        {
-            attribStrings[i] = const_cast<GLchar*>(attribs[i].c_str());
-        }
-        glTransformFeedbackVaryings(_transformFeedbackPass1Shader->id(), attribs.size(), attribStrings, GL_SEPARATE_ATTRIBS);
+        const char* attribs[] = { "position", "velocity", "particleTime" };
+        glTransformFeedbackVaryings(_transformFeedbackPass1Shader->id(), 3, attribs, GL_SEPARATE_ATTRIBS);
         
         _transformFeedbackPass1Shader->linkProgram();
 
@@ -121,17 +110,6 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-        glGenSamplers(1, &_depthSampler);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glSamplerParameterfv(_depthSampler, GL_TEXTURE_BORDER_COLOR, border);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
         //=========================================================
 
         srand((int)(glfwGetTime() * 1000));
@@ -147,14 +125,8 @@ public:
 
         for (unsigned int i = 0; i < numParticles; i++)
         {
-            _particlePositions.push_back(_particles[i].position.x);
-            _particlePositions.push_back(_particles[i].position.y);
-            _particlePositions.push_back(_particles[i].position.z);
-
-            _particleVelocities.push_back(_particles[i].velocity.x);
-            _particleVelocities.push_back(_particles[i].velocity.y);
-            _particleVelocities.push_back(_particles[i].velocity.z);
-
+            _particlePositions.push_back(_particles[i].position);
+            _particleVelocities.push_back(_particles[i].velocity);
             _particleTimes.push_back(_particles[i].startTime);
         }
 
@@ -166,64 +138,42 @@ public:
 
         for (unsigned int i = 0; i < 2; i++)
         {
-            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF[i]);
-
             glBindVertexArray(_particleVaoTF[i]);
 
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, _particlePosVboTF[i]);
-            glBufferData(GL_ARRAY_BUFFER, _particlePositions.size() * sizeof(float), _particlePositions.data(), GL_DYNAMIC_DRAW);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _particlePosVboTF[i]);
+            glBufferData(GL_ARRAY_BUFFER, _particlePositions.size() * sizeof(float) * 3, _particlePositions.data(), GL_DYNAMIC_DRAW);
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);            
 
             glEnableVertexAttribArray(1);
             glBindBuffer(GL_ARRAY_BUFFER, _particleVelVboTF[i]);
-            glBufferData(GL_ARRAY_BUFFER, _particleVelocities.size() * sizeof(float), _particleVelocities.data(), GL_DYNAMIC_DRAW);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, _particleVelVboTF[i]);
+            glBufferData(GL_ARRAY_BUFFER, _particleVelocities.size() * sizeof(float) * 3, _particleVelocities.data(), GL_DYNAMIC_DRAW);
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);            
 
             glEnableVertexAttribArray(2);
             glBindBuffer(GL_ARRAY_BUFFER, _particleTimeVboTF[i]);
             glBufferData(GL_ARRAY_BUFFER, _particleTimes.size() * sizeof(float), _particleTimes.data(), GL_DYNAMIC_DRAW);
             glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+
+            //---------------------------
+
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF[i]);
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _particlePosVboTF[i]);
+            glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, _particleVelVboTF[i]);
             glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, _particleTimeVboTF[i]);
         }
 
         glBindVertexArray(0);
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
-
-        _tfIndex = 0;
-        _firstTime = true;
-    }
-
-    void computeFPS()
-    {
-        _fpsData.push_back(1 / _deltaTime);
-        while (_fpsData.size() > 10)
-        {
-            _fpsData.pop_front();
-        }
-
-        _fps = 0.0;
-        if (_fpsData.size() > 0)
-        {
-            for (unsigned int i = 0; i < _fpsData.size(); i++)
-            {
-                _fps += _fpsData[i];
-            }
-            _fps /= _fpsData.size();
-            _fps = floor(_fps);
-        }
     }
 
     void update()
     {
         Application::update();
 
-        _deltaTime = glfwGetTime() - _oldTime;
-        _oldTime = glfwGetTime();
-
-        computeFPS();
+        float time = static_cast<float>(glfwGetTime());
+        _deltaTime = time - _oldTime;
+        _oldTime = time;
     }
 
     void draw() override
@@ -237,47 +187,50 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        //-----------------------------
 
+        updateParticles();
         drawParticles();
 
+        _tfIndex = 1 - _tfIndex;
+
+        //-----------------------------
 
         //Отсоединяем сэмплер и шейдерную программу
         glBindSampler(0, 0);
         glUseProgram(0);
     }
 
-    void drawParticles()
+    void updateParticles()
     {
-        int curVB = 1 - _tfIndex;
-
-        //=========================================================
-
         _transformFeedbackPass1Shader->use();
         _transformFeedbackPass1Shader->setFloatUniform("deltaTime", _deltaTime);
 
         glEnable(GL_RASTERIZER_DISCARD);
 
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF[_tfIndex]);
-        glBindVertexArray(_particleVaoTF[curVB]);
 
         glBeginTransformFeedback(GL_POINTS);
 
         if (_firstTime)
         {
+            glBindVertexArray(_particleVaoTF[1 - _tfIndex]);
             glDrawArrays(GL_POINTS, 0, _particlePositions.size());
             _firstTime = false;
         }
         else
         {
-            glDrawTransformFeedback(GL_POINTS, _TF[curVB]);
+            glBindVertexArray(_particleVaoTF[1 - _tfIndex]);
+            glDrawTransformFeedback(GL_POINTS, _TF[1 - _tfIndex]);
         }
 
         glEndTransformFeedback();
 
         glDisable(GL_RASTERIZER_DISCARD);
+    }
 
-        //=========================================================
-
+    void drawParticles()
+    {
         _transformFeedbackPass2Shader->use();
 
         _transformFeedbackPass2Shader->setMat4Uniform("modelMatrix", glm::mat4(1.0f));
@@ -285,29 +238,24 @@ public:
         _transformFeedbackPass2Shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
         _transformFeedbackPass2Shader->setFloatUniform("time", (float)glfwGetTime());
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _particleTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _particleTex->bind();
         _transformFeedbackPass2Shader->setIntUniform("tex", 0);
 
-        glEnable(GL_PROGRAM_POINT_SIZE);
-        glEnable(GL_POINT_SPRITE);
-
-        glDisable(GL_DEPTH_TEST);
-
+        glEnable(GL_PROGRAM_POINT_SIZE);        
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+        glDepthMask(false);
 
         glBindVertexArray(_particleVaoTF[_tfIndex]);
         glDrawTransformFeedback(GL_POINTS, _TF[_tfIndex]); //Рисуем здесь!
 
+        glDepthMask(true);
 
         glDisable(GL_BLEND);
-
-        glEnable(GL_DEPTH_TEST);
-
-        _tfIndex = 1 - _tfIndex;
+        glDisable(GL_PROGRAM_POINT_SIZE);        
     }
 };
 
