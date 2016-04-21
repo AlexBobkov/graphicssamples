@@ -37,5 +37,4 @@ void main()
 	color.a *= (1.0 - ratio);
 
 	fragColor = color;
-	//fragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }

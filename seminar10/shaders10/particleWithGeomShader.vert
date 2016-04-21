@@ -12,11 +12,11 @@ layout(location = 1) in float startTime;
 
 out float ratioVert;
 
-const float lifeTime = 3.0f;
+const float lifeTime = 5.0f;
 
 void main()
-{	
-	gl_Position = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
-		
+{
 	ratioVert = (time - startTime) / lifeTime;
+	
+	gl_Position = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }
