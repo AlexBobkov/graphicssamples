@@ -33,7 +33,7 @@ vec4 getColorFromPalette(float value)
 void main()
 {
 	vec4 color = texture(tex, gl_PointCoord); //читаем из текстуры	
-	color *= getColorFromPalette(ratio);
+	//color *= getColorFromPalette(ratio);
 	color.a *= (1.0 - ratio);
 
 	fragColor = color;

@@ -428,19 +428,15 @@ public:
         }
         else if (_currentMode == BATCH)
         {
-            glm::mat4 modelMatrix = glm::mat4(1.0);
-
-            shader->setMat4Uniform("modelMatrix", modelMatrix);
-            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+            shader->setMat4Uniform("modelMatrix", glm::mat4(1.0));
+            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix))));
 
             _teapotArray->draw();
         }
         else if (_currentMode == DIVISOR)
         {
-            glm::mat4 modelMatrix = glm::mat4(1.0);
-
-            shader->setMat4Uniform("modelMatrix", modelMatrix);
-            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+            shader->setMat4Uniform("modelMatrix", glm::mat4(1.0));
+            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix))));
 
             _teapotDivisor->drawInstanced(_positionsVec3.size());
         }
@@ -467,9 +463,8 @@ public:
                 shader->setIntUniform("texBuf", 1);
             }
 
-            glm::mat4 modelMatrix = glm::mat4(1.0);
-            shader->setMat4Uniform("modelMatrix", modelMatrix);
-            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+            shader->setMat4Uniform("modelMatrix", glm::mat4(1.0));
+            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix))));
 
             _teapot->drawInstanced(_positionsVec3.size());
         }
