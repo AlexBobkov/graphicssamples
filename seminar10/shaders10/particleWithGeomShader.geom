@@ -4,8 +4,6 @@ const vec2 corners[4] = vec2[](vec2(0.0, 1.0), vec2(0.0, 0.0), vec2(1.0, 1.0), v
 
 uniform mat4 projectionMatrix;
 
-const float size = 0.3;
-
 layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
@@ -14,17 +12,47 @@ in float ratioVert[];
 out vec2 texCoord;
 out float ratio;
 
+const float size = 0.3;
+
 void main()
 {
-	for (int i = 0; i < 4; i++)
-	{
-		vec4 eyePos = gl_in[0].gl_Position;
-		eyePos.xy += size * (ratioVert[0] + 1.0) * (corners[i] - vec2(0.5));
-		gl_Position = projectionMatrix * eyePos;
+	float curSize = size * (ratioVert[0] + 1.0);
 
-		ratio = ratioVert[0];
-		texCoord = corners[i];
+	vec4 eyePos = gl_in[0].gl_Position;
+	eyePos.xy += curSize * vec2(-0.5, 0.5);
+	gl_Position = projectionMatrix * eyePos;
 
-		EmitVertex();
-	}
+	ratio = ratioVert[0];
+	texCoord = vec2(0.0, 1.0);
+
+	EmitVertex();
+	
+	eyePos = gl_in[0].gl_Position;
+	eyePos.xy += curSize * vec2(-0.5, -0.5);
+	gl_Position = projectionMatrix * eyePos;
+
+	ratio = ratioVert[0];
+	texCoord = vec2(0.0, 0.0);
+
+	EmitVertex();
+	
+	eyePos = gl_in[0].gl_Position;
+	eyePos.xy += curSize * vec2(0.5, 0.5);
+	gl_Position = projectionMatrix * eyePos;
+
+	ratio = ratioVert[0];
+	texCoord = vec2(1.0, 1.0);
+
+	EmitVertex();
+	
+	eyePos = gl_in[0].gl_Position;
+	eyePos.xy += curSize * vec2(0.5, -0.5);
+	gl_Position = projectionMatrix * eyePos;
+
+	ratio = ratioVert[0];
+	texCoord = vec2(1.0, 0.0);
+
+	EmitVertex();
+
+	EndPrimitive();
 }
