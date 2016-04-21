@@ -8,6 +8,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <glm/gtx/transform.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -110,9 +112,16 @@ public:
     MeshPtr _teapot;
     MeshPtr _teapotArray;
     MeshPtr _teapotDivisor;
+
+    TexturePtr _brickTex;
+    GLuint _sampler;
+
+    //------------------------
         
     std::vector<ShaderProgramPtr> _shaders;
     int _currentIndex = 0;
+
+    //------------------------
 
     //Переменные для управления положением одного источника света
     float _lr;
@@ -121,14 +130,19 @@ public:
 
     LightInfo _light;
 
-    TexturePtr _brickTex;
+    //------------------------
+
+    const unsigned int K = 1000; //Количество инстансов
+
+    std::vector<glm::vec3> _positionsVec3;
+    std::vector<glm::vec4> _positionsVec4;
+
+    DataBufferPtr _bufVec3;
+    DataBufferPtr _bufVec4;
+    
     TexturePtr _bufferTex;
 
-    GLuint _sampler;
-    
-    const unsigned int K = 500; //Количество инстансов
-
-    std::vector<glm::vec3> _positions;
+    //------------------------
     
     SampleApplication() :
         Application(),
@@ -140,36 +154,88 @@ public:
     {
         Application::makeScene();
 
+        //Максимальное количество вершиных атрибутов, выраженное в количестве vec4
+        GLint maxVertexAttributes;
+        glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
+
+        //Максимальный размер всех юниформ-перемнных, выраженный в количестве vec4
+        GLint maxVertexUniformVectors;
+        glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &maxVertexUniformVectors);
+
+        //Максимальный размер юниформ-блока в байтах
+        GLint maxUniformBlockSize;
+        glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
+
+        //Максимальный размер ShaderStorage-блока в байтах
+        GLint maxShaderStorageBlockSize;
+        glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxShaderStorageBlockSize);
+
+        //Максимальное количество текселей в текстурном буфере
+        GLint maxTextureBufferSize;
+        glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &maxTextureBufferSize);
+
+        std::cout << "GL_MAX_VERTEX_ATTRIBS " << maxVertexAttributes << std::endl;
+        std::cout << "GL_MAX_VERTEX_UNIFORM_VECTORS " << maxVertexUniformVectors << std::endl;
+        std::cout << "GL_MAX_UNIFORM_BLOCK_SIZE " << maxUniformBlockSize << std::endl;
+        std::cout << "GL_MAX_SHADER_STORAGE_BLOCK_SIZE " << maxShaderStorageBlockSize << std::endl;            
+        std::cout << "GL_MAX_TEXTURE_BUFFER_SIZE " << maxTextureBufferSize << std::endl;
+
         //=========================================================
-        //Создание и загрузка мешей
+        //Инициализируем K случайных сдвигов для K экземпляров
+        //Некоторые варианты требуют выровненный массив по vec4, а некоторые нет
 
         srand((int)(glfwGetTime() * 1000));
 
         float size = 50.0f;
         for (int i = 0; i < K; i++)
         {
-            _positions.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
+            _positionsVec3.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
+            _positionsVec4.push_back(glm::vec4(_positionsVec3.back(), 0.0));
         }
+
+        //Создаем буферы без выравнивания (_bufVec3) и с выравниванием (_bufVec4)
+
+        _bufVec3 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
+        _bufVec3->setData(_positionsVec3.size() * sizeof(float) * 3, _positionsVec3.data());
+
+        _bufVec4 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
+        _bufVec4->setData(_positionsVec4.size() * sizeof(float) * 4, _positionsVec4.data());
+
+        //----------------------------
+
+        //Привязываем SSBO к 0й точке привязки (требуется буфер с выравниванием)
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, _bufVec4->id());
+
+        //----------------------------
+
+        //Привязываем UBO к 0й точке привязки (требуется буфер с выравниванием)
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, _bufVec4->id());
+
+        //----------------------------
+
+        //Создаем текстурный буфер и привязываем к нему буфер без выравнивания
+        _bufferTex = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
+        _bufferTex->bind();
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, _bufVec3->id());
+        _bufferTex->unbind();
 
         //----------------------------
 
         _teapot = loadFromFile("models/teapot.obj");
-        _teapotArray = loadFromFileArray("models/teapot.obj", _positions);
+        _teapotArray = loadFromFileArray("models/teapot.obj", _positionsVec3);
 
         //----------------------------
 
         _teapotDivisor = loadFromFile("models/teapot.obj");
-
-        DataBufferPtr buf = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
-        buf->setData(_positions.size() * sizeof(float) * 3, _positions.data());
-
-        _teapotDivisor->setAttribute(3, 3, GL_FLOAT, GL_FALSE, 0, 0, buf);
-        _teapotDivisor->setAttributeDivisor(3, 1);
+                
+        //Используем буфер без выравнивания в качестве вершинного атрибута
+        _teapotDivisor->setAttribute(3, 3, GL_FLOAT, GL_FALSE, 0, 0, _bufVec3);
+        _teapotDivisor->setAttributeDivisor(3, 1);        
 
         //=========================================================
         //Инициализация шейдеров
 
-        _shaders.resize(6);
+        _shaders.resize(8);
 
         _shaders[0] = std::make_shared<ShaderProgram>();
         _shaders[0]->createProgram("shaders/common.vert", "shaders/common.frag");
@@ -189,6 +255,12 @@ public:
         _shaders[5] = std::make_shared<ShaderProgram>();
         _shaders[5]->createProgram("shaders10/instancingDivisor.vert", "shaders/common.frag");
 
+        _shaders[6] = std::make_shared<ShaderProgram>();
+        _shaders[6]->createProgram("shaders10/instancingSSBO.vert", "shaders/common.frag");
+
+        _shaders[7] = std::make_shared<ShaderProgram>();
+        _shaders[7]->createProgram("shaders10/instancingUBO.vert", "shaders/common.frag");
+
         //=========================================================
         //Инициализация значений переменных освщения
         _lr = 10.0;
@@ -203,12 +275,7 @@ public:
         //=========================================================
         //Загрузка и создание текстур
         _brickTex = loadTexture("images/brick.jpg");
-
-        _bufferTex = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
-        _bufferTex->bind();
-        buf->attachToTexture(GL_RGB32F_ARB);
-        _bufferTex->unbind();
-
+                
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
         glGenSamplers(1, &_sampler);
@@ -244,6 +311,8 @@ public:
             ImGui::RadioButton("Uniform instancing", &_currentIndex, 3);
             ImGui::RadioButton("Texture instancing", &_currentIndex, 4);
             ImGui::RadioButton("Divisor instancing", &_currentIndex, 5);
+            ImGui::RadioButton("SSBO instancing", &_currentIndex, 6);
+            ImGui::RadioButton("UBO instancing", &_currentIndex, 7);
         }
         ImGui::End();
     }
@@ -299,7 +368,7 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (_currentIndex == 0 || _currentIndex == 1)
+        if (_currentIndex == 0 || _currentIndex == 1 || _currentIndex == 5)
         {
             drawScene(_shaders[_currentIndex]);
         }
@@ -322,6 +391,16 @@ public:
         if (_currentIndex == 5)
         {
             drawDivisorInstancedScene(_shaders[_currentIndex]);
+        }
+
+        if (_currentIndex == 6)
+        {
+            drawSSBOInstancedScene(_shaders[_currentIndex]);
+        }
+
+        if (_currentIndex == 7)
+        {
+            drawUBOInstancedScene(_shaders[_currentIndex]);
         }
 
         //Отсоединяем сэмплер и шейдерную программу
@@ -350,9 +429,9 @@ public:
 
         if (_currentIndex == 0)
         {
-            for (unsigned int i = 0; i < _positions.size(); i++)
+            for (unsigned int i = 0; i < _positionsVec3.size(); i++)
             {
-                glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), _positions[i]);
+                glm::mat4 modelMatrix = glm::translate(_positionsVec3[i]);
 
                 shader->setMat4Uniform("modelMatrix", modelMatrix);
                 shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
@@ -360,8 +439,7 @@ public:
                 _teapot->draw();
             }
         }
-
-        if (_currentIndex == 1)
+        else if (_currentIndex == 1)
         {
             glm::mat4 modelMatrix = glm::mat4(1.0);
 
@@ -369,6 +447,15 @@ public:
             shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
             _teapotArray->draw();
+        }
+        else if (_currentIndex == 5) //divisor
+        {
+            glm::mat4 modelMatrix = glm::mat4(1.0);
+
+            shader->setMat4Uniform("modelMatrix", modelMatrix);
+            shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+
+            _teapotDivisor->drawInstanced(_positionsVec3.size());
         }
     }
 
@@ -395,7 +482,7 @@ public:
         shader->setMat4Uniform("modelMatrix", modelMatrix);
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        _teapot->drawInstanced(_positions.size());
+        _teapot->drawInstanced(_positionsVec3.size());
     }
 
     void drawUniformInstancedScene(const ShaderProgramPtr& shader)
@@ -417,13 +504,13 @@ public:
         _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
-        shader->setVec3UniformArray("positions", _positions);
+        shader->setVec3UniformArray("positions", _positionsVec3);
 
         glm::mat4 modelMatrix = glm::mat4(1.0);
         shader->setMat4Uniform("modelMatrix", modelMatrix);
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        _teapot->drawInstanced(_positions.size());
+        _teapot->drawInstanced(_positionsVec3.size());
     }
 
     void drawTextureInstancedScene(const ShaderProgramPtr& shader)
@@ -453,7 +540,7 @@ public:
         shader->setMat4Uniform("modelMatrix", modelMatrix);
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        _teapot->drawInstanced(_positions.size());
+        _teapot->drawInstanced(_positionsVec3.size());
     }
 
     void drawDivisorInstancedScene(const ShaderProgramPtr& shader)
@@ -479,7 +566,65 @@ public:
         shader->setMat4Uniform("modelMatrix", modelMatrix);
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
 
-        _teapotDivisor->drawInstanced(_positions.size());
+        _teapotDivisor->drawInstanced(_positionsVec3.size());
+    }
+
+    void drawSSBOInstancedScene(const ShaderProgramPtr& shader)
+    {
+        shader->use();
+
+        //Загружаем на видеокарту значения юниформ-переменных
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
+
+        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glBindSampler(0, _sampler);
+        _brickTex->bind();
+        shader->setIntUniform("diffuseTex", 0);
+                
+        unsigned int ssboIndex = glGetProgramResourceIndex(shader->id(), GL_SHADER_STORAGE_BLOCK, "Positions");        
+        glShaderStorageBlockBinding(shader->id(), ssboIndex, 0); //0я точка привязки
+
+        glm::mat4 modelMatrix = glm::mat4(1.0);
+        shader->setMat4Uniform("modelMatrix", modelMatrix);
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+
+        _teapot->drawInstanced(_positionsVec3.size());
+    }
+
+    void drawUBOInstancedScene(const ShaderProgramPtr& shader)
+    {
+        shader->use();
+
+        //Загружаем на видеокарту значения юниформ-переменных
+        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
+
+        glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.La", _light.ambient);
+        shader->setVec3Uniform("light.Ld", _light.diffuse);
+        shader->setVec3Uniform("light.Ls", _light.specular);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glBindSampler(0, _sampler);
+        _brickTex->bind();
+        shader->setIntUniform("diffuseTex", 0);
+
+        unsigned int uboIndex = glGetUniformBlockIndex(shader->id(), "Positions");
+        glUniformBlockBinding(shader->id(), uboIndex, 0); //0я точка привязки
+
+        glm::mat4 modelMatrix = glm::mat4(1.0);
+        shader->setMat4Uniform("modelMatrix", modelMatrix);
+        shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * modelMatrix))));
+
+        _teapot->drawInstanced(_positionsVec3.size());
     }
 };
 

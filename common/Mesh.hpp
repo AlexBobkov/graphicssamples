@@ -55,14 +55,9 @@ public:
     }
 
     /**
-    Прикрепляет буфер с данными к текстуре с типом GL_TEXTURE_BUFFER (разбирается на 10м семинаре).
+    Возвращает идентификатор шейдера
     */
-    void attachToTexture(GLenum internalFormat)
-    {
-        glBindBuffer(GL_TEXTURE_BUFFER, _vbo);
-        glTexBuffer(GL_TEXTURE_BUFFER, internalFormat, _vbo);
-        glBindBuffer(GL_TEXTURE_BUFFER, 0);
-    }
+    GLuint id() const { return _vbo; }
 
 protected:
     DataBuffer(const DataBuffer&) = delete;

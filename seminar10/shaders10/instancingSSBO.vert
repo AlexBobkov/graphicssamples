@@ -1,6 +1,9 @@
-#version 330
+#version 430 core
 
-uniform vec3 positions[1000];
+layout(std430) buffer Positions 
+{
+	vec3 positions[];
+};
 
 //стандартные матрицы для преобразования координат
 uniform mat4 modelMatrix; //из локальной в мировую
