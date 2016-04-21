@@ -11,9 +11,9 @@
 
 namespace
 {
-    const int numParticles = 1000;
-    const float emitterSize = 1.0;
-    const float lifeTime = 3.0;
+    const int numParticles = 5000;
+    const float emitterSize = 0.25f;
+    const float lifeTime = 15.0f;
 
     struct Particle
     {
@@ -34,13 +34,17 @@ namespace
 class SampleApplication : public Application
 {
 public:
-    //Идентификатор шейдерной программы    
+    MeshPtr _ground;
+    
+    ShaderProgramPtr _groundShader;
     ShaderProgramPtr _transformFeedbackPass1Shader;
     ShaderProgramPtr _transformFeedbackPass2Shader;
 
+    TexturePtr _grassTex;
     TexturePtr _particleTex;
 
     GLuint _sampler;
+    GLuint _grassSampler;
 
     float _oldTime;
     float _deltaTime;
@@ -75,8 +79,15 @@ public:
         //=========================================================
         //Создание и загрузка мешей		
 
+        _ground = makeGroundPlane(10.0f, 5.0f);
+
         //=========================================================
         //Инициализация шейдеров
+
+        _groundShader = std::make_shared<ShaderProgram>();
+        _groundShader->createProgram("shaders10/ground.vert", "shaders10/ground.frag");
+
+        //----------------------------
         
         _transformFeedbackPass1Shader = std::make_shared<ShaderProgram>();
         
@@ -101,14 +112,21 @@ public:
         //=========================================================
         //Загрузка и создание текстур
         _particleTex = loadTexture("images/particle.png", false, true);
+        _grassTex = loadTexture("images/grass.jpg", false, false);
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glGenSamplers(1, &_grassSampler);
+        glSamplerParameteri(_grassSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_grassSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glSamplerParameteri(_grassSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(_grassSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         //=========================================================
 
@@ -116,10 +134,15 @@ public:
 
         for (unsigned int i = 0; i < numParticles; i++)
         {
+            float r = frand() * emitterSize;
+            float theta = frand() * 0.2f;
+            float phi = frand() * 2.0f * glm::pi<float>();
+            
             Particle p;
-            p.position = glm::vec3((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, frand() * 5.0);
-            p.velocity = glm::vec3(frand() * 0.01, frand() * 0.01, 0.0);
-            p.startTime = frand() * lifeTime;
+            p.position = glm::vec3(cos(phi) * r, sin(phi) * r, 0.0);
+            p.velocity = glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)) * 3.0f;
+
+            p.startTime = -frand() * lifeTime;
             _particles.push_back(p);
         }
 
@@ -187,14 +210,29 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //-----------------------------
+        //-------------------------
+
+        _groundShader->use();
+
+        _groundShader->setMat4Uniform("modelMatrix", glm::mat4(1.0f));
+        _groundShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
+        _groundShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
+
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glBindSampler(0, _grassSampler);
+        _grassTex->bind();
+        _groundShader->setIntUniform("tex", 0);
+
+        _ground->draw();
+
+        //-------------------------
 
         updateParticles();
         drawParticles();
 
         _tfIndex = 1 - _tfIndex;
 
-        //-----------------------------
+        //-------------------------
 
         //Отсоединяем сэмплер и шейдерную программу
         glBindSampler(0, 0);

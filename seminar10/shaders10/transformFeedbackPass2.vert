@@ -11,12 +11,12 @@ layout(location = 2) in float oldParticleTime;
 
 out float ratio;
 
-const float lifeTime = 3.0f;
+const float lifeTime = 15.0f;
 
 void main()
 {	
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
-	
+			
 	ratio = oldParticleTime / lifeTime;
 
 	gl_PointSize = 10.0 + ratio * 20.0;

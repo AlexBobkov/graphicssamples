@@ -10,21 +10,38 @@ out vec3 position;
 out vec3 velocity;
 out float particleTime;
 
-const float lifeTime = 3.0f;
+const float lifeTime = 15.0f;
 
 void main()
 {	
 	particleTime = oldParticleTime + deltaTime;
 
-	velocity = vertexVelocity + vec3(0.0, 0.0, -1.0) * deltaTime;
-
-	position = vertexPosition + velocity * deltaTime;
-
-	if (particleTime > lifeTime)
+	if (particleTime > 0.0)
 	{
-		particleTime -= lifeTime;
+		velocity = vertexVelocity + vec3(0.0, 0.0, -1.0) * deltaTime;
+
+		position = vertexPosition + velocity * deltaTime;
 		
-		position.z = 0.0;
-		velocity = vec3(position.x * 0.1, position.y * 0.1, 1.0);
+		if (position.z < 0.0)
+		{
+			position.z *= -1;
+			velocity.z *= -0.75;
+		}
+
+		if (particleTime > lifeTime)
+		{
+			particleTime -= lifeTime;
+			
+			position.z = 0.0;
+			vec3 dir = normalize(position);
+			
+			position = dir * 0.25;
+			velocity = vec3(dir.xy * 0.2, 1.0) * 3.0;
+		}
+	}
+	else
+	{
+		position = vertexPosition;
+		velocity = vertexVelocity;
 	}
 }
