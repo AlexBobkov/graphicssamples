@@ -48,7 +48,7 @@ public:
     GLuint _grassSampler;
     
     float _oldTime;
-
+    
     std::vector<Particle> _particles;
     std::vector<glm::vec3> _particlePositions;
     std::vector<float> _particleTimes;
@@ -57,9 +57,12 @@ public:
     GLuint _particleTimeVbo;
     GLuint _particleVao;
 
+    bool _wind;
+
     SampleApplication() :
         Application(),
-        _oldTime(0.0)
+        _oldTime(0.0),
+        _wind(false)
     {
     }
 
@@ -137,6 +140,20 @@ public:
         glBindVertexArray(0);
     }
 
+    void updateGUI() override
+    {
+        Application::updateGUI();
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
+                        
+            ImGui::Checkbox("Wind", &_wind);
+        }
+        ImGui::End();
+    }
+
     Particle makeNewParticle()
     {
         float r = frand() * emitterSize;
@@ -176,6 +193,11 @@ public:
         {
             //_particles[i].velocity += glm::vec3(0.0, 0.0, -1.0) * animationDeltaTime; //Гравитация
             _particles[i].position += _particles[i].velocity * animationDeltaTime;
+
+            if (_wind)
+            {
+                _particles[i].position += glm::vec3(0.0, _particles[i].position.z * 0.1, 0.0) * animationDeltaTime;
+            }
 
             if (curTime - _particles[i].startTime > lifeTime)
             {
