@@ -39,5 +39,6 @@ MAKE_SAMPLE(Sample_10_1_Instancing)
 MAKE_SAMPLE(Sample_10_2_Particles)
 MAKE_SAMPLE(Sample_10_3_TransformFeedback)
 MAKE_SAMPLE(Sample_10_4_GeometryShader)
+MAKE_SAMPLE(Sample_10_5_ComputeShader)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar10/shaders10 DESTINATION ${CMAKE_INSTALL_PREFIX})

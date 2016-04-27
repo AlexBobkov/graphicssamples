@@ -1,0 +1,34 @@
+#version 430 core
+
+layout(local_size_x = 500,  local_size_y = 1, local_size_z = 1) in;
+
+layout(std140, binding = 0) buffer Positions
+{
+    vec4 positions[];
+};
+
+layout(std140, binding = 1) buffer Velocities
+{
+    vec4 velocities[];
+};
+
+uniform int numParticles;
+uniform float time;
+
+void main()
+{
+    uint i = gl_GlobalInvocationID.x;
+
+    if (i >= numParticles)
+    {
+        return;
+    }
+
+    vec3 p = positions[i].xyz;
+    vec3 v = velocities[i].xyz;
+
+    p.z = 10.0 * sin(time + p.x);
+
+    positions[i] = vec4(p, 1.0);
+    velocities[i] = vec4(v, 0.0);
+}
