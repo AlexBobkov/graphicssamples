@@ -56,7 +56,8 @@ public:
 
     DataBufferPtr _bufVec3;
 
-    TexturePtr _bufferTex;
+    TexturePtr _bufferTexCulled;
+    TexturePtr _bufferTexAll;
 
     //------------------------
 
@@ -65,6 +66,10 @@ public:
     GLuint _tfOutputVbo; //VBO, в который будут записываться смещения моделей после отсечения
 
     GLuint _query; //Переменная-счетчик, куда будет записываться количество пройденных отбор моделей
+
+    //------------------------
+
+    bool _isCullEnabled = false;
 
     void makeScene() override
     {
@@ -125,10 +130,16 @@ public:
         //----------------------------
 
         //Создаем текстурный буфер и привязываем к нему буфер без выравнивания
-        _bufferTex = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
-        _bufferTex->bind();
+        _bufferTexAll = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
+        _bufferTexAll->bind();
+        glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, _bufVec3->id());
+        _bufferTexAll->unbind();
+
+        //Создаем текстурный буфер и привязываем к нему буфер без выравнивания
+        _bufferTexCulled = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
+        _bufferTexCulled->bind();
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, _tfOutputVbo);
-        _bufferTex->unbind();
+        _bufferTexCulled->unbind();
 
         //----------------------------
 
@@ -152,16 +163,12 @@ public:
         gs->createFromFile("shaders10/cull.geom");
         _cullShader->attachShader(gs);
 
-        ShaderPtr fs = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
-        fs->createFromFile("shaders10/cull.frag");
-        _cullShader->attachShader(fs);
-
         //Выходные переменные, которые будут записаны в буфер
         const char* attribs[] = { "position" };
         glTransformFeedbackVaryings(_cullShader->id(), 1, attribs, GL_SEPARATE_ATTRIBS);
 
         _cullShader->linkProgram();
-                
+
         //----------------------------
 
         //VAO, который будет поставлять данные для отсечения
@@ -175,17 +182,17 @@ public:
         glBindVertexArray(0);
 
         //----------------------------
-        
+
         //Настроечный объект Transform Feedback
-        glGenTransformFeedbacks(1, &_TF);        
+        glGenTransformFeedbacks(1, &_TF);
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _tfOutputVbo);
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);        
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
 
         //----------------------------
 
         glGenQueries(1, &_query);
-        
+
         //=========================================================
         //Инициализация значений переменных освщения
         _lr = 10.0;
@@ -229,6 +236,8 @@ public:
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
+
+            ImGui::Checkbox("Is Cull Enabled", &_isCullEnabled);
         }
         ImGui::End();
     }
@@ -250,7 +259,7 @@ public:
 
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                
+
         cull(_cullShader);
 
         drawScene(_shader);
@@ -262,23 +271,21 @@ public:
 
     void cull(const ShaderProgramPtr& shader)
     {
-        shader->use();        
+        shader->use();
 
-        shader->setMat4Uniform("modelMatrix", glm::mat4(1.0f));
-        shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
-        shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-                
+        shader->setFloatUniform("time", static_cast<float>(glfwGetTime()));
+
         glEnable(GL_RASTERIZER_DISCARD);
-                
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF);                        
+
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF);
 
         glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, _query);
 
         glBeginTransformFeedback(GL_POINTS);
-        
+
         glBindVertexArray(_cullVao);
         glDrawArrays(GL_POINTS, 0, _positionsVec3.size());
-                
+
         glEndTransformFeedback();
 
         glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
@@ -309,13 +316,27 @@ public:
         shader->setIntUniform("diffuseTex", 0);
 
         glActiveTexture(GL_TEXTURE1);
-        _bufferTex->bind();
+        if (_isCullEnabled)
+        {
+            _bufferTexCulled->bind();
+        }
+        else
+        {
+            _bufferTexAll->bind();
+        }
         shader->setIntUniform("texBuf", 1);
 
         shader->setMat4Uniform("modelMatrix", glm::mat4(1.0));
         shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix))));
 
-        _teapot->drawInstanced(primitivesWritten);
+        if (_isCullEnabled)
+        {
+            _teapot->drawInstanced(primitivesWritten);
+        }
+        else
+        {
+            _teapot->drawInstanced(_positionsVec3.size());
+        }
     }
 };
 
