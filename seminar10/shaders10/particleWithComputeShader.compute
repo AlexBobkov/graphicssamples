@@ -14,6 +14,15 @@ layout(std140, binding = 1) buffer Velocities
 
 uniform int numParticles;
 uniform float time;
+uniform float deltaTime;
+
+uniform vec3 attractor1Pos;
+uniform float attractor1Gravity;
+
+uniform vec3 attractor2Pos;
+uniform float attractor2Gravity;
+
+const float particleInvMass = 1.0 / 0.1;
 
 void main()
 {
@@ -27,7 +36,16 @@ void main()
     vec3 p = positions[i].xyz;
     vec3 v = velocities[i].xyz;
 
-    p.z = 10.0 * sin(time + p.x);
+    vec3 d1 = attractor1Pos - p;
+    vec3 force1 = normalize(d1) * attractor1Gravity / length(d1);
+    
+    vec3 d2 = attractor2Pos - p;
+    vec3 force2 = normalize(d2) * attractor2Gravity / length(d2);
+    
+    vec3 a = (force1 + force2) * particleInvMass;
+    
+    p += v * deltaTime + 0.5 * a * deltaTime * deltaTime;
+    v += a * deltaTime;
 
     positions[i] = vec4(p, 1.0);
     velocities[i] = vec4(v, 0.0);

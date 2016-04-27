@@ -9,10 +9,10 @@ layout(location = 0) in vec4 vertexPosition; //координаты вершин
 
 void main()
 {	
-	vec4 posCamSpace = viewMatrix * modelMatrix * vertexPosition;
-		
 	//Вычисляем размер частицы с учётом эффекта перспективы
-	gl_PointSize = 200.0 / (-posCamSpace.z);
+	//vec4 posCamSpace = viewMatrix * modelMatrix * vertexPosition;
+	//gl_PointSize = 200.0 / (-posCamSpace.z);
+	gl_PointSize = 2.0;
 	
 	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vertexPosition;
 }

@@ -11,7 +11,7 @@
 
 namespace
 {
-    const int numParticles = 4000;
+    const int numParticles = 100000;
     const float emitterSize = 20.0;
     const float maxSpeed = 1.0f;
 
@@ -35,9 +35,16 @@ public:
     GLuint _sampler;
     
     float _oldTime = 0.0f;
+    float _deltaTime = 0.0f;
     
     std::vector<glm::vec4> _particlePositions;
     std::vector<glm::vec4> _particleVelocities;
+    
+    glm::vec3 _attractor1Pos = glm::vec3(-10.0, 0.0, 0.0);
+    glm::vec3 _attractor2Pos = glm::vec3(10.0, 0.0, 0.0);
+
+    float _attractor1Gravity = 50.0f;
+    float _attractor2Gravity = 100.0f;
 
     GLuint _particlePosVbo;
     GLuint _particleVelVbo;
@@ -51,7 +58,7 @@ public:
         glGetIntegerv(GL_POINT_SIZE_RANGE, range);
 
         std::cout << "Point size range " << range[0] << " " << range[1] << std::endl;       
-
+                
         //=========================================================
         //Создание и загрузка мешей		
 
@@ -121,7 +128,7 @@ public:
         //--------------------------------
 
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, _particlePosVbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _particleVelVbo);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _particleVelVbo);        
     }
 
     void updateGUI() override
@@ -132,6 +139,11 @@ public:
         if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
+
+            ImGui::SliderFloat3("attractor1", &_attractor1Pos[0], -emitterSize, emitterSize);
+            ImGui::SliderFloat("attractor1 gravity", &_attractor1Gravity, 0.0, 200.0f);
+            ImGui::SliderFloat3("attractor2", &_attractor2Pos[0], -emitterSize, emitterSize);
+            ImGui::SliderFloat("attractor2 gravity", &_attractor2Gravity, 0.0, 200.0f);
         }
         ImGui::End();
     }    
@@ -141,7 +153,15 @@ public:
         Application::update();
 
         float time = static_cast<float>(glfwGetTime());
+        _deltaTime = time - _oldTime;
         _oldTime = time;
+        
+
+        int width, height;
+        glfwGetFramebufferSize(_window, &width, &height);
+
+        //Выставим побольше far plane
+        _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 1.0f, 10000.f);
     }
 
     void draw() override
@@ -172,7 +192,14 @@ public:
         shader->use();
 
         shader->setFloatUniform("time", static_cast<float>(glfwGetTime()));
+        shader->setFloatUniform("deltaTime", _deltaTime);
         shader->setIntUniform("numParticles", numParticles);
+
+        shader->setVec3Uniform("attractor1Pos", _attractor1Pos);
+        shader->setFloatUniform("attractor1Gravity", _attractor1Gravity);
+
+        shader->setVec3Uniform("attractor2Pos", _attractor2Pos);
+        shader->setFloatUniform("attractor2Gravity", _attractor2Gravity);
 
         unsigned int posIndex = glGetProgramResourceIndex(shader->id(), GL_SHADER_STORAGE_BLOCK, "Positions");
         glShaderStorageBlockBinding(shader->id(), posIndex, 0); //0я точка привязки
