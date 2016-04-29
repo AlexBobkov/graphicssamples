@@ -1,0 +1,39 @@
+#version 400
+
+//layout( quads, equal_spacing, ccw ) in;
+layout(quads) in;
+
+//стандартные матрицы для преобразования координат
+uniform mat4 modelMatrix; //из локальной в мировую
+uniform mat4 viewMatrix; //из мировой в систему координат камеры
+uniform mat4 projectionMatrix; //из системы координат камеры в усеченные координаты
+
+out vec2 texCoords;
+out vec3 normalCamSpace;
+out vec3 posCamSpace;
+
+const float pi = 3.14159265358979323;
+
+void main()
+{        
+    float u = gl_TessCoord.x;
+    float v = gl_TessCoord.y;
+    
+    vec4 p0 = gl_in[0].gl_Position;
+    vec4 p1 = gl_in[1].gl_Position;
+    vec4 p2 = gl_in[2].gl_Position;
+    vec4 p3 = gl_in[3].gl_Position;
+    
+    vec4 position = p0 * (1 - u) * (1 - v) + p1 * u * (1 - v) + p2 * u * v + p3 * (1 - u) * v;
+    
+    position.z = 0.2 * sin(position.y * 2.0 * pi);
+    
+    posCamSpace = (viewMatrix * modelMatrix * position).xyz;
+    
+    normalCamSpace = mat3(viewMatrix * modelMatrix) * vec3(0.0, -0.2 * 2.0 * pi * cos(position.y * 2.0 * pi), 1.0);
+    normalCamSpace = normalize(normalCamSpace);
+    
+    texCoords = vec2(gl_TessCoord.xy);
+        
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * position;
+}

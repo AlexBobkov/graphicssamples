@@ -1,0 +1,48 @@
+#version 430 core
+
+layout(vertices = 4) out;
+
+uniform mat4 modelMatrix; //из локальной в мировую
+uniform mat4 viewMatrix; //из мировой в систему координат камеры
+
+uniform int outerLevel;
+uniform int innerLevel;
+
+uniform int dynamicLevel;
+
+const float minZ = 1.0;
+const float maxZ = 10.0;
+
+const float minLevel = 2;
+const float maxLevel = 16;
+
+void main()
+{	
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+            
+    if (dynamicLevel > 0)
+    {
+        vec4 p = viewMatrix * modelMatrix * gl_in[gl_InvocationID].gl_Position;
+    
+        float depth = clamp((abs(p.z) - minZ) / (maxZ - minZ), 0.0, 1.0);
+        float tessLevel = mix(maxLevel, minLevel, depth);
+    
+        gl_TessLevelOuter[0] = float(tessLevel);
+        gl_TessLevelOuter[1] = float(tessLevel);
+        gl_TessLevelOuter[2] = float(tessLevel);
+        gl_TessLevelOuter[3] = float(tessLevel);
+
+        gl_TessLevelInner[0] = float(tessLevel);
+        gl_TessLevelInner[1] = float(tessLevel);    
+    }
+    else
+    {
+        gl_TessLevelOuter[0] = float(outerLevel);
+        gl_TessLevelOuter[1] = float(outerLevel);
+        gl_TessLevelOuter[2] = float(outerLevel);
+        gl_TessLevelOuter[3] = float(outerLevel);
+        
+        gl_TessLevelInner[0] = float(innerLevel);
+        gl_TessLevelInner[1] = float(innerLevel);
+    }
+}
