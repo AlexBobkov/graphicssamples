@@ -1,4 +1,5 @@
 #include <Application.hpp>
+#include <LightInfo.hpp>
 #include <Mesh.hpp>
 #include <ShaderProgram.hpp>
 #include <Texture.hpp>
@@ -8,21 +9,8 @@
 #include <vector>
 #include <deque>
 
-struct LightInfo
-{
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
-
-float frand()
-{
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
-
 /**
-Инстансинг
+Пример построения горизонтальной стереопары
 */
 class SampleApplication : public Application
 {
@@ -32,9 +20,6 @@ public:
     MeshPtr _bunny;
     MeshPtr _ground;
 
-    MeshPtr _marker; //Меш - маркер для источника света
-
-    //Идентификатор шейдерной программы
     ShaderProgramPtr _commonShader;
 
     //Переменные для управления положением одного источника света
@@ -48,20 +33,10 @@ public:
     TexturePtr _brickTex;
 
     GLuint _sampler;
-    GLuint _depthSampler;
-
-    float _oldTime;
-    float _deltaTime;
-    float _fps;
-    std::deque<float> _fpsData;
 
     void makeScene() override
     {
         Application::makeScene();
-
-        _oldTime = 0.0;
-        _deltaTime = 0.0;
-        _fps = 0.0;
 
         //=========================================================
         //Создание и загрузка мешей		
@@ -76,8 +51,6 @@ public:
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
         _ground = makeGroundPlane(5.0f, 2.0f);
-
-        _marker = makeSphere(0.1f);
 
         //=========================================================
         //Инициализация шейдеров
@@ -107,40 +80,7 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-        glGenSamplers(1, &_depthSampler);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glSamplerParameterfv(_depthSampler, GL_TEXTURE_BORDER_COLOR, border);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-        glSamplerParameteri(_depthSampler, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-    }
-
-    void computeFPS()
-    {
-        _deltaTime = glfwGetTime() - _oldTime;
-        _oldTime = glfwGetTime();
-        _fpsData.push_back(1 / _deltaTime);
-        while (_fpsData.size() > 10)
-        {
-            _fpsData.pop_front();
-        }
-
-        _fps = 0.0;
-        if (_fpsData.size() > 0)
-        {
-            for (unsigned int i = 0; i < _fpsData.size(); i++)
-            {
-                _fps += _fpsData[i];
-            }
-            _fps /= _fpsData.size();
-            _fps = floor(_fps);
-        }
-    }
+    }    
 
     void update()
     {
@@ -149,8 +89,6 @@ public:
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
-
-        computeFPS();
     }
 
     void draw() override
@@ -219,9 +157,9 @@ public:
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
@@ -253,11 +191,6 @@ public:
             _ground->draw();
         }
     }
-
-    //В этом примере нет ГУИ
-    void initGUI() override { }
-    void updateGUI() override { }
-    void drawGUI() override { }
 };
 
 int main()
