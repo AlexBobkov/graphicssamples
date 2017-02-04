@@ -15,7 +15,7 @@ macro(MAKE_SAMPLE TRGTNAME)
         glm
         glfw        
         SOIL::soil
-        imgui
+        IMGUI::imgui
         ${ASSIMP_LIBRARY}
     )
 

@@ -73,6 +73,17 @@ if(UNIX)
             "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
     )
     
+    ExternalProject_Add(imgui
+        DEPENDS GLEW GLFW
+        HG_REPOSITORY https://bitbucket.org/AlexBobkov/imgui
+        HG_TAG        default
+        CMAKE_ARGS
+            "-DCMAKE_GENERATOR=${CMAKE_GENERATOR}"
+            "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+            "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
+            "-DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}"
+    )
+    
 else()
 
     ExternalProject_Add(GLEW
@@ -122,6 +133,16 @@ else()
             "-DCMAKE_GENERATOR=${CMAKE_GENERATOR}"
             "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
             "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
+    )
+    
+    ExternalProject_Add(imgui
+        DEPENDS GLEW GLFW
+        URL https://bitbucket.org/AlexBobkov/imgui/get/default.zip
+        CMAKE_ARGS
+            "-DCMAKE_GENERATOR=${CMAKE_GENERATOR}"
+            "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
+            "-DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}"
+            "-DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}"
     )
 
 endif()
