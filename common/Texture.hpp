@@ -74,7 +74,7 @@ public:
     */
     void attachToFramebuffer(GLenum attachment)
     {
-        glBindTexture(_target, _tex);        
+        glBindTexture(_target, _tex);
         glFramebufferTexture(GL_FRAMEBUFFER, attachment, _tex, 0);
         glBindTexture(_target, 0);
     }
@@ -101,10 +101,16 @@ typedef std::shared_ptr<Texture> TexturePtr;
 
 //=========== Функции для создания текстур
 
+enum class SRGB
+{
+    YES,
+    NO
+};
+
 /**
 Загружает текстуру из файла PNG, JPEG и других форматов
 */
-TexturePtr loadTexture(const std::string& filename, bool gamma = false, bool withAlpha = false);
+TexturePtr loadTexture(const std::string& filename, SRGB srgb = SRGB::NO);
 
 /**
 Загружает текстуру из файла DDS

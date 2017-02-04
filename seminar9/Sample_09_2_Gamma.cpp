@@ -181,8 +181,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _brickTex = loadTexture("images/brick.jpg", false);
-        _brickGammaTex = loadTexture("images/brick.jpg", true);
+        _brickTex = loadTexture("images/brick.jpg", SRGB::NO);
+        _brickGammaTex = loadTexture("images/brick.jpg", SRGB::YES);
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры

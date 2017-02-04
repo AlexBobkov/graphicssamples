@@ -28,29 +28,29 @@ namespace
     }
 }
 
-TexturePtr loadTexture(const std::string& filename, bool gamma, bool withAlpha)
+TexturePtr loadTexture(const std::string& filename, SRGB srgb)
 {
     int width, height, channels;
-    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, withAlpha ? SOIL_LOAD_RGBA : SOIL_LOAD_RGB);
+    unsigned char* image = SOIL_load_image(filename.c_str(), &width, &height, &channels, SOIL_LOAD_AUTO);
     if (!image)
     {
         std::cerr << "SOIL loading error: " << SOIL_last_result() << std::endl;
-        return 0;
+        return std::make_shared<Texture>();
     }
 
-    invertY(image, width, height, withAlpha ? 4 : 3);
+    invertY(image, width, height, channels);
 
-    GLint internalFormat = GL_RGB8;
-    if (gamma)
+    GLint internalFormat;
+    if (srgb == SRGB::YES)
     {
-        internalFormat = GL_SRGB8;
+        internalFormat = channels == 4 ? GL_SRGB8 : GL_SRGB8_ALPHA8;
     }
-    else if (withAlpha)
+    else
     {
-        internalFormat = GL_RGBA8;
+        internalFormat = channels == 4 ? GL_RGBA8 : GL_RGB8;
     }
 
-    GLint format = withAlpha ? GL_RGBA : GL_RGB;
+    GLint format = channels == 4 ? GL_RGBA : GL_RGB;
 
     TexturePtr texture = std::make_shared<Texture>(GL_TEXTURE_2D);
     texture->setTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, format, GL_UNSIGNED_BYTE, image);

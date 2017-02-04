@@ -242,7 +242,7 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _brickTex = loadTexture("images/brick.jpg", true); //sRGB
+        _brickTex = loadTexture("images/brick.jpg", SRGB::YES); //sRGB
         _rotateTex = loadTexture("images/rotate.png");
 
         //=========================================================

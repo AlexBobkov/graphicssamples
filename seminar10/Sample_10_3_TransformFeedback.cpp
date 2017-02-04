@@ -111,8 +111,8 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _particleTex = loadTexture("images/particle.png", false, true);
-        _grassTex = loadTexture("images/grass.jpg", false, false);
+        _particleTex = loadTexture("images/particle.png");
+        _grassTex = loadTexture("images/grass.jpg");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
