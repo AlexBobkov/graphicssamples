@@ -62,6 +62,7 @@ if(UNIX)
             "-DASSIMP_ENABLE_BOOST_WORKAROUND:BOOL=ON"
             "-DCMAKE_C_FLAGS=-fPIC"
             "-DCMAKE_CXX_FLAGS=-fPIC"
+            "-DASSIMP_BUILD_ZLIB:BOOL=ON"
     )
     
     ExternalProject_Add(SOIL
@@ -125,6 +126,7 @@ else()
             "-DCMAKE_DEBUG_POSTFIX:STRING=d"
             "-DASSIMP_BUILD_ASSIMP_TOOLS:BOOL=OFF"
             "-DASSIMP_BUILD_TESTS:BOOL=OFF"
+            "-DASSIMP_BUILD_ZLIB:BOOL=ON"
     )
 
     ExternalProject_Add(SOIL
