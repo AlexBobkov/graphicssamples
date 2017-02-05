@@ -53,7 +53,7 @@ if(UNIX)
     
     ExternalProject_Add(Assimp
         GIT_REPOSITORY https://github.com/assimp/assimp.git
-        GIT_TAG        3.3.1
+        GIT_TAG        v3.3.1
         CMAKE_ARGS
             "-DCMAKE_GENERATOR=${CMAKE_GENERATOR}"
             "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
