@@ -57,10 +57,20 @@ public:
         //Включаем 1й вершинный атрибут - цвета
         glEnableVertexAttribArray(1);
 
-        //Устанавливаем настройки: 0й атрибут, 3 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 0 - сдвиг от начала
+        //Устанавливаем настройки:
+        //0й атрибут,
+        //3 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //0 - значения расположены в массиве впритык,
+        //0 - сдвиг от начала
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
 
-        //Устанавливаем настройки: 1й атрибут, 4 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 36 - сдвиг от начала массива
+        //Устанавливаем настройки:
+        //1й атрибут,
+        //4 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //0 - значения расположены в массиве впритык,
+        //36 - сдвиг от начала массива
         glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(36));
 
         glBindVertexArray(0);
@@ -86,7 +96,7 @@ public:
         GLuint vs = glCreateShader(GL_VERTEX_SHADER);
 
         //Передаем в шейдерный объект текст шейдера
-        glShaderSource(vs, 1, &vertexShaderText, NULL);
+        glShaderSource(vs, 1, &vertexShaderText, nullptr);
 
         //Компилируем шейдер
         glCompileShader(vs);
@@ -128,7 +138,7 @@ public:
         GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
 
         //Передаем в шейдерный объект текст шейдера
-        glShaderSource(fs, 1, &fragmentShaderText, NULL);
+        glShaderSource(fs, 1, &fragmentShaderText, nullptr);
 
         //Компилируем шейдер
         glCompileShader(fs);

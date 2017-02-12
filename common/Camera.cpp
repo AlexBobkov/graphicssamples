@@ -5,17 +5,6 @@
 
 #include <iostream>
 
-OrbitCameraMover::OrbitCameraMover() :
-CameraMover(),
-_phiAng(0.0),
-_thetaAng(0.0),
-_r(5.0),
-_oldXPos(0),
-_oldYPos(0)
-{
-
-}
-
 void OrbitCameraMover::handleKey(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 
@@ -96,8 +85,6 @@ void OrbitCameraMover::update(GLFWwindow* window, double dt)
 
 FreeCameraMover::FreeCameraMover() :
 CameraMover(),
-_oldXPos(0),
-_oldYPos(0),
 _pos(5.0f, 0.0f, 2.5f)
 {       
     //Нам нужно как-нибудь посчитать начальную ориентацию камеры

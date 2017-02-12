@@ -12,9 +12,9 @@ option(USE_CORE_PROFILE "Enable to use core profile" ON)
 
 include(MacroUtils)
 
-option(USE_AUDO_DEPENDENCIES "Enable to use auto built dependencies" ON)
+option(USE_AUTO_DEPENDENCIES "Enable to use auto built dependencies" ON)
 set(DEPENDENCIES_ROOT CACHE PATH "Dependencies install path")
-if(USE_AUDO_DEPENDENCIES)
+if(USE_AUTO_DEPENDENCIES)
     if(DEPENDENCIES_ROOT)
         set(CMAKE_PREFIX_PATH ${DEPENDENCIES_ROOT})
         find_package(glew CONFIG)

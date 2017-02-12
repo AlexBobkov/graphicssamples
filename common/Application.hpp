@@ -18,7 +18,7 @@
 class Application
 {
 public:
-    Application(bool hasGUI = true);
+    Application();
     ~Application();
 
     /**
@@ -67,7 +67,7 @@ protected:
     Запускает цикл рендеринга
     */
     void run();
-        
+
     /**
     Выполняет обновление сцены и виртуальной камеры
     */
@@ -90,13 +90,11 @@ protected:
 
     //---------------------------------------------
 
-    GLFWwindow* _window; //Графичекое окно
+    GLFWwindow* _window = nullptr; //Графичекое окно
 
     CameraInfo _camera;
     CameraMoverPtr _cameraMover;
 
     //Время на предыдущем кадре
-    double _oldTime;
-
-    bool _hasGUI;
+    double _oldTime = 0.0;
 };

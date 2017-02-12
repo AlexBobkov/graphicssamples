@@ -10,5 +10,5 @@ set(HEADER_FILES
 
 MAKE_SAMPLE(Sample_01_1_SolidTriangle)
 MAKE_SAMPLE(Sample_01_2_ColoredTriangle)
-MAKE_SAMPLE(Sample_01_3_DrawArrays)
-MAKE_SAMPLE(Sample_01_4_DrawElements)
+MAKE_SAMPLE(Sample_01_3_Indexes)
+MAKE_SAMPLE(Sample_01_4_Map)

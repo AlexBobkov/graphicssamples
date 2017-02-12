@@ -35,19 +35,14 @@ void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
 
 //======================================
 
-Application::Application(bool hasGUI) :
-_oldTime(0.0),
-_hasGUI(hasGUI),
-_cameraMover(std::make_shared<OrbitCameraMover>())
+Application::Application() :
+    _cameraMover(std::make_shared<OrbitCameraMover>())
 {
 }
 
 Application::~Application()
 {
-    if (_hasGUI)
-    {
-        ImGui_ImplGlfwGL3_Shutdown();
-    }
+    ImGui_ImplGlfwGL3_Shutdown();
     glfwTerminate();
 }
 
@@ -57,10 +52,7 @@ void Application::start()
 
     initGL();
 
-    if (_hasGUI)
-    {
-        initGUI();
-    }
+    initGUI();
 
     makeScene();
 
@@ -88,11 +80,11 @@ void Application::initContext()
     if (count == 2)
     {
         //Если 2 монитора, то запускаем приложение в полноэкранном режиме на 2м мониторе                
-        _window = glfwCreateWindow(1920, 1080, "MIPT OpenGL demos", monitors[1], NULL);
+        _window = glfwCreateWindow(1920, 1080, "MIPT OpenGL demos", monitors[1], nullptr);
     }
     else
     {
-        _window = glfwCreateWindow(800, 600, "MIPT OpenGL demos", NULL, NULL);
+        _window = glfwCreateWindow(800, 600, "MIPT OpenGL demos", nullptr, nullptr);
     }
     if (!_window)
     {
@@ -141,17 +133,11 @@ void Application::run()
 
         update(); //Обновляем сцену и положение виртуальной камеры
 
-        if (_hasGUI)
-        {
-            updateGUI();
-        }
+        updateGUI();
 
         draw(); //Рисуем один кадр
 
-        if (_hasGUI)
-        {
-            drawGUI();
-        }
+        drawGUI();
 
         glfwSwapBuffers(_window); //Переключаем передний и задний буферы
     }
@@ -164,7 +150,7 @@ void Application::handleKey(int key, int scancode, int action, int mods)
         if (key == GLFW_KEY_ESCAPE)
         {
             glfwSetWindowShouldClose(_window, GL_TRUE);
-        }        
+        }
     }
 
     _cameraMover->handleKey(_window, key, scancode, action, mods);
@@ -197,7 +183,7 @@ void Application::update()
 }
 
 void Application::draw()
-{    
+{
 }
 
 //====================================================

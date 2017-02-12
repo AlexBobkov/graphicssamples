@@ -4,55 +4,55 @@
 #include <vector>
 
 /**
-3 грани куба (вариант с индексами)
+3 грани куба (вариант без индексов)
 */
 class SampleApplication : public Application
 {
 public:
     //Идентификатор VertexArrayObject, который хранит настройки полигональной модели
-    GLuint _vao;
+    GLuint _noIndexedModed;
+    GLsizei _noIndexedModelVertexCount = 0;
+
+    GLuint _indexedModed;
+    GLsizei _indexedModelVertexCount = 0;
+    GLsizei _indexCount = 0;
 
     //Идентификатор шейдерной программы
     GLuint _program;
 
-    void makeScene() override
+    enum ModelType
     {
-        Application::makeScene();
+        NoIndexedModel,
+        IndexedModel
+    };
 
+    int _currentModel = 0;
+
+    void makeModelWithoutIndexes()
+    {
+        //Координаты и цвета вершин
         float points[] =
         {
-            //coords
-            -0.3f, 0.3f, 0.0f,
-            0.3f, 0.3f, 0.0f,
-            0.3f, -0.3f, 0.0f,
-            -0.3f, -0.3f, 0.0f,
-            -0.3f, 0.3f, -1.0f,
-            -0.3f, -0.3f, -1.0f,
-            0.3f, -0.3f, -1.0f,
+            -0.5f, -0.5f, 0.0f,      //координаты
+            1.0f, 0.0f, 0.0f, 1.0f,  //цвет
 
-            //colors
+            0.5f, 0.5f, 0.0f,
             1.0f, 0.0f, 0.0f, 1.0f,
+
+            0.5f, -0.5f, 0.0f,
             1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
+
+            -0.5f, -0.5f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+
+            -0.5f, 0.5f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+
+            0.5f, 0.5f, 0.0f,
             0.0f, 1.0f, 0.0f, 1.0f,
         };
 
-        int vertexCount = sizeof(points) / sizeof(float) / 7;
-
-        unsigned short indices[] =
-        {
-            0, 1, 2,
-            0, 2, 3,
-            4, 0, 3,
-            4, 3, 5,
-            5, 6, 2,
-            5, 2, 3
-        };
-
-        int indicesCount = sizeof(indices) / sizeof(unsigned short);
+        _noIndexedModelVertexCount = sizeof(points) / sizeof(float) / 7;
 
         //Создаем буфер VertexBufferObject для хранения координат на видеокарте
         GLuint vbo;
@@ -62,7 +62,80 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
         //Копируем содержимое массива в буфер на видеокарте
-        glBufferData(GL_ARRAY_BUFFER, vertexCount * 7 * sizeof(float), points, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, _noIndexedModelVertexCount * 7 * sizeof(float), points, GL_STATIC_DRAW);
+
+        //=========================================================
+
+        //Создаем объект VertexArrayObject для хранения настроек полигональной модели
+        glGenVertexArrays(1, &_noIndexedModed);
+
+        //Делаем этот объект текущим
+        glBindVertexArray(_noIndexedModed);
+
+        //Делаем буфер с координатами текущим
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        //Включаем 0й вершинный атрибут - координаты
+        glEnableVertexAttribArray(0);
+
+        //Включаем 1й вершинный атрибут - цвета
+        glEnableVertexAttribArray(1);
+
+        //Устанавливаем настройки:
+        //0й атрибут,
+        //3 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //28 - расстояние в байтах между 2мя соседними значениями,
+        //0 - сдвиг в байтах от начала
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr);
+
+        //Устанавливаем настройки:
+        //1й атрибут,
+        //4 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //28 - расстояние в байтах между 2мя соседними значениями,
+        //12 - сдвиг в байтах от начала массива
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+
+        glBindVertexArray(0);
+    }
+
+    void makeModelWithIndexes()
+    {
+        float points[] =
+        {
+            -0.5f, 0.5f, 0.0f,        //координаты
+            1.0f, 0.0f, 0.0f, 1.0f,   //цвет
+
+            0.5f, 0.5f, 0.0f,
+            0.0f, 1.0f, 0.0f, 1.0f,
+
+            0.5f, -0.5f, 0.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
+
+            -0.5f, -0.5f, 0.0f,
+            1.0f, 1.0f, 0.0f, 1.0f,
+        };
+
+        _indexedModelVertexCount = sizeof(points) / sizeof(float) / 7;
+
+        unsigned short indices[] =
+        {
+            3, 1, 2,
+            3, 0, 1,
+        };
+
+        _indexCount = sizeof(indices) / sizeof(unsigned short);
+
+        //Создаем буфер VertexBufferObject для хранения координат на видеокарте
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+
+        //Делаем этот буфер текущим
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        //Копируем содержимое массива в буфер на видеокарте
+        glBufferData(GL_ARRAY_BUFFER, _indexedModelVertexCount * 7 * sizeof(float), points, GL_STATIC_DRAW);
 
         //=========================================================
 
@@ -74,15 +147,15 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
         //Копируем содержимое массива индексов в буфер на видеокарте
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesCount * sizeof(unsigned short), indices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indexCount * sizeof(unsigned short), indices, GL_STATIC_DRAW);
 
         //=========================================================
 
         //Создаем объект VertexArrayObject для хранения настроек полигональной модели
-        glGenVertexArrays(1, &_vao);
+        glGenVertexArrays(1, &_indexedModed);
 
         //Делаем этот объект текущим
-        glBindVertexArray(_vao);
+        glBindVertexArray(_indexedModed);
 
         //Делаем буфер с координатами текущим
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -93,24 +166,40 @@ public:
         //Включаем 1й вершинный атрибут - цвета
         glEnableVertexAttribArray(1);
 
-        //Устанавливаем настройки: 0й атрибут, 3 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 0 - сдвиг от начала
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        //Устанавливаем настройки:
+        //0й атрибут,
+        //3 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //28 - значения расположены в массиве впритык,
+        //0 - сдвиг от начала
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), nullptr);
 
-        //Устанавливаем настройки: 1й атрибут, 4 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 84 - сдвиг от начала массива
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(vertexCount * 4 * 3));
+        //Устанавливаем настройки:
+        //1й атрибут,
+        //4 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //28 - значения расположены в массиве впритык,
+        //12 - сдвиг от начала массива
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 7 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
 
         //Подключаем буфер с индексами
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
         glBindVertexArray(0);
+    }
+
+    void makeScene() override
+    {
+        Application::makeScene();
+
+        makeModelWithoutIndexes();
+        makeModelWithIndexes();
 
         //=========================================================
 
         //Вершинный шейдер
         const char* vertexShaderText =
             "#version 330\n"
-
-            "uniform mat4 matrix;\n"
 
             "layout(location = 0) in vec3 vertexPosition;\n"
             "layout(location = 1) in vec4 vertexColor;\n"
@@ -120,14 +209,14 @@ public:
             "void main()\n"
             "{\n"
             "   color = vertexColor;\n"
-            "   gl_Position = matrix * vec4(vertexPosition, 1.0);\n"
+            "   gl_Position = vec4(vertexPosition, 1.0);\n"
             "}\n";
 
         //Создаем шейдерный объект
         GLuint vs = glCreateShader(GL_VERTEX_SHADER);
 
         //Передаем в шейдерный объект текст шейдера
-        glShaderSource(vs, 1, &vertexShaderText, NULL);
+        glShaderSource(vs, 1, &vertexShaderText, nullptr);
 
         //Компилируем шейдер
         glCompileShader(vs);
@@ -169,7 +258,7 @@ public:
         GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
 
         //Передаем в шейдерный объект текст шейдера
-        glShaderSource(fs, 1, &fragmentShaderText, NULL);
+        glShaderSource(fs, 1, &fragmentShaderText, nullptr);
 
         //Компилируем шейдер
         glCompileShader(fs);
@@ -223,6 +312,21 @@ public:
         }
     }
 
+    void updateGUI() override
+    {
+        Application::updateGUI();
+
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MIPT OpenGL Sample", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
+
+            ImGui::RadioButton("no indices", &_currentModel, ModelType::NoIndexedModel);
+            ImGui::RadioButton("index", &_currentModel, ModelType::IndexedModel);
+        }
+        ImGui::End();
+    }
+
     void draw() override
     {
         Application::draw();
@@ -240,18 +344,22 @@ public:
         //Подключаем шейдерную программу
         glUseProgram(_program);
 
-        //Задаем матрицу поворота, чтобы смотреть на куб сбоку
-        glm::mat4 mat = glm::rotate(glm::mat4(1.0f), 0.2f, glm::vec3(-1.0f, 1.0f, 0.0f));
+        if (_currentModel == ModelType::NoIndexedModel)
+        {
+            //Подключаем VertexArrayObject с настойками полигональной модели
+            glBindVertexArray(_noIndexedModed);
 
-        //Копируем матрицу на видеокарту в виде юниформ-переменной
-        GLint uniformLoc = glGetUniformLocation(_program, "matrix");
-        glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
+            //Рисуем полигональную модель без индексов
+            glDrawArrays(GL_TRIANGLES, 0, _noIndexedModelVertexCount);
+        }
+        else
+        {
+            //Подключаем VertexArrayObject с настойками полигональной модели        
+            glBindVertexArray(_indexedModed);
 
-        //Подключаем VertexArrayObject с настойками полигональной модели
-        glBindVertexArray(_vao);
-
-        //Рисуем индексную полигональную модель (3 грани куба состоят из 6 треугольников, количество индексов 18, тип данных индекса unsigned short, сдвиг 0)
-        glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_SHORT, 0); //Рисуем с помощью индексов
+            //Рисуем индексную полигональную модель
+            glDrawElements(GL_TRIANGLES, _indexCount, GL_UNSIGNED_SHORT, 0); //Рисуем с помощью индексов
+        }
     }
 };
 

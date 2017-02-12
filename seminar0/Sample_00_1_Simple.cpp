@@ -32,7 +32,7 @@ int main()
 #endif
 
     //Создаем графический контекст (окно)
-    GLFWwindow* window = glfwCreateWindow(800, 600, "MIPT OpenGL demos", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(800, 600, "MIPT OpenGL demos", nullptr, nullptr);
     if (!window)
     {
         std::cerr << "ERROR: could not open window with GLFW3\n";
@@ -85,7 +85,12 @@ int main()
     //Включаем 0й вершинный атрибут
     glEnableVertexAttribArray(0);
 
-    //Устанавливаем настройки: 0й атрибут, 3 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 0 - сдвиг от начала
+    //Устанавливаем настройки:
+    //0й атрибут,
+    //3 компоненты типа GL_FLOAT,
+    //не нужно нормализовать,
+    //0 - значения расположены в массиве впритык,
+    //0 - сдвиг от начала
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
 
     glBindVertexArray(0);
@@ -107,7 +112,7 @@ int main()
     GLuint vs = glCreateShader(GL_VERTEX_SHADER);
 
     //Передаем в шейдерный объект текст шейдера
-    glShaderSource(vs, 1, &vertexShaderText, NULL);
+    glShaderSource(vs, 1, &vertexShaderText, nullptr);
 
     //Компилируем шейдер
     glCompileShader(vs);
@@ -147,7 +152,7 @@ int main()
     GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
 
     //Передаем в шейдерный объект текст шейдера
-    glShaderSource(fs, 1, &fragmentShaderText, NULL);
+    glShaderSource(fs, 1, &fragmentShaderText, nullptr);
 
     //Компилируем шейдер
     glCompileShader(fs);

@@ -4,7 +4,7 @@
 #include <vector>
 
 /**
-3 грани куба (вариант без индексов)
+Треугольник с интерполированными цветами
 */
 class SampleApplication : public Application
 {
@@ -19,65 +19,16 @@ public:
     {
         Application::makeScene();
 
-        //Координаты вершин и далее цвета вершин
+        //Координаты вершин треугольника и далее цвета вершин
         float points[] =
         {
-            //face 1 coords
-            -0.3f, 0.3f, 0.0f,
-            0.3f, 0.3f, 0.0f,
-            0.3f, -0.3f, 0.0f,
-
-            -0.3f, 0.3f, 0.0f,
-            0.3f, -0.3f, 0.0f,
-            -0.3f, -0.3f, 0.0f,
-
-            //face 2 coords
-            -0.3f, 0.3f, 0.0f,
-            -0.3f, -0.3f, -1.0f,
-            -0.3f, 0.3f, -1.0f,
-
-            -0.3f, 0.3f, 0.0f,
-            -0.3f, -0.3f, 0.0f,
-            -0.3f, -0.3f, -1.0f,
-
-            //face 3 coords
-            -0.3f, -0.3f, 0.0f,
-            0.3f, -0.3f, -1.0f,
-            0.3f, -0.3f, 0.0f,
-
-            -0.3f, -0.3f, 0.0f,
-            -0.3f, -0.3f, -1.0f,
-            0.3f, -0.3f, -1.0f,
-
-            //face 1 colors
+            0.0f, 0.5f, 0.0f,
+            0.5f, -0.5f, 0.0f,
+            -0.5f, -0.5f, 0.0f,
             1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-            1.0f, 0.0f, 0.0f, 1.0f,
-
-            //face 2 colors
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-            1.0f, 1.0f, 0.0f, 1.0f,
-
-            //face 3 colors
             0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
-            0.0f, 1.0f, 0.0f, 1.0f,
+            0.0f, 0.0f, 1.0f, 1.0f,
         };
-
-        int vertexCount = sizeof(points) / sizeof(float) / 7;
 
         //Создаем буфер VertexBufferObject для хранения координат на видеокарте
         GLuint vbo;
@@ -86,8 +37,17 @@ public:
         //Делаем этот буфер текущим
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-        //Копируем содержимое массива в буфер на видеокарте
-        glBufferData(GL_ARRAY_BUFFER, vertexCount * 7 * sizeof(float), points, GL_STATIC_DRAW);
+        //Выделяем память на видеокарте нужного размера, ничего пока не копируем
+        glBufferData(GL_ARRAY_BUFFER, sizeof(points), nullptr, GL_STATIC_DRAW);
+
+        //Получаем указатель на область памяти
+        void* ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+        //Копируем туда данные
+        memcpy(ptr, points, sizeof(points));
+
+        //Отсоединяем указатель
+        glUnmapBuffer(GL_ARRAY_BUFFER);
 
         //=========================================================
 
@@ -106,11 +66,21 @@ public:
         //Включаем 1й вершинный атрибут - цвета
         glEnableVertexAttribArray(1);
 
-        //Устанавливаем настройки: 0й атрибут, 3 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 0 - сдвиг от начала
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+        //Устанавливаем настройки:
+        //0й атрибут,
+        //3 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //0 - значения расположены в массиве впритык,
+        //0 - сдвиг от начала
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(0));
 
-        //Устанавливаем настройки: 1й атрибут, 4 компоненты типа GL_FLOAT, не нужно нормализовать, 0 - значения расположены в массиве впритык, 216 - сдвиг от начала массива
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(vertexCount * 3 * sizeof(float)));
+        //Устанавливаем настройки:
+        //1й атрибут,
+        //4 компоненты типа GL_FLOAT,
+        //не нужно нормализовать,
+        //0 - значения расположены в массиве впритык,
+        //36 - сдвиг от начала массива
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(36));
 
         glBindVertexArray(0);
 
@@ -120,8 +90,6 @@ public:
         const char* vertexShaderText =
             "#version 330\n"
 
-            "uniform mat4 matrix;\n"
-
             "layout(location = 0) in vec3 vertexPosition;\n"
             "layout(location = 1) in vec4 vertexColor;\n"
 
@@ -130,14 +98,14 @@ public:
             "void main()\n"
             "{\n"
             "   color = vertexColor;\n"
-            "   gl_Position = matrix * vec4(vertexPosition, 1.0);\n"
+            "   gl_Position = vec4(vertexPosition, 1.0);\n"
             "}\n";
 
         //Создаем шейдерный объект
         GLuint vs = glCreateShader(GL_VERTEX_SHADER);
 
         //Передаем в шейдерный объект текст шейдера
-        glShaderSource(vs, 1, &vertexShaderText, NULL);
+        glShaderSource(vs, 1, &vertexShaderText, nullptr);
 
         //Компилируем шейдер
         glCompileShader(vs);
@@ -179,7 +147,7 @@ public:
         GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
 
         //Передаем в шейдерный объект текст шейдера
-        glShaderSource(fs, 1, &fragmentShaderText, NULL);
+        glShaderSource(fs, 1, &fragmentShaderText, nullptr);
 
         //Компилируем шейдер
         glCompileShader(fs);
@@ -250,18 +218,11 @@ public:
         //Подключаем шейдерную программу
         glUseProgram(_program);
 
-        //Задаем матрицу поворота, чтобы смотреть на куб сбоку
-        glm::mat4 mat = glm::rotate(glm::mat4(1.0f), 0.2f, glm::vec3(-1.0f, 1.0f, 0.0f));
-
-        //Копируем матрицу на видеокарту в виде юниформ-переменной
-        GLint uniformLoc = glGetUniformLocation(_program, "matrix");
-        glUniformMatrix4fv(uniformLoc, 1, GL_FALSE, glm::value_ptr(mat));
-
         //Подключаем VertexArrayObject с настойками полигональной модели
         glBindVertexArray(_vao);
 
-        //Рисуем полигональную модель (3 грани куба состоят из 6 треугольников, сдвиг 0, количество вершин 18)
-        glDrawArrays(GL_TRIANGLES, 0, 18);
+        //Рисуем полигональную модель (состоит из треугольников, сдвиг 0, количество вершин 3)
+        glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 };
 

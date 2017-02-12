@@ -52,13 +52,10 @@ public:
     virtual void update(GLFWwindow* window, double dt) = 0;
 
 protected:
-    CameraMover(const CameraMover&) = delete;
-    void operator=(const CameraMover&) = delete;
-
     CameraInfo _camera;
 };
 
-typedef std::shared_ptr<CameraMover> CameraMoverPtr;
+using CameraMoverPtr = std::shared_ptr<CameraMover>;
 
 /**
 Положение камеры задается в сферических координатах. Камера всегда смотрит в центр сферы.
@@ -66,9 +63,6 @@ typedef std::shared_ptr<CameraMover> CameraMoverPtr;
 class OrbitCameraMover : public CameraMover
 {
 public:
-    OrbitCameraMover();
-    ~OrbitCameraMover() override {}
-
     void handleKey(GLFWwindow* window, int key, int scancode, int action, int mods) override;
     void handleMouseMove(GLFWwindow* window, double xpos, double ypos) override;
     void handleScroll(GLFWwindow* window, double xoffset, double yoffset) override;
@@ -76,13 +70,13 @@ public:
 
 protected:
     //Положение виртуальный камеры задается в сферических координат
-    double _phiAng;
-    double _thetaAng;
-    double _r;
+    double _phiAng = 0.0;
+    double _thetaAng = 0.0;
+    double _r = 5.0;
 
     //Положение курсора мыши на предыдущем кадре
-    double _oldXPos;
-    double _oldYPos;
+    double _oldXPos = 0.0;
+    double _oldYPos = 0.0;
 };
 
 /**
@@ -92,7 +86,6 @@ class FreeCameraMover : public CameraMover
 {
 public:
     FreeCameraMover();
-    ~FreeCameraMover() override {}
 
     void handleKey(GLFWwindow* window, int key, int scancode, int action, int mods) override;
     void handleMouseMove(GLFWwindow* window, double xpos, double ypos) override;
@@ -105,7 +98,7 @@ protected:
     glm::quat _rot;
 
     //Положение курсора мыши на предыдущем кадре
-    double _oldXPos;
-    double _oldYPos;
+    double _oldXPos = 0.0;
+    double _oldYPos = 0.0;
 };
 
