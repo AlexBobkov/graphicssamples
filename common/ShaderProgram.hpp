@@ -18,9 +18,9 @@ class Shader
 {
 public:
     Shader(GLenum shaderType) :
-        _shaderType(shaderType)
+        _shaderType(shaderType),
+        _id(glCreateShader(shaderType))
     {
-        _id = glCreateShader(shaderType);
     }
 
     ~Shader()
@@ -59,9 +59,15 @@ typedef std::shared_ptr<Shader> ShaderPtr;
 class ShaderProgram
 {
 public:
-    ShaderProgram()
+    ShaderProgram() :
+        _programId(glCreateProgram())
     {
-        _programId = glCreateProgram();
+    }
+
+    ShaderProgram(const std::string& vertFilepath, const std::string& fragFilepath) :
+        _programId(glCreateProgram())
+    {
+        createProgram(vertFilepath, fragFilepath);
     }
 
     ~ShaderProgram()

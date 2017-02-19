@@ -36,7 +36,7 @@ public:
         //=========================================================
 
         _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders3/shaderPoint.vert", "shaders3/shader.frag");
+        _shader->createProgram("shaders2/shaderPoint.vert", "shaders2/shader.frag");
     }
 
     void draw() override

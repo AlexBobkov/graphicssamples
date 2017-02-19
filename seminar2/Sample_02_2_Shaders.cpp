@@ -29,28 +29,13 @@ public:
 
         //=========================================================
 
-        _shaders.resize(7);
-
-        _shaders[0] = std::make_shared<ShaderProgram>();
-        _shaders[0]->createProgram("shaders3/simple.vert", "shaders3/simple.frag");
-
-        _shaders[1] = std::make_shared<ShaderProgram>();
-        _shaders[1]->createProgram("shaders3/simpleMat.vert", "shaders3/simple.frag");
-
-        _shaders[2] = std::make_shared<ShaderProgram>();
-        _shaders[2]->createProgram("shaders3/shader.vert", "shaders3/shader.frag");
-
-        _shaders[3] = std::make_shared<ShaderProgram>();
-        _shaders[3]->createProgram("shaders3/shaderTime.vert", "shaders3/shader.frag");
-
-        _shaders[4] = std::make_shared<ShaderProgram>();
-        _shaders[4]->createProgram("shaders3/shader.vert", "shaders3/shaderTime.frag");
-
-        _shaders[5] = std::make_shared<ShaderProgram>();
-        _shaders[5]->createProgram("shaders3/shaderTimeCoord.vert", "shaders3/shaderTimeCoord.frag");
-
-        _shaders[6] = std::make_shared<ShaderProgram>();
-        _shaders[6]->createProgram("shaders3/shader.vert", "shaders3/shaderDiscard.frag");
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/simple.vert", "shaders2/simple.frag"));
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/simpleMat.vert", "shaders2/simple.frag"));
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/shader.vert", "shaders2/shader.frag"));
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/shaderTime.vert", "shaders2/shader.frag"));
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/shader.vert", "shaders2/shaderTime.frag"));
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/shaderTimeCoord.vert", "shaders2/shaderTimeCoord.frag"));
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/shader.vert", "shaders2/shaderDiscard.frag"));
     }
 
     void updateGUI() override
@@ -61,7 +46,7 @@ public:
         if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
-                        
+
             ImGui::RadioButton("no matrix", &_currentIndex, 0);
             ImGui::RadioButton("matrix", &_currentIndex, 1);
             ImGui::RadioButton("colored", &_currentIndex, 2);
@@ -101,7 +86,7 @@ public:
 
         _shaders[_currentIndex]->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         _bunny->draw();
-    }    
+    }
 };
 
 int main()

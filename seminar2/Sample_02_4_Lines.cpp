@@ -38,7 +38,7 @@ public:
         //=========================================================
 
         _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders3/shaderLine.vert", "shaders3/shader.frag");
+        _shader->createProgram("shaders2/shaderLine.vert", "shaders2/shader.frag");
     }
 
     void draw() override
@@ -56,14 +56,14 @@ public:
         _shader->use();
 
         //«агружаем на видеокарту значени€ юниформ-переменные: врем€ и матрицы
-        _shader->setFloatUniform("time", (float)glfwGetTime()); //передаем врем€ в шейдер
+        _shader->setFloatUniform("time", static_cast<float>(glfwGetTime())); //передаем врем€ в шейдер
 
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         //«агружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         _shader->setMat4Uniform("modelMatrix", glm::mat4(1.0f));
-                
+
         //–исуем линию
         _lineStrip->draw();
     }

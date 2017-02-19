@@ -32,7 +32,7 @@ public:
 
         //Создаем шейдерную программу        
         _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders2/shader.vert", "shaders2/shader.frag");
+        _shader->createProgram("shaders2/shaderNormal.vert", "shaders2/shader.frag");
     }
 
     void update() override
@@ -45,7 +45,7 @@ public:
         glm::mat4 mat;
         mat = glm::translate(mat, glm::vec3(0.0f, 0.5f, 0.0));
         mat = glm::rotate(mat, angle, glm::vec3(0.0f, 0.0f, 1.0f));
-                
+
         _bunny->setModelMatrix(mat);
     }
 
@@ -69,8 +69,8 @@ public:
 
         //Рисуем первый меш
         _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
-        _cube->draw(); 
-        
+        _cube->draw();
+
         //Рисуем второй меш
         _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         _bunny->draw();

@@ -13,7 +13,8 @@ class SampleApplication : public Application
 public:
     MeshPtr _quad;
 
-    ShaderProgramPtr _shader;
+    std::vector<ShaderProgramPtr> _shaders;
+    int _currentIndex = 0;
 
     void makeScene() override
     {
@@ -21,19 +22,23 @@ public:
 
         _quad = makeScreenAlignedQuad();
 
-        //=========================================================
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/shaderQuad.vert", "shaders2/shaderQuad.frag"));
+        _shaders.push_back(std::make_shared<ShaderProgram>("shaders2/shaderQuad.vert", "shaders2/shaderQuadMandelbrot.frag"));
+    }
 
-        std::string vertFilename = "shaders3/shaderQuad.vert";
-        std::string fragFilename = "shaders3/shaderQuad.frag";
+    void updateGUI() override
+    {
+        Application::updateGUI();
 
-        bool mandelbrot = true;
-        if (mandelbrot)
+        ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiSetCond_FirstUseEver);
+        if (ImGui::Begin("MIPT OpenGL Sample", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            fragFilename = "shaders3/shaderQuadMandelbrot.frag";
-        }
+            ImGui::Text("FPS %.1f", ImGui::GetIO().Framerate);
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram(vertFilename, fragFilename);
+            ImGui::RadioButton("circle", &_currentIndex, 0);
+            ImGui::RadioButton("mandelbrot", &_currentIndex, 1);
+        }
+        ImGui::End();
     }
 
     void draw() override
@@ -48,7 +53,7 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //Подключаем шейдер
-        _shader->use();
+        _shaders[_currentIndex]->use();
 
         //Рисуем квад
         _quad->draw();
