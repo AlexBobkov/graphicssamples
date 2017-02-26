@@ -15,9 +15,8 @@ uniform mat3 normalToCameraMatrix;
 struct LightInfo
 {
     vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
-    vec3 La; //цвет и интенсивность переотраженного света
-    vec3 Ld; //цвет и интенсивность диффузного света
-    vec3 Ls; //цвет и интенсивность бликового света
+    vec3 ambient;
+    vec3 color;
 };
 uniform LightInfo light;
 

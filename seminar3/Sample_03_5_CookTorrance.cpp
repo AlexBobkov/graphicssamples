@@ -27,13 +27,12 @@ public:
 
     //Параметры источника света
     glm::vec3 _lightAmbientColor;
-    glm::vec3 _lightDiffuseColor;
-    glm::vec3 _lightSpecularColor;
+    glm::vec3 _lightColor;
 
     //Параметры материала
-    glm::vec3 _bunnyAmbientColor;
     glm::vec3 _bunnyDiffuseColor;
     glm::vec3 _bunnySpecularColor;
+    float _diffuseFraction = 0.0f;
     float _roughnessValue = 0.3f;
     float _F0 = 0.8f;
 
@@ -64,13 +63,12 @@ public:
         //=========================================================
         //Инициализация значений переменных освщения
         _lightAmbientColor = glm::vec3(0.0, 0.0, 0.0);
-        _lightDiffuseColor = glm::vec3(0.0, 0.0, 0.0);
-        _lightSpecularColor = glm::vec3(1.0, 1.0, 1.0);
+        _lightColor = glm::vec3(1.0, 1.0, 1.0);
 
         //Инициализация материала кролика
-        _bunnyAmbientColor = glm::vec3(1.0, 1.0, 0.0);
         _bunnyDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
         _bunnySpecularColor = glm::vec3(1.0, 1.0, 1.0);
+        _diffuseFraction = 0.0f;
         _roughnessValue = 0.3f;
         _F0 = 0.8f;
     }
@@ -87,8 +85,7 @@ public:
             if (ImGui::CollapsingHeader("Light"))
             {
                 ImGui::ColorEdit3("ambient", glm::value_ptr(_lightAmbientColor));
-                ImGui::ColorEdit3("diffuse", glm::value_ptr(_lightDiffuseColor));
-                ImGui::ColorEdit3("specular", glm::value_ptr(_lightSpecularColor));
+                ImGui::ColorEdit3("color", glm::value_ptr(_lightColor));
 
                 ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
@@ -97,10 +94,10 @@ public:
 
             if (ImGui::CollapsingHeader("Rabbit material"))
             {
-                ImGui::ColorEdit3("mat ambient", glm::value_ptr(_bunnyAmbientColor));
                 ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_bunnyDiffuseColor));
                 ImGui::ColorEdit3("mat specular", glm::value_ptr(_bunnySpecularColor));
 
+                ImGui::SliderFloat("diffuse fraction", &_diffuseFraction, 0.01f, 1.0f);
                 ImGui::SliderFloat("roughness", &_roughnessValue, 0.01f, 1.0f);
                 ImGui::SliderFloat("F0", &_F0, 0.01f, 1.0f);
             }
@@ -130,18 +127,17 @@ public:
 
 
         _shader->setVec3Uniform("light.pos", lightPos);
-        _shader->setVec3Uniform("light.La", _lightAmbientColor);
-        _shader->setVec3Uniform("light.Ld", _lightDiffuseColor);
-        _shader->setVec3Uniform("light.Ls", _lightSpecularColor);
+        _shader->setVec3Uniform("light.ambient", _lightAmbientColor);
+        _shader->setVec3Uniform("light.color", _lightColor);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         {
             _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
 
-            _shader->setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
             _shader->setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
-            _shader->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
+            _shader->setVec3Uniform("material.Ks", glm::vec3(0.0, 1.0, 0.0));
+            _shader->setFloatUniform("material.diffuseFraction", _diffuseFraction);
             _shader->setFloatUniform("material.roughnessValue", _roughnessValue);
             _shader->setFloatUniform("material.F0", _F0);
 
@@ -152,9 +148,9 @@ public:
             _shader->setMat4Uniform("modelMatrix", _sphere->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _sphere->modelMatrix()))));
 
-            _shader->setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
-            _shader->setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
-            _shader->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
+            _shader->setVec3Uniform("material.Kd", glm::vec3(0.98, 0.82, 0.75));
+            _shader->setVec3Uniform("material.Ks", glm::vec3(0.98, 0.82, 0.75));
+            _shader->setFloatUniform("material.diffuseFraction", _diffuseFraction);
             _shader->setFloatUniform("material.roughnessValue", _roughnessValue);
             _shader->setFloatUniform("material.F0", _F0);
 
@@ -165,9 +161,9 @@ public:
             _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
-            _shader->setVec3Uniform("material.Ka", glm::vec3(_bunnyAmbientColor));
             _shader->setVec3Uniform("material.Kd", glm::vec3(_bunnyDiffuseColor));
             _shader->setVec3Uniform("material.Ks", glm::vec3(_bunnySpecularColor));
+            _shader->setFloatUniform("material.diffuseFraction", _diffuseFraction);
             _shader->setFloatUniform("material.roughnessValue", _roughnessValue);
             _shader->setFloatUniform("material.F0", _F0);
 
@@ -178,7 +174,7 @@ public:
         {
             _markerShader->use();
             _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));
-            _markerShader->setVec4Uniform("color", glm::vec4(_lightDiffuseColor, 1.0f));
+            _markerShader->setVec4Uniform("color", glm::vec4(_lightColor, 1.0f));
             _marker->draw();
         }
     }

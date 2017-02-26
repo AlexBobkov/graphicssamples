@@ -9,17 +9,16 @@
 struct LightInfo
 {
     vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
-    vec3 La; //цвет и интенсивность окружающего света
-    vec3 Ld; //цвет и интенсивность диффузного света
-    vec3 Ls; //цвет и интенсивность бликового света
+    vec3 ambient;
+    vec3 color;
 };
 uniform LightInfo light;
 
 struct MaterialInfo
 {
-    vec3 Ka; //коэффициент отражения окружающего света
-    vec3 Kd; //коэффициент отражения диффузного света
-    vec3 Ks; //коэффициент отражения бликового света
+    vec3 Kd; //коэффициент отражения
+    vec3 Ks;
+    float diffuseFraction;
     float F0;
     float roughnessValue;
 };
@@ -39,7 +38,7 @@ void main()
 
     float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
-    vec3 color = light.La * material.Ka + light.Ld * material.Kd * NdotL; //цвет вершины
+    vec3 color = light.ambient * material.Kd + light.color * material.Kd * material.diffuseFraction * NdotL; //цвет вершины
 
     if (NdotL > 0.0)
     {
@@ -60,7 +59,7 @@ void main()
 
         // roughness (or: microfacet distribution function)
         // beckmann distribution function
-        float r1 = 1.0 / (4.0 * mSquared * pow(NdotH, 4.0));
+        float r1 = 1.0 / (3.14 * mSquared * pow(NdotH, 4.0));
         float r2 = (NdotH * NdotH - 1.0) / (mSquared * NdotH * NdotH);
         float roughness = r1 * exp(r2);
 
@@ -70,7 +69,7 @@ void main()
         fresnel *= (1.0 - material.F0);
         fresnel += material.F0;
 
-        color += light.Ls * NdotL * (fresnel * geoAtt * roughness) / (NdotV * NdotL * 3.14);
+        color += light.color * material.Ks * (1.0 - material.diffuseFraction) * NdotL * (fresnel * geoAtt * roughness) / (NdotV * NdotL * 3.14);
     }
 
     fragColor = vec4(color, 1.0); //просто копируем
