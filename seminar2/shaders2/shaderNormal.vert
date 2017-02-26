@@ -15,12 +15,12 @@ out vec4 color;
 
 void main()
 {
-	/*
-	Меш не имеет атрибута цвет (диапазон [0; 1]), но имеет атрибут нормаль (диапазон [-1; 1]).
-	Нормаль легко перевести в цвет для отладочных и демонстрационных задач.
-	*/
-	color.rgb = (vertexNormal.xyz + 1.0) * 0.5;
+    /*
+    Меш не имеет атрибута цвет (диапазон [0; 1]), но имеет атрибут нормаль (диапазон [-1; 1]).
+    Нормаль легко перевести в цвет для отладочных и демонстрационных задач.
+    */
+    color.rgb = (vertexNormal.xyz + 1.0) * 0.5;
     color.a = 1.0;
 
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

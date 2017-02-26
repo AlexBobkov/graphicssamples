@@ -11,9 +11,9 @@ struct LightInfo
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
-    float a0;
-    float a1;
-    float a2;
+    float a0 = 1.0f;
+    float a1 = 0.0f;
+    float a2 = 0.0f;
 };
 
 struct MaterialInfo
@@ -21,7 +21,7 @@ struct MaterialInfo
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
-    float shininess;
+    float shininess = 128.0f;
 };
 
 /**
@@ -40,13 +40,13 @@ public:
     ShaderProgramPtr _markerShader;
 
     //Координаты источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 5.0;
+    float _phi = 0.0;
+    float _theta = glm::pi<float>() * 0.25f;
 
     //Параметры источника света
     LightInfo _light;
-    
+
     //Параметры материалов
     MaterialInfo _bunnyMaterial;
     MaterialInfo _cubeMaterial;
@@ -80,18 +80,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders4/lightingUBO.vert", "shaders4/lightingUBO.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders3/lightingUBO.vert", "shaders3/lightingUBO.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 5.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
@@ -124,7 +117,7 @@ public:
 
         glGenBuffers(1, &_matricesUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, _matricesUbo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(_camera), 0, GL_DYNAMIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(_camera), nullptr, GL_DYNAMIC_DRAW); //Выделяем память, пока ничего не копируем
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         //Привязываем к 0й точке привязки
@@ -140,10 +133,10 @@ public:
 
         GLint lightBlockSize;
         glGetActiveUniformBlockiv(_shader->id(), lightBlockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &lightBlockSize);
-        
+
         glGenBuffers(1, &_lightUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, _lightUbo);
-        glBufferData(GL_UNIFORM_BUFFER, lightBlockSize, 0, GL_DYNAMIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, lightBlockSize, nullptr, GL_DYNAMIC_DRAW); //Выделяем память, пока ничего не копируем
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         //Привязываем к 1й точке привязки
@@ -162,17 +155,17 @@ public:
 
         glGenBuffers(1, &_bunnyMaterialUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, _bunnyMaterialUbo);
-        glBufferData(GL_UNIFORM_BUFFER, materialBlockSize, 0, GL_STATIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, materialBlockSize, nullptr, GL_STATIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         glGenBuffers(1, &_cubeMaterialUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, _cubeMaterialUbo);
-        glBufferData(GL_UNIFORM_BUFFER, materialBlockSize, 0, GL_STATIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, materialBlockSize, nullptr, GL_STATIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         glGenBuffers(1, &_sphereMaterialUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, _sphereMaterialUbo);
-        glBufferData(GL_UNIFORM_BUFFER, materialBlockSize, 0, GL_STATIC_DRAW);
+        glBufferData(GL_UNIFORM_BUFFER, materialBlockSize, nullptr, GL_STATIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
         //Для материала пока не назначаем точку привязки, т.к. материалов будет несколько, и будем их менять
@@ -182,7 +175,7 @@ public:
 
         //Имена переменных материала
         const char* names[4] =
-        {            
+        {
             "MaterialInfo.Ka",
             "MaterialInfo.Kd",
             "MaterialInfo.Ks",
@@ -254,7 +247,7 @@ public:
 
                 ImGui::SliderFloat("attenuation 0", &_light.a0, 0.0f, 10.0f);
                 ImGui::SliderFloat("attenuation 1", &_light.a1, 0.0f, 10.0f);
-                ImGui::SliderFloat("attenuation 2", &_light.a1, 0.0f, 10.0f);
+                ImGui::SliderFloat("attenuation 2", &_light.a2, 0.0f, 10.0f);
             }
         }
         ImGui::End();
@@ -307,7 +300,7 @@ public:
 
         //Заполняем буфер данными, используя полученные сдвиги
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         memcpy(buffer.data() + offset[0], &lightPosCamSpace, sizeof(lightPosCamSpace));

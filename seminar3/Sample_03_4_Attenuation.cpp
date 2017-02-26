@@ -21,21 +21,21 @@ public:
     ShaderProgramPtr _markerShader;
 
     //Координаты источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 5.0;
+    float _phi = 0.0;
+    float _theta = glm::pi<float>() * 0.25f;
 
     //Параметры источника света
     glm::vec3 _lightAmbientColor;
     glm::vec3 _lightDiffuseColor;
     glm::vec3 _lightSpecularColor;
-    float _attenuation;
+    float _attenuation = 1.0f;
 
     //Параметры материала
     glm::vec3 _bunnyAmbientColor;
     glm::vec3 _bunnyDiffuseColor;
     glm::vec3 _bunnySpecularColor;
-    float _bunnyShininess;
+    float _bunnyShininess = 128.0f;
 
     void makeScene() override
     {
@@ -58,18 +58,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shaderPerFragment = std::make_shared<ShaderProgram>();
-        _shaderPerFragment->createProgram("shaders4/specularAttenuationPointLightPerFragment.vert", "shaders4/specularAttenuationPointLightPerFragment.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shaderPerFragment = std::make_shared<ShaderProgram>("shaders3/specularAttenuationPointLightPerFragment.vert", "shaders3/specularAttenuationPointLightPerFragment.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 5.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
         _lightAmbientColor = glm::vec3(0.2, 0.2, 0.2);
         _lightDiffuseColor = glm::vec3(0.8, 0.8, 0.8);
         _lightSpecularColor = glm::vec3(1.0, 1.0, 1.0);
@@ -134,7 +127,6 @@ public:
         //Загружаем на видеокарту значения юниформ-переменных
         _shaderPerFragment->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shaderPerFragment->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-
 
         _shaderPerFragment->setVec3Uniform("light.pos", lightPos);
         _shaderPerFragment->setVec3Uniform("light.La", _lightAmbientColor);

@@ -16,7 +16,7 @@ out vec4 color;
 
 void main()
 {
-	color = vertexColor;
+    color = vertexColor;
 
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

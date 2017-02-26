@@ -18,8 +18,8 @@ out vec4 position;
 
 void main()
 {
-	color = vertexColor;
-	position = vec4(vertexPosition, 1.0);
-	
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+    color = vertexColor;
+    position = vec4(vertexPosition, 1.0);
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

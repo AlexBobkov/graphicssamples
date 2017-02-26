@@ -31,8 +31,7 @@ public:
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
         //Создаем шейдерную программу        
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders2/shaderNormal.vert", "shaders2/shader.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders2/shaderNormal.vert", "shaders2/shader.frag");
     }
 
     void update() override

@@ -12,7 +12,7 @@ out vec4 fragColor;
 
 void main()
 {
-	vec4 colorOffset = vec4(0.5 * (1.0 + sin(time)), cos(gl_FragCoord.y), 0.0, 0.0);
-	
-	fragColor = color + colorOffset;
+    vec4 colorOffset = vec4(0.5 * (1.0 + sin(time)), cos(gl_FragCoord.y), 0.0, 0.0);
+
+    fragColor = color + colorOffset;
 }

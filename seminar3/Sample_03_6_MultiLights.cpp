@@ -19,10 +19,10 @@ struct MaterialInfo
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
-    float shininess;
+    float shininess = 128.0f;
 };
 
-const int LightNum = 3;
+constexpr unsigned int LightNum = 3;
 
 /**
 Несколько источников света
@@ -40,9 +40,9 @@ public:
     ShaderProgramPtr _markerShader;
 
     //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 3.0;
+    float _phi = 0.0;
+    float _theta = glm::pi<float>() * 0.25f;
 
     LightInfo _light[LightNum];
     MaterialInfo _material;
@@ -68,18 +68,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders4/manyLights.vert", "shaders4/manyLights.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders3/manyLights.vert", "shaders3/manyLights.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 3.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
         _light[0].position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _light[0].ambient = glm::vec3(0.2, 0.2, 0.2);
         _light[0].diffuse = glm::vec3(0.8, 0.8, 0.8);

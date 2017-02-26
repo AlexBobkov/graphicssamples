@@ -16,9 +16,9 @@ out vec4 color;
 
 void main()
 {
-	color = vertexColor;
+    color = vertexColor;
 
-	gl_PointSize = 6.0; //Выставл¤ет размер точки
+    gl_PointSize = 6.0; //Выставляет размер точки
 
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

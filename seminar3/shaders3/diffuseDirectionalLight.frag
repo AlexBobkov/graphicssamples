@@ -6,5 +6,5 @@ out vec4 fragColor; //выходной цвет фрагмента
 
 void main()
 {
-	fragColor = vec4(color, 1.0); //просто копируем
+    fragColor = vec4(color, 1.0); //просто копируем
 }

@@ -31,8 +31,7 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders3/shaderUBO.vert", "shaders3/shader.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders2/shaderUBO.vert", "shaders2/shader.frag");
 
         //=========================================================
         //Инициализация Uniform Buffer Object
@@ -79,14 +78,14 @@ public:
 
         //Зная индексы, запрашиваем сдвиги для 2х юниформ-переменных
         glGetActiveUniformsiv(_shader->id(), 2, index, GL_UNIFORM_OFFSET, offset);
-        
+
         //Устанавливаем значения 2х юниформ-перменных по отдельности
         glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
         glBufferSubData(GL_UNIFORM_BUFFER, offset[0], sizeof(_camera.viewMatrix), &_camera.viewMatrix);
         glBufferSubData(GL_UNIFORM_BUFFER, offset[1], sizeof(_camera.projMatrix), &_camera.projMatrix);
 #endif
     }
-    
+
     void draw() override
     {
         Application::draw();
@@ -104,7 +103,7 @@ public:
         _shader->use();
 
         //Загружаем на видеокарту значения юниформ-переменных
-        unsigned int blockIndex = glGetUniformBlockIndex(_shader->id(), "Matrices");        
+        unsigned int blockIndex = glGetUniformBlockIndex(_shader->id(), "Matrices");
         glUniformBlockBinding(_shader->id(), blockIndex, 0); //0я точка привязки
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
@@ -113,7 +112,7 @@ public:
 
         _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         _bunny->draw();
-    }    
+    }
 };
 
 int main()

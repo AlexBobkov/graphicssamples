@@ -21,9 +21,9 @@ public:
     ShaderProgramPtr _markerShader;
 
     //Координаты источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 5.0;
+    float _phi = 0.0;
+    float _theta = glm::pi<float>() * 0.25f;
 
     //Параметры источника света
     glm::vec3 _lightAmbientColor;
@@ -54,18 +54,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders4/diffusePointLight.vert", "shaders4/diffusePointLight.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders3/diffusePointLight.vert", "shaders3/diffusePointLight.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 5.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
         _lightAmbientColor = glm::vec3(0.2, 0.2, 0.2);
         _lightDiffuseColor = glm::vec3(0.8, 0.8, 0.8);
 

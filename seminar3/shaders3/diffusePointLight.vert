@@ -14,16 +14,16 @@ uniform mat3 normalToCameraMatrix;
 
 struct LightInfo
 {
-	vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
-	vec3 La; //цвет и интенсивность окружающего света
-	vec3 Ld; //цвет и интенсивность диффузного света
+    vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
+    vec3 La; //цвет и интенсивность окружающего света
+    vec3 Ld; //цвет и интенсивность диффузного света
 };
 uniform LightInfo light;
 
 struct MaterialInfo
-{	
-	vec3 Ka; //коэффициент отражения окружающего света
-	vec3 Kd; //коэффициент отражения диффузного света
+{
+    vec3 Ka; //коэффициент отражения окружающего света
+    vec3 Kd; //коэффициент отражения диффузного света
 };
 uniform MaterialInfo material;
 
@@ -34,15 +34,15 @@ out vec3 color; //выходной цвет вершины
 
 void main()
 {
-	vec3 normalCamSpace = normalize(normalToCameraMatrix * vertexNormal); //нормаль - из локальной в систему координат камеры
+    vec3 normalCamSpace = normalize(normalToCameraMatrix * vertexNormal); //нормаль - из локальной в систему координат камеры
 
-	vec4 posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0); //координаты вершины из локальной в систему координат камеры
-	vec4 lightPosCamSpace = viewMatrix * vec4(light.pos, 1.0); //положение источника света - из мировой в систему координат камеры 
-	vec4 lightDirCamSpace = normalize(lightPosCamSpace - posCamSpace); 
-				    
+    vec4 posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0); //координаты вершины из локальной в систему координат камеры
+    vec4 lightPosCamSpace = viewMatrix * vec4(light.pos, 1.0); //положение источника света - из мировой в систему координат камеры
+    vec4 lightDirCamSpace = normalize(lightPosCamSpace - posCamSpace);
+
     float NdotL = max(dot(normalCamSpace, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
-        
+
     color = light.La * material.Ka + light.Ld * material.Kd * NdotL; //цвет вершины
-	
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

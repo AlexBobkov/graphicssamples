@@ -11,10 +11,10 @@ out vec4 fragColor;
 
 void main()
 {
-	fragColor = color;
-	
-	if (color.r > 0.5) //Если интенсивность красного больше 0.5 отбрасываем фрагмент.
-	{
-		discard;
-	}
+    fragColor = color;
+
+    if (color.r > 0.5) //Если интенсивность красного больше 0.5 отбрасываем фрагмент.
+    {
+        discard;
+    }
 }

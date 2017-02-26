@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
-Модель освещения Кука-Торренса
+Направленный источник света
 */
 class SampleApplication : public Application
 {
@@ -15,27 +15,19 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Маркер для источника света
-
     ShaderProgramPtr _shader;
-    ShaderProgramPtr _markerShader;
 
     //Координаты источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _phi = 0.0f;
+    float _theta = glm::pi<float>() * 0.25f;
 
     //Параметры источника света
     glm::vec3 _lightAmbientColor;
     glm::vec3 _lightDiffuseColor;
-    glm::vec3 _lightSpecularColor;
 
     //Параметры материала
     glm::vec3 _bunnyAmbientColor;
     glm::vec3 _bunnyDiffuseColor;
-    glm::vec3 _bunnySpecularColor;
-    float _roughnessValue;
-    float _F0;
 
     void makeScene() override
     {
@@ -53,33 +45,19 @@ public:
         _bunny = loadFromFile("models/bunny.obj");
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        _marker = makeSphere(0.1f);
-
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders4/CookTorrance.vert", "shaders4/CookTorrance.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders3/diffuseDirectionalLight.vert", "shaders3/diffuseDirectionalLight.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 5.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
-        _lightAmbientColor = glm::vec3(0.0, 0.0, 0.0);
-        _lightDiffuseColor = glm::vec3(0.0, 0.0, 0.0);
-        _lightSpecularColor = glm::vec3(1.0, 1.0, 1.0);
+        _lightAmbientColor = glm::vec3(0.2, 0.2, 0.2);
+        _lightDiffuseColor = glm::vec3(0.8, 0.8, 0.8);
 
         //Инициализация материала кролика
         _bunnyAmbientColor = glm::vec3(1.0, 1.0, 0.0);
         _bunnyDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
-        _bunnySpecularColor = glm::vec3(1.0, 1.0, 1.0);
-        _roughnessValue = 0.3f;
-        _F0 = 0.8f;
     }
 
     void updateGUI() override
@@ -95,9 +73,7 @@ public:
             {
                 ImGui::ColorEdit3("ambient", glm::value_ptr(_lightAmbientColor));
                 ImGui::ColorEdit3("diffuse", glm::value_ptr(_lightDiffuseColor));
-                ImGui::ColorEdit3("specular", glm::value_ptr(_lightSpecularColor));
 
-                ImGui::SliderFloat("radius", &_lr, 0.1f, 10.0f);
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
@@ -106,10 +82,6 @@ public:
             {
                 ImGui::ColorEdit3("mat ambient", glm::value_ptr(_bunnyAmbientColor));
                 ImGui::ColorEdit3("mat diffuse", glm::value_ptr(_bunnyDiffuseColor));
-                ImGui::ColorEdit3("mat specular", glm::value_ptr(_bunnySpecularColor));
-
-                ImGui::SliderFloat("roughness", &_roughnessValue, 0.01f, 1.0f);
-                ImGui::SliderFloat("F0", &_F0, 0.01f, 1.0f);
             }
         }
         ImGui::End();
@@ -126,8 +98,6 @@ public:
         //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::vec3 lightPos = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
-
         //Подключаем шейдер		
         _shader->use();
 
@@ -135,11 +105,10 @@ public:
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-
-        _shader->setVec3Uniform("light.pos", lightPos);
+        glm::vec3 lightDir = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta));
+        _shader->setVec3Uniform("light.dir", lightDir);
         _shader->setVec3Uniform("light.La", _lightAmbientColor);
         _shader->setVec3Uniform("light.Ld", _lightDiffuseColor);
-        _shader->setVec3Uniform("light.Ls", _lightSpecularColor);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         {
@@ -148,9 +117,6 @@ public:
 
             _shader->setVec3Uniform("material.Ka", glm::vec3(0.0, 1.0, 0.0));
             _shader->setVec3Uniform("material.Kd", glm::vec3(0.0, 1.0, 0.0));
-            _shader->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-            _shader->setFloatUniform("material.roughnessValue", _roughnessValue);
-            _shader->setFloatUniform("material.F0", _F0);
 
             _cube->draw();
         }
@@ -161,9 +127,6 @@ public:
 
             _shader->setVec3Uniform("material.Ka", glm::vec3(1.0, 1.0, 1.0));
             _shader->setVec3Uniform("material.Kd", glm::vec3(1.0, 1.0, 1.0));
-            _shader->setVec3Uniform("material.Ks", glm::vec3(1.0, 1.0, 1.0));
-            _shader->setFloatUniform("material.roughnessValue", _roughnessValue);
-            _shader->setFloatUniform("material.F0", _F0);
 
             _sphere->draw();
         }
@@ -174,19 +137,8 @@ public:
 
             _shader->setVec3Uniform("material.Ka", glm::vec3(_bunnyAmbientColor));
             _shader->setVec3Uniform("material.Kd", glm::vec3(_bunnyDiffuseColor));
-            _shader->setVec3Uniform("material.Ks", glm::vec3(_bunnySpecularColor));
-            _shader->setFloatUniform("material.roughnessValue", _roughnessValue);
-            _shader->setFloatUniform("material.F0", _F0);
 
             _bunny->draw();
-        }
-
-        //Рисуем маркер для источника света		
-        {
-            _markerShader->use();
-            _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));
-            _markerShader->setVec4Uniform("color", glm::vec4(_lightDiffuseColor, 1.0f));
-            _marker->draw();
         }
     }
 };

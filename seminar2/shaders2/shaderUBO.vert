@@ -6,9 +6,9 @@
 #version 330
 
 layout (std140) uniform Matrices
-{ 
-  mat4 viewMatrix;
-  mat4 projectionMatrix;
+{
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
 };
 
 uniform mat4 modelMatrix;
@@ -20,7 +20,7 @@ out vec4 color;
 
 void main()
 {
-	color = vertexColor;
+    color = vertexColor;
 
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

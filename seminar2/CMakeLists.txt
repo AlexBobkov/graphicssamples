@@ -26,6 +26,7 @@ set(SHADER_FILES
     shaders2/shaderTime.frag
     shaders2/shaderTimeCoord.vert
     shaders2/shaderTimeCoord.frag
+    shaders2/shaderUBO.vert
     shaders2/simple.vert
     shaders2/simple.frag
     shaders2/simpleMat.vert
@@ -40,5 +41,6 @@ MAKE_SAMPLE(Sample_02_2_Shaders)
 MAKE_SAMPLE(Sample_02_3_Points)
 MAKE_SAMPLE(Sample_02_4_Lines)
 MAKE_SAMPLE(Sample_02_5_ScreenSpaceQuad)
+MAKE_SAMPLE(Sample_02_6_UBO)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/seminar2/shaders2 DESTINATION ${CMAKE_INSTALL_PREFIX})

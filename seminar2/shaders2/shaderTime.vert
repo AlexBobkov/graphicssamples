@@ -18,9 +18,9 @@ out vec4 color;
 
 void main()
 {
-	color = vertexColor;
-	
-	vec3 offset = vec3(sin(time), cos(time), 0.0); //Сдвиг локальных координат
-			
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition + offset, 1.0);
+    color = vertexColor;
+
+    vec3 offset = vec3(sin(time), cos(time), 0.0); //Сдвиг локальных координат
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition + offset, 1.0);
 }

@@ -14,10 +14,10 @@ uniform mat3 normalToCameraMatrix;
 
 struct LightInfo
 {
-	vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
-	vec3 La; //цвет и интенсивность окружающего света
-	vec3 Ld; //цвет и интенсивность диффузного света
-	vec3 Ls; //цвет и интенсивность бликового света
+    vec3 pos; //положение источника света в мировой системе координат (для точечного источника)
+    vec3 La; //цвет и интенсивность окружающего света
+    vec3 Ld; //цвет и интенсивность диффузного света
+    vec3 Ls; //цвет и интенсивность бликового света
 };
 uniform LightInfo light;
 
@@ -30,9 +30,9 @@ out vec4 posCamSpace; //координаты вершины в системе к
 
 void main()
 {
-	posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0); //преобразование координат вершины в систему координат камеры
-	normalCamSpace = normalize(normalToCameraMatrix * vertexNormal); //преобразование нормали в систему координат камеры
-	lightPosCamSpace = viewMatrix * vec4(light.pos, 1.0); //преобразование положения источника света в систему координат камеры
+    posCamSpace = viewMatrix * modelMatrix * vec4(vertexPosition, 1.0); //преобразование координат вершины в систему координат камеры
+    normalCamSpace = normalize(normalToCameraMatrix * vertexNormal); //преобразование нормали в систему координат камеры
+    lightPosCamSpace = viewMatrix * vec4(light.pos, 1.0); //преобразование положения источника света в систему координат камеры
 
-	gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vertexPosition, 1.0);
 }

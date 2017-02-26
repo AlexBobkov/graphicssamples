@@ -13,5 +13,5 @@ out vec4 fragColor;
 
 void main()
 {
-	fragColor = position * 0.5 * (2.0 + sin(time));
+    fragColor = position * 0.5 * (2.0 + sin(time));
 }

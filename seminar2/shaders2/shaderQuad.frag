@@ -10,10 +10,10 @@ out vec4 fragColor;
 
 void main()
 {
-	fragColor = vec4(1.0, 1.0, 0.0, 1.0);
-	
-	if (length(position) > 0.5)
-	{
-		discard;
-	}
+    fragColor = vec4(1.0, 1.0, 0.0, 1.0);
+
+    if (length(position) > 0.5)
+    {
+        discard;
+    }
 }
