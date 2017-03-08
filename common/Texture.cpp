@@ -43,14 +43,14 @@ TexturePtr loadTexture(const std::string& filename, SRGB srgb)
     GLint internalFormat;
     if (srgb == SRGB::YES)
     {
-        internalFormat = channels == 4 ? GL_SRGB8 : GL_SRGB8_ALPHA8;
+        internalFormat = (channels == 4) ? GL_SRGB8 : GL_SRGB8_ALPHA8;
     }
     else
     {
-        internalFormat = channels == 4 ? GL_RGBA8 : GL_RGB8;
+        internalFormat = (channels == 4) ? GL_RGBA8 : GL_RGB8;
     }
 
-    GLint format = channels == 4 ? GL_RGBA : GL_RGB;
+    GLint format = (channels == 4) ? GL_RGBA : GL_RGB;
 
     TexturePtr texture = std::make_shared<Texture>(GL_TEXTURE_2D);
     texture->setTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, format, GL_UNSIGNED_BYTE, image);
@@ -112,9 +112,9 @@ TexturePtr makeProceduralTexture()
         {
             glm::vec3 color = getColorFromLinearPalette((float)column / width);
 
-            data.push_back((unsigned char)(255 * color.r));
-            data.push_back((unsigned char)(255 * color.g));
-            data.push_back((unsigned char)(255 * color.b));
+            data.push_back(static_cast<unsigned char>(255 * color.r));
+            data.push_back(static_cast<unsigned char>(255 * color.g));
+            data.push_back(static_cast<unsigned char>(255 * color.b));
         }
     }
 

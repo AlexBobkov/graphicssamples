@@ -27,9 +27,9 @@ public:
     ShaderProgramPtr _skyboxShader;
 
     //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 10.0;
+    float _phi = 2.65f;
+    float _theta = 0.48f;
 
     LightInfo _light;
 
@@ -69,15 +69,11 @@ public:
         _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
 
         _skyboxShader = std::make_shared<ShaderProgram>();
-        _skyboxShader->createProgram("shaders6/skybox.vert", "shaders6/skybox.frag");
+        _skyboxShader->createProgram("shaders/skybox.vert", "shaders/skybox.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 2.65f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -169,8 +165,8 @@ public:
         //Загружаем на видеокарту значения юниформ-переменных
         _commonShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _commonShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
-                        
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры

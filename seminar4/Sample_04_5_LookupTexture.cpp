@@ -25,9 +25,9 @@ public:
     ShaderProgramPtr _markerShader;
 
     //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 3.0;
+    float _phi = 0.0;
+    float _theta = glm::pi<float>() * 0.25f;
 
     LightInfo _light;
 
@@ -57,19 +57,12 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders5/textureLookup.vert", "shaders5/textureLookup.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders4/textureLookup.vert", "shaders4/textureLookup.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 3.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -83,6 +76,7 @@ public:
         int height = 128;
 
         std::vector<GLubyte> data;
+        data.reserve(width * height);
 
         for (int row = 0; row < height; row++)
         {

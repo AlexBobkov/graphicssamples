@@ -26,18 +26,22 @@ public:
     ShaderProgramPtr _markerShader;
 
     //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 3.0;
+    float _phi = 0.0;
+    float _theta = glm::pi<float>() * 0.25f;
 
     LightInfo _light;
 
     TexturePtr _worldTex;
 
-    int _magnificationType; //0 - nearest, 1 - linear
-    
-    GLuint _samplerMagNearest;
-    GLuint _samplerMagLinear;
+    enum MagnificationType : int
+    {
+        Nearest,
+        Linear
+    };
+
+    MagnificationType _magnificationType = Nearest;
+    GLuint _samplers[2];
 
     void makeScene() override
     {
@@ -62,19 +66,12 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders5/texture.vert", "shaders5/texture.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders4/texture.vert", "shaders4/texture.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 3.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -85,19 +82,17 @@ public:
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
-        glGenSamplers(1, &_samplerMagNearest);
-        glSamplerParameteri(_samplerMagNearest, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glSamplerParameteri(_samplerMagNearest, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glSamplerParameteri(_samplerMagNearest, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glSamplerParameteri(_samplerMagNearest, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glGenSamplers(2, _samplers);
 
-        glGenSamplers(1, &_samplerMagLinear);
-        glSamplerParameteri(_samplerMagLinear, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glSamplerParameteri(_samplerMagLinear, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glSamplerParameteri(_samplerMagLinear, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glSamplerParameteri(_samplerMagLinear, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glSamplerParameteri(_samplers[0], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glSamplerParameteri(_samplers[0], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glSamplerParameteri(_samplers[0], GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(_samplers[0], GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        _magnificationType = 0; //nearest
+        glSamplerParameteri(_samplers[1], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_samplers[1], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glSamplerParameteri(_samplers[1], GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(_samplers[1], GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
 
     void updateGUI() override
@@ -120,8 +115,8 @@ public:
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
 
-            ImGui::RadioButton("mag nearest", &_magnificationType, 0);
-            ImGui::RadioButton("mag linear", &_magnificationType, 1);
+            ImGui::RadioButton("mag nearest", reinterpret_cast<int*>(&_magnificationType), Nearest);
+            ImGui::RadioButton("mag linear", reinterpret_cast<int*>(&_magnificationType), Linear);
         }
         ImGui::End();
     }
@@ -134,11 +129,11 @@ public:
         {
             if (key == GLFW_KEY_1)
             {
-                _magnificationType = 0;
+                _magnificationType = Nearest;
             }
             else if (key == GLFW_KEY_2)
             {
-                _magnificationType = 1;
+                _magnificationType = Linear;
             }
         }
     }
@@ -161,7 +156,7 @@ public:
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         _shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
@@ -169,15 +164,8 @@ public:
         _shader->setVec3Uniform("light.Ld", _light.diffuse);
         _shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
-        if (_magnificationType == 0)
-        {
-            glBindSampler(0, _samplerMagNearest);
-        }
-        else
-        {
-            glBindSampler(0, _samplerMagLinear);
-        }
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glBindSampler(0, _samplers[_magnificationType]);
         _worldTex->bind();
         _shader->setIntUniform("diffuseTex", 0);
 

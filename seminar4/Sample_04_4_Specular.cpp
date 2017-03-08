@@ -9,7 +9,7 @@
 #include <vector>
 
 /**
-Пример с текстурированием разных 3д-моделей
+Используются 2 текстуры: одна с картой земли (диффузный цвет), другая - с картой бликового цвета (specular map).
 */
 class SampleApplication : public Application
 {
@@ -25,13 +25,14 @@ public:
     ShaderProgramPtr _markerShader;
 
     //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    float _lr = 3.0;
+    float _phi = 0.0;
+    float _theta = glm::pi<float>() * 0.25f;
 
     LightInfo _light;
 
-    TexturePtr _worldTexture;
+    TexturePtr _worldTex;
+    TexturePtr _specularTex;
 
     GLuint _sampler;
 
@@ -56,18 +57,11 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders5/texture.vert", "shaders5/texture.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders4/textureSpecular.vert", "shaders4/textureSpecular.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
-        _lr = 3.0;
-        _phi = 0.0;
-        _theta = glm::pi<float>() * 0.25f;
-
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
@@ -75,13 +69,14 @@ public:
 
         //=========================================================
         //Загрузка и создание текстур
-        _worldTexture = loadTexture("images/earth_global.jpg");
+        _worldTex = loadTexture("images/earth_global.jpg");
+        _specularTex = loadTexture("images/earth_specular.png");
 
         //=========================================================
         //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
         glGenSamplers(1, &_sampler);
-        glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
@@ -127,7 +122,7 @@ public:
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
         _shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
@@ -135,10 +130,15 @@ public:
         _shader->setVec3Uniform("light.Ld", _light.diffuse);
         _shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
         glBindSampler(0, _sampler);
-        _worldTexture->bind();
+        _worldTex->bind();
         _shader->setIntUniform("diffuseTex", 0);
+
+        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
+        glBindSampler(1, _sampler);
+        _specularTex->bind();
+        _shader->setIntUniform("specularTex", 1);
 
         //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
         {

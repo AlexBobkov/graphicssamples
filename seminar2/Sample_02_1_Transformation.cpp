@@ -39,7 +39,7 @@ public:
         Application::update();
 
         //Вращаем кролика
-        float angle = (float)glfwGetTime();
+        float angle = static_cast<float>(glfwGetTime());
 
         glm::mat4 mat;
         mat = glm::translate(mat, glm::vec3(0.0f, 0.5f, 0.0));

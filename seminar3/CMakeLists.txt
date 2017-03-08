@@ -33,6 +33,9 @@ set(SHADER_FILES
 
     shaders3/manyLights.vert
     shaders3/manyLights.frag
+    
+    shaders3/lightingUBO.vert
+    shaders3/lightingUBO.frag
 )
 
 source_group("Shaders" FILES

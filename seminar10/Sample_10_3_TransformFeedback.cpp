@@ -94,10 +94,6 @@ public:
         ShaderPtr vs = std::make_shared<Shader>(GL_VERTEX_SHADER);
         vs->createFromFile("shaders10/transformFeedbackPass1.vert");
         _transformFeedbackPass1Shader->attachShader(vs);
-        
-        ShaderPtr fs = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
-        fs->createFromFile("shaders10/particle.frag");
-        _transformFeedbackPass1Shader->attachShader(fs);
 
         const char* attribs[] = { "position", "velocity", "particleTime" };
         glTransformFeedbackVaryings(_transformFeedbackPass1Shader->id(), 3, attribs, GL_SEPARATE_ATTRIBS);
