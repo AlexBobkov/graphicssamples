@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
-Íåñêîëüêî ïðèìåðîâ øåéäåðîâ
+ÐÐµÑÐºÐ¾Ð»ÑŒÐºÐ¾ Ð¿Ñ€Ð¸Ð¼ÐµÑ€Ð¾Ð² ÑˆÐµÐ¹Ð´ÐµÑ€Ð¾Ð²
 */
 class SampleApplication : public Application
 {
@@ -62,25 +62,25 @@ public:
     {
         Application::draw();
 
-        //Ïîëó÷àåì òåêóùèå ðàçìåðû ýêðàíà è âûñòàâëÿì âüþïîðò
+        //ÐŸÐ¾Ð»ÑƒÑ‡Ð°ÐµÐ¼ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ðµ Ñ€Ð°Ð·Ð¼ÐµÑ€Ñ‹ ÑÐºÑ€Ð°Ð½Ð° Ð¸ Ð²Ñ‹ÑÑ‚Ð°Ð²Ð»ÑÐ¼ Ð²ÑŒÑŽÐ¿Ð¾Ñ€Ñ‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Î÷èùàåì áóôåðû öâåòà è ãëóáèíû îò ðåçóëüòàòîâ ðåíäåðèíãà ïðåäûäóùåãî êàäðà
+        //ÐžÑ‡Ð¸Ñ‰Ð°ÐµÐ¼ Ð±ÑƒÑ„ÐµÑ€Ñ‹ Ñ†Ð²ÐµÑ‚Ð° Ð¸ Ð³Ð»ÑƒÐ±Ð¸Ð½Ñ‹ Ð¾Ñ‚ Ñ€ÐµÐ·ÑƒÐ»ÑŒÑ‚Ð°Ñ‚Ð¾Ð² Ñ€ÐµÐ½Ð´ÐµÑ€Ð¸Ð½Ð³Ð° Ð¿Ñ€ÐµÐ´Ñ‹Ð´ÑƒÑ‰ÐµÐ³Ð¾ ÐºÐ°Ð´Ñ€Ð°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //Ïîäêëþ÷àåì øåéäåð
+        //ÐŸÐ¾Ð´ÐºÐ»ÑŽÑ‡Ð°ÐµÐ¼ ÑˆÐµÐ¹Ð´ÐµÑ€
         _shaders[_currentIndex]->use();
 
-        //Çàãðóæàåì íà âèäåîêàðòó çíà÷åíèÿ þíèôîðì-ïåðåìåííûå: âðåìÿ è ìàòðèöû
-        _shaders[_currentIndex]->setFloatUniform("time", (float)glfwGetTime()); //ïåðåäàåì âðåìÿ â øåéäåð
+        //Ð—Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÐ¼ Ð½Ð° Ð²Ð¸Ð´ÐµÐ¾ÐºÐ°Ñ€Ñ‚Ñƒ Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ñ ÑŽÐ½Ð¸Ñ„Ð¾Ñ€Ð¼-Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ñ‹Ðµ: Ð²Ñ€ÐµÐ¼Ñ Ð¸ Ð¼Ð°Ñ‚Ñ€Ð¸Ñ†Ñ‹
+        _shaders[_currentIndex]->setFloatUniform("time", (float)glfwGetTime()); //Ð¿ÐµÑ€ÐµÐ´Ð°ÐµÐ¼ Ð²Ñ€ÐµÐ¼Ñ Ð² ÑˆÐµÐ¹Ð´ÐµÑ€
 
         _shaders[_currentIndex]->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shaders[_currentIndex]->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-        //Çàãðóæàåì íà âèäåîêàðòó ìàòðèöû ìîäåëè ìåøåé è çàïóñêàåì îòðèñîâêó
+        //Ð—Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÐ¼ Ð½Ð° Ð²Ð¸Ð´ÐµÐ¾ÐºÐ°Ñ€Ñ‚Ñƒ Ð¼Ð°Ñ‚Ñ€Ð¸Ñ†Ñ‹ Ð¼Ð¾Ð´ÐµÐ»Ð¸ Ð¼ÐµÑˆÐµÐ¹ Ð¸ Ð·Ð°Ð¿ÑƒÑÐºÐ°ÐµÐ¼ Ð¾Ñ‚Ñ€Ð¸ÑÐ¾Ð²ÐºÑƒ
         _shaders[_currentIndex]->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         _cube->draw();
 

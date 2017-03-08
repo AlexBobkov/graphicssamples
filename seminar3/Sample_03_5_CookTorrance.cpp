@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
-Модель освещения Кука-Торренса
+РњРѕРґРµР»СЊ РѕСЃРІРµС‰РµРЅРёСЏ РљСѓРєР°-РўРѕСЂСЂРµРЅСЃР°
 */
 class SampleApplication : public Application
 {
@@ -15,21 +15,21 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Маркер для источника света
+    MeshPtr _marker; //РњР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
     ShaderProgramPtr _shader;
     ShaderProgramPtr _markerShader;
 
-    //Координаты источника света
+    //РљРѕРѕСЂРґРёРЅР°С‚С‹ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
     float _lr = 5.0;
     float _phi = 0.0;
     float _theta = glm::pi<float>() * 0.25f;
 
-    //Параметры источника света
+    //РџР°СЂР°РјРµС‚СЂС‹ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
     glm::vec3 _lightAmbientColor;
     glm::vec3 _lightColor;
 
-    //Параметры материала
+    //РџР°СЂР°РјРµС‚СЂС‹ РјР°С‚РµСЂРёР°Р»Р°
     glm::vec3 _bunnyDiffuseColor;
     glm::vec3 _bunnySpecularColor;
     float _diffuseFraction = 0.0f;
@@ -41,7 +41,7 @@ public:
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -55,17 +55,17 @@ public:
         _marker = makeSphere(0.1f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _shader = std::make_shared<ShaderProgram>("shaders3/CookTorrance.vert", "shaders3/CookTorrance.frag");
         _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
         _lightAmbientColor = glm::vec3(0.0, 0.0, 0.0);
         _lightColor = glm::vec3(1.0, 1.0, 1.0);
 
-        //Инициализация материала кролика
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°С‚РµСЂРёР°Р»Р° РєСЂРѕР»РёРєР°
         _bunnyDiffuseColor = glm::vec3(1.0, 1.0, 0.0);
         _bunnySpecularColor = glm::vec3(1.0, 1.0, 1.0);
         _diffuseFraction = 0.0f;
@@ -107,21 +107,21 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::vec3 lightPos = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
 
-        //Подключаем шейдер		
+        //РџРѕРґРєР»СЋС‡Р°РµРј С€РµР№РґРµСЂ		
         _shader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
@@ -130,7 +130,7 @@ public:
         _shader->setVec3Uniform("light.ambient", _lightAmbientColor);
         _shader->setVec3Uniform("light.color", _lightColor);
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
@@ -170,7 +170,7 @@ public:
             _bunny->draw();
         }
 
-        //Рисуем маркер для источника света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°		
         {
             _markerShader->use();
             _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));

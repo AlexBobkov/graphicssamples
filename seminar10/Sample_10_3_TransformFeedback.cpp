@@ -29,7 +29,7 @@ namespace
 }
 
 /**
-Пример с системой частиц с Transform Feedback
+РџСЂРёРјРµСЂ СЃ СЃРёСЃС‚РµРјРѕР№ С‡Р°СЃС‚РёС† СЃ Transform Feedback
 */
 class SampleApplication : public Application
 {
@@ -77,12 +77,12 @@ public:
         Application::makeScene();
         
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _ground = makeGroundPlane(10.0f, 5.0f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _groundShader = std::make_shared<ShaderProgram>();
         _groundShader->createProgram("shaders10/ground.vert", "shaders10/ground.frag");
@@ -106,12 +106,12 @@ public:
         _transformFeedbackPass2Shader->createProgram("shaders10/transformFeedbackPass2.vert", "shaders10/particle.frag");
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _particleTex = loadTexture("images/particle.png");
         _grassTex = loadTexture("images/grass.jpg");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -197,13 +197,13 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //-------------------------
@@ -214,7 +214,7 @@ public:
         _groundShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _groundShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _grassSampler);
         _grassTex->bind();
         _groundShader->setIntUniform("tex", 0);
@@ -230,7 +230,7 @@ public:
 
         //-------------------------
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
@@ -272,7 +272,7 @@ public:
         _transformFeedbackPass2Shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
         _transformFeedbackPass2Shader->setFloatUniform("time", (float)glfwGetTime());
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _particleTex->bind();
         _transformFeedbackPass2Shader->setIntUniform("tex", 0);
@@ -284,7 +284,7 @@ public:
         glDepthMask(false);
 
         glBindVertexArray(_particleVaoTF[_tfIndex]);
-        glDrawTransformFeedback(GL_POINTS, _TF[_tfIndex]); //Рисуем здесь!
+        glDrawTransformFeedback(GL_POINTS, _TF[_tfIndex]); //Р РёСЃСѓРµРј Р·РґРµСЃСЊ!
 
         glDepthMask(true);
 

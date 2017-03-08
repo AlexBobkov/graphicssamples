@@ -9,7 +9,7 @@
 #include <vector>
 
 /**
-Пример с кубической текстурой
+РџСЂРёРјРµСЂ СЃ РєСѓР±РёС‡РµСЃРєРѕР№ С‚РµРєСЃС‚СѓСЂРѕР№
 */
 class SampleApplication : public Application
 {
@@ -19,14 +19,14 @@ public:
     MeshPtr _bunny;
     MeshPtr _backgroundCube;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //РњРµС€ - РјР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _commonShader;
     ShaderProgramPtr _markerShader;
     ShaderProgramPtr _skyboxShader;
 
-    //Переменные для управления положением одного источника света
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
     float _lr = 10.0;
     float _phi = 2.65f;
     float _theta = 0.48f;
@@ -44,7 +44,7 @@ public:
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -60,7 +60,7 @@ public:
         _backgroundCube = makeCube(10.0f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _commonShader = std::make_shared<ShaderProgram>();
         _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
@@ -72,19 +72,19 @@ public:
         _skyboxShader->createProgram("shaders/skybox.vert", "shaders/skybox.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _brickTex = loadTexture("images/brick.jpg");
         _cubeTex = loadCubeTexture("images/cube");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -124,62 +124,62 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //====== РИСУЕМ ФОН С КУБИЧЕСКОЙ ТЕКСТУРОЙ ======
+        //====== Р РРЎРЈР•Рњ Р¤РћРќ РЎ РљРЈР‘РР§Р•РЎРљРћР™ РўР•РљРЎРўРЈР РћР™ ======
         {
             _skyboxShader->use();
 
-            glm::vec3 cameraPos = glm::vec3(glm::inverse(_camera.viewMatrix)[3]); //Извлекаем из матрицы вида положение виртуальный камеры в мировой системе координат
+            glm::vec3 cameraPos = glm::vec3(glm::inverse(_camera.viewMatrix)[3]); //РР·РІР»РµРєР°РµРј РёР· РјР°С‚СЂРёС†С‹ РІРёРґР° РїРѕР»РѕР¶РµРЅРёРµ РІРёСЂС‚СѓР°Р»СЊРЅС‹Р№ РєР°РјРµСЂС‹ РІ РјРёСЂРѕРІРѕР№ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚
 
             _skyboxShader->setVec3Uniform("cameraPos", cameraPos);
             _skyboxShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
             _skyboxShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-            //Для преобразования координат в текстурные координаты нужна матрица для поворота осей YZ на 90 градусов и отражения оси Y.
+            //Р”Р»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РєРѕРѕСЂРґРёРЅР°С‚ РІ С‚РµРєСЃС‚СѓСЂРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅСѓР¶РЅР° РјР°С‚СЂРёС†Р° РґР»СЏ РїРѕРІРѕСЂРѕС‚Р° РѕСЃРµР№ YZ РЅР° 90 РіСЂР°РґСѓСЃРѕРІ Рё РѕС‚СЂР°Р¶РµРЅРёСЏ РѕСЃРё Y.
             glm::mat3 textureMatrix = glm::mat3(glm::scale(glm::rotate(glm::mat4(), -glm::pi<float>() * 0.5f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(1.0f, -1.0f, 1.0f)));
             _skyboxShader->setMat3Uniform("textureMatrix", textureMatrix);
 
-            glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0            
+            glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0            
             glBindSampler(0, _cubeTexSampler);
             _cubeTex->bind();
             _skyboxShader->setIntUniform("cubeTex", 0);
 
-            glDepthMask(GL_FALSE); //Отключаем запись в буфер глубины
+            glDepthMask(GL_FALSE); //РћС‚РєР»СЋС‡Р°РµРј Р·Р°РїРёСЃСЊ РІ Р±СѓС„РµСЂ РіР»СѓР±РёРЅС‹
 
             _backgroundCube->draw();
 
-            glDepthMask(GL_TRUE); //Включаем обратно запись в буфер глубины
+            glDepthMask(GL_TRUE); //Р’РєР»СЋС‡Р°РµРј РѕР±СЂР°С‚РЅРѕ Р·Р°РїРёСЃСЊ РІ Р±СѓС„РµСЂ РіР»СѓР±РёРЅС‹
         }
 
-        //====== РИСУЕМ ОСНОВНЫЕ ОБЪЕКТЫ СЦЕНЫ ======
+        //====== Р РРЎРЈР•Рњ РћРЎРќРћР’РќР«Р• РћР‘РЄР•РљРўР« РЎР¦Р•РќР« ======
         _commonShader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         _commonShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _commonShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         _commonShader->setVec3Uniform("light.La", _light.ambient);
         _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
         _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _brickTex->bind();
         _commonShader->setIntUniform("diffuseTex", 0);
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             _commonShader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
             _commonShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
@@ -201,7 +201,7 @@ public:
             _bunny->draw();
         }
 
-        //Рисуем маркеры для всех источников света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂС‹ РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°		
         {
             _markerShader->use();
 
@@ -210,7 +210,7 @@ public:
             _marker->draw();
         }
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }

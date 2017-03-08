@@ -25,7 +25,7 @@ struct MaterialInfo
 };
 
 /**
-Вариант с хранением параметров освещения в Uniform Buffer Object
+Р’Р°СЂРёР°РЅС‚ СЃ С…СЂР°РЅРµРЅРёРµРј РїР°СЂР°РјРµС‚СЂРѕРІ РѕСЃРІРµС‰РµРЅРёСЏ РІ Uniform Buffer Object
 */
 class SampleApplication : public Application
 {
@@ -34,25 +34,25 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Маркер для источника света
+    MeshPtr _marker; //РњР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
     ShaderProgramPtr _shader;
     ShaderProgramPtr _markerShader;
 
-    //Координаты источника света
+    //РљРѕРѕСЂРґРёРЅР°С‚С‹ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
     float _lr = 5.0;
     float _phi = 0.0;
     float _theta = glm::pi<float>() * 0.25f;
 
-    //Параметры источника света
+    //РџР°СЂР°РјРµС‚СЂС‹ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
     LightInfo _light;
 
-    //Параметры материалов
+    //РџР°СЂР°РјРµС‚СЂС‹ РјР°С‚РµСЂРёР°Р»РѕРІ
     MaterialInfo _bunnyMaterial;
     MaterialInfo _cubeMaterial;
     MaterialInfo _sphereMaterial;
 
-    //Буферы юниформ-переменных (Uniform Buffer Object)
+    //Р‘СѓС„РµСЂС‹ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С… (Uniform Buffer Object)
     GLuint _matricesUbo;
     GLuint _lightUbo;
     GLuint _bunnyMaterialUbo;
@@ -64,7 +64,7 @@ public:
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -78,13 +78,13 @@ public:
         _marker = makeSphere(0.1f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _shader = std::make_shared<ShaderProgram>("shaders3/lightingUBO.vert", "shaders3/lightingUBO.frag");
         _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
@@ -93,7 +93,7 @@ public:
         _light.a1 = 0.0f;
         _light.a2 = 0.0f;
 
-        //Инициализация материалов
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°С‚РµСЂРёР°Р»РѕРІ
         _bunnyMaterial.ambient = glm::vec3(1.0, 1.0, 0.0);
         _bunnyMaterial.diffuse = glm::vec3(1.0, 1.0, 0.0);
         _bunnyMaterial.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -110,24 +110,24 @@ public:
         _sphereMaterial.shininess = 128.0f;
 
         //=========================================================
-        //Инициализация Uniform Buffer Object
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Uniform Buffer Object
 
-        //Сначала создаем UBO для матриц проекции и вида
-        //Поскольку матрицы расположены в памяти просто без промежутков, то можно вычислить размер массива с помощью sizeof(_camera)
+        //РЎРЅР°С‡Р°Р»Р° СЃРѕР·РґР°РµРј UBO РґР»СЏ РјР°С‚СЂРёС† РїСЂРѕРµРєС†РёРё Рё РІРёРґР°
+        //РџРѕСЃРєРѕР»СЊРєСѓ РјР°С‚СЂРёС†С‹ СЂР°СЃРїРѕР»РѕР¶РµРЅС‹ РІ РїР°РјСЏС‚Рё РїСЂРѕСЃС‚Рѕ Р±РµР· РїСЂРѕРјРµР¶СѓС‚РєРѕРІ, С‚Рѕ РјРѕР¶РЅРѕ РІС‹С‡РёСЃР»РёС‚СЊ СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР° СЃ РїРѕРјРѕС‰СЊСЋ sizeof(_camera)
 
         glGenBuffers(1, &_matricesUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, _matricesUbo);
-        glBufferData(GL_UNIFORM_BUFFER, sizeof(_camera), nullptr, GL_DYNAMIC_DRAW); //Выделяем память, пока ничего не копируем
+        glBufferData(GL_UNIFORM_BUFFER, sizeof(_camera), nullptr, GL_DYNAMIC_DRAW); //Р’С‹РґРµР»СЏРµРј РїР°РјСЏС‚СЊ, РїРѕРєР° РЅРёС‡РµРіРѕ РЅРµ РєРѕРїРёСЂСѓРµРј
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        //Привязываем к 0й точке привязки
+        //РџСЂРёРІСЏР·С‹РІР°РµРј Рє 0Р№ С‚РѕС‡РєРµ РїСЂРёРІСЏР·РєРё
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, _matricesUbo);
 
         //--------------------------
 
-        //Создаем UBO для источника света
-        //Переменные источника света располагаются в памяти с промежутками,
-        //поэтому сначала нужно запросить размер буфера с помощью функции glGetActiveUniformBlockiv
+        //РЎРѕР·РґР°РµРј UBO РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+        //РџРµСЂРµРјРµРЅРЅС‹Рµ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р° СЂР°СЃРїРѕР»Р°РіР°СЋС‚СЃСЏ РІ РїР°РјСЏС‚Рё СЃ РїСЂРѕРјРµР¶СѓС‚РєР°РјРё,
+        //РїРѕСЌС‚РѕРјСѓ СЃРЅР°С‡Р°Р»Р° РЅСѓР¶РЅРѕ Р·Р°РїСЂРѕСЃРёС‚СЊ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° СЃ РїРѕРјРѕС‰СЊСЋ С„СѓРЅРєС†РёРё glGetActiveUniformBlockiv
 
         GLuint lightBlockIndex = glGetUniformBlockIndex(_shader->id(), "LightInfo");
 
@@ -136,17 +136,17 @@ public:
 
         glGenBuffers(1, &_lightUbo);
         glBindBuffer(GL_UNIFORM_BUFFER, _lightUbo);
-        glBufferData(GL_UNIFORM_BUFFER, lightBlockSize, nullptr, GL_DYNAMIC_DRAW); //Выделяем память, пока ничего не копируем
+        glBufferData(GL_UNIFORM_BUFFER, lightBlockSize, nullptr, GL_DYNAMIC_DRAW); //Р’С‹РґРµР»СЏРµРј РїР°РјСЏС‚СЊ, РїРѕРєР° РЅРёС‡РµРіРѕ РЅРµ РєРѕРїРёСЂСѓРµРј
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        //Привязываем к 1й точке привязки
+        //РџСЂРёРІСЏР·С‹РІР°РµРј Рє 1Р№ С‚РѕС‡РєРµ РїСЂРёРІСЏР·РєРё
         glBindBufferBase(GL_UNIFORM_BUFFER, 1, _lightUbo);
 
         //--------------------------
 
-        //Создаем UBO для материала
-        //Переменные материала располагаются в памяти с промежутками,
-        //поэтому сначала нужно запросить размер буфера с помощью функции glGetActiveUniformBlockiv
+        //РЎРѕР·РґР°РµРј UBO РґР»СЏ РјР°С‚РµСЂРёР°Р»Р°
+        //РџРµСЂРµРјРµРЅРЅС‹Рµ РјР°С‚РµСЂРёР°Р»Р° СЂР°СЃРїРѕР»Р°РіР°СЋС‚СЃСЏ РІ РїР°РјСЏС‚Рё СЃ РїСЂРѕРјРµР¶СѓС‚РєР°РјРё,
+        //РїРѕСЌС‚РѕРјСѓ СЃРЅР°С‡Р°Р»Р° РЅСѓР¶РЅРѕ Р·Р°РїСЂРѕСЃРёС‚СЊ СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР° СЃ РїРѕРјРѕС‰СЊСЋ С„СѓРЅРєС†РёРё glGetActiveUniformBlockiv
 
         GLuint materialBlockIndex = glGetUniformBlockIndex(_shader->id(), "MaterialInfo");
 
@@ -168,12 +168,12 @@ public:
         glBufferData(GL_UNIFORM_BUFFER, materialBlockSize, nullptr, GL_STATIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        //Для материала пока не назначаем точку привязки, т.к. материалов будет несколько, и будем их менять
+        //Р”Р»СЏ РјР°С‚РµСЂРёР°Р»Р° РїРѕРєР° РЅРµ РЅР°Р·РЅР°С‡Р°РµРј С‚РѕС‡РєСѓ РїСЂРёРІСЏР·РєРё, С‚.Рє. РјР°С‚РµСЂРёР°Р»РѕРІ Р±СѓРґРµС‚ РЅРµСЃРєРѕР»СЊРєРѕ, Рё Р±СѓРґРµРј РёС… РјРµРЅСЏС‚СЊ
 
-        //Пусть свойства материала будут статичными. Тогда можно заполнить буфер данными прямо здесь
-        //Для этого нужно получить сдвиги переменных внутри буфера
+        //РџСѓСЃС‚СЊ СЃРІРѕР№СЃС‚РІР° РјР°С‚РµСЂРёР°Р»Р° Р±СѓРґСѓС‚ СЃС‚Р°С‚РёС‡РЅС‹РјРё. РўРѕРіРґР° РјРѕР¶РЅРѕ Р·Р°РїРѕР»РЅРёС‚СЊ Р±СѓС„РµСЂ РґР°РЅРЅС‹РјРё РїСЂСЏРјРѕ Р·РґРµСЃСЊ
+        //Р”Р»СЏ СЌС‚РѕРіРѕ РЅСѓР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ СЃРґРІРёРіРё РїРµСЂРµРјРµРЅРЅС‹С… РІРЅСѓС‚СЂРё Р±СѓС„РµСЂР°
 
-        //Имена переменных материала
+        //РРјРµРЅР° РїРµСЂРµРјРµРЅРЅС‹С… РјР°С‚РµСЂРёР°Р»Р°
         const char* names[4] =
         {
             "MaterialInfo.Ka",
@@ -185,43 +185,43 @@ public:
         GLuint index[4];
         GLint offset[4];
 
-        //Запрашиваем индексы 4х юниформ-переменных
+        //Р—Р°РїСЂР°С€РёРІР°РµРј РёРЅРґРµРєСЃС‹ 4С… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         glGetUniformIndices(_shader->id(), 4, names, index);
 
-        //Зная индексы, запрашиваем сдвиги для 4х юниформ-переменных
+        //Р—РЅР°СЏ РёРЅРґРµРєСЃС‹, Р·Р°РїСЂР°С€РёРІР°РµРј СЃРґРІРёРіРё РґР»СЏ 4С… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         glGetActiveUniformsiv(_shader->id(), 4, index, GL_UNIFORM_OFFSET, offset);
 
-        //Создаем буфер в оперативной памяти
+        //РЎРѕР·РґР°РµРј Р±СѓС„РµСЂ РІ РѕРїРµСЂР°С‚РёРІРЅРѕР№ РїР°РјСЏС‚Рё
         std::vector<GLubyte> buffer;
         buffer.resize(materialBlockSize);
 
-        //Заполняем буфер данными, зная сдвиги
+        //Р—Р°РїРѕР»РЅСЏРµРј Р±СѓС„РµСЂ РґР°РЅРЅС‹РјРё, Р·РЅР°СЏ СЃРґРІРёРіРё
         memcpy(buffer.data() + offset[0], &_bunnyMaterial.ambient, sizeof(_bunnyMaterial.ambient));
         memcpy(buffer.data() + offset[1], &_bunnyMaterial.diffuse, sizeof(_bunnyMaterial.diffuse));
         memcpy(buffer.data() + offset[2], &_bunnyMaterial.specular, sizeof(_bunnyMaterial.specular));
         memcpy(buffer.data() + offset[3], &_bunnyMaterial.shininess, sizeof(_bunnyMaterial.shininess));
 
-        //Копируем буфер на видеокарту
+        //РљРѕРїРёСЂСѓРµРј Р±СѓС„РµСЂ РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ
         glBindBuffer(GL_UNIFORM_BUFFER, _bunnyMaterialUbo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, materialBlockSize, buffer.data());
 
-        //Заполняем буфер данными, зная сдвиги
+        //Р—Р°РїРѕР»РЅСЏРµРј Р±СѓС„РµСЂ РґР°РЅРЅС‹РјРё, Р·РЅР°СЏ СЃРґРІРёРіРё
         memcpy(buffer.data() + offset[0], &_cubeMaterial.ambient, sizeof(_cubeMaterial.ambient));
         memcpy(buffer.data() + offset[1], &_cubeMaterial.diffuse, sizeof(_cubeMaterial.diffuse));
         memcpy(buffer.data() + offset[2], &_cubeMaterial.specular, sizeof(_cubeMaterial.specular));
         memcpy(buffer.data() + offset[3], &_cubeMaterial.shininess, sizeof(_cubeMaterial.shininess));
 
-        //Копируем буфер на видеокарту
+        //РљРѕРїРёСЂСѓРµРј Р±СѓС„РµСЂ РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ
         glBindBuffer(GL_UNIFORM_BUFFER, _cubeMaterialUbo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, materialBlockSize, buffer.data());
 
-        //Заполняем буфер данными, зная сдвиги
+        //Р—Р°РїРѕР»РЅСЏРµРј Р±СѓС„РµСЂ РґР°РЅРЅС‹РјРё, Р·РЅР°СЏ СЃРґРІРёРіРё
         memcpy(buffer.data() + offset[0], &_sphereMaterial.ambient, sizeof(_sphereMaterial.ambient));
         memcpy(buffer.data() + offset[1], &_sphereMaterial.diffuse, sizeof(_sphereMaterial.diffuse));
         memcpy(buffer.data() + offset[2], &_sphereMaterial.specular, sizeof(_sphereMaterial.specular));
         memcpy(buffer.data() + offset[3], &_sphereMaterial.shininess, sizeof(_sphereMaterial.shininess));
 
-        //Копируем буфер на видеокарту
+        //РљРѕРїРёСЂСѓРµРј Р±СѓС„РµСЂ РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ
         glBindBuffer(GL_UNIFORM_BUFFER, _sphereMaterialUbo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, materialBlockSize, buffer.data());
     }
@@ -257,23 +257,23 @@ public:
     {
         Application::update();
 
-        //Обновляем содержимое Uniform Buffer Object
+        //РћР±РЅРѕРІР»СЏРµРј СЃРѕРґРµСЂР¶РёРјРѕРµ Uniform Buffer Object
         glBindBuffer(GL_UNIFORM_BUFFER, _matricesUbo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(_camera), &_camera);
 
         //----------------------------------
 
-        //Теперь нужно перезалить обновленные переменные освещения в буфер
-        //Сначала получаем размер буфера
+        //РўРµРїРµСЂСЊ РЅСѓР¶РЅРѕ РїРµСЂРµР·Р°Р»РёС‚СЊ РѕР±РЅРѕРІР»РµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ РѕСЃРІРµС‰РµРЅРёСЏ РІ Р±СѓС„РµСЂ
+        //РЎРЅР°С‡Р°Р»Р° РїРѕР»СѓС‡Р°РµРј СЂР°Р·РјРµСЂ Р±СѓС„РµСЂР°
 
         GLuint lightBlockIndex = glGetUniformBlockIndex(_shader->id(), "LightInfo");
 
         GLint lightBlockSize;
         glGetActiveUniformBlockiv(_shader->id(), lightBlockIndex, GL_UNIFORM_BLOCK_DATA_SIZE, &lightBlockSize);
 
-        //Теперь нужно получить сдвиги переменных внутри буфера
+        //РўРµРїРµСЂСЊ РЅСѓР¶РЅРѕ РїРѕР»СѓС‡РёС‚СЊ СЃРґРІРёРіРё РїРµСЂРµРјРµРЅРЅС‹С… РІРЅСѓС‚СЂРё Р±СѓС„РµСЂР°
 
-        //Имена переменных освещения
+        //РРјРµРЅР° РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІРµС‰РµРЅРёСЏ
         const char* names[7] =
         {
             "LightInfo.pos",
@@ -288,17 +288,17 @@ public:
         GLuint index[7];
         GLint offset[7];
 
-        //Запрашиваем индексы 7х юниформ-переменных
+        //Р—Р°РїСЂР°С€РёРІР°РµРј РёРЅРґРµРєСЃС‹ 7С… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         glGetUniformIndices(_shader->id(), 7, names, index);
 
-        //Зная индексы, запрашиваем сдвиги для 2х юниформ-переменных
+        //Р—РЅР°СЏ РёРЅРґРµРєСЃС‹, Р·Р°РїСЂР°С€РёРІР°РµРј СЃРґРІРёРіРё РґР»СЏ 2С… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         glGetActiveUniformsiv(_shader->id(), 7, index, GL_UNIFORM_OFFSET, offset);
 
-        //Создаем буфер в оперативной памяти
+        //РЎРѕР·РґР°РµРј Р±СѓС„РµСЂ РІ РѕРїРµСЂР°С‚РёРІРЅРѕР№ РїР°РјСЏС‚Рё
         std::vector<GLubyte> buffer;
         buffer.resize(lightBlockSize);
 
-        //Заполняем буфер данными, используя полученные сдвиги
+        //Р—Р°РїРѕР»РЅСЏРµРј Р±СѓС„РµСЂ РґР°РЅРЅС‹РјРё, РёСЃРїРѕР»СЊР·СѓСЏ РїРѕР»СѓС‡РµРЅРЅС‹Рµ СЃРґРІРёРіРё
 
         _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
@@ -311,43 +311,43 @@ public:
         memcpy(buffer.data() + offset[5], &_light.a1, sizeof(_light.a1));
         memcpy(buffer.data() + offset[6], &_light.a2, sizeof(_light.a2));
 
-        //Копируем буфер на видеокарту
+        //РљРѕРїРёСЂСѓРµРј Р±СѓС„РµСЂ РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ
         glBindBuffer(GL_UNIFORM_BUFFER, _lightUbo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, lightBlockSize, buffer.data());
     }
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::vec3 lightPos = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
 
-        //Подключаем шейдер		
+        //РџРѕРґРєР»СЋС‡Р°РµРј С€РµР№РґРµСЂ		
         _shader->use();
 
-        // Загружаем на видеокарту значения юниформ - переменных
+        // Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј - РїРµСЂРµРјРµРЅРЅС‹С…
         unsigned int matricesBlockIndex = glGetUniformBlockIndex(_shader->id(), "Matrices");
-        glUniformBlockBinding(_shader->id(), matricesBlockIndex, 0); //0я точка привязки
+        glUniformBlockBinding(_shader->id(), matricesBlockIndex, 0); //0СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
         unsigned int lightBlockIndex = glGetUniformBlockIndex(_shader->id(), "LightInfo");
-        glUniformBlockBinding(_shader->id(), lightBlockIndex, 1); //1я точка привязки
+        glUniformBlockBinding(_shader->id(), lightBlockIndex, 1); //1СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
         unsigned int materialBlockIndex = glGetUniformBlockIndex(_shader->id(), "MaterialInfo");
-        glUniformBlockBinding(_shader->id(), materialBlockIndex, 2); //2я точка привязки
+        glUniformBlockBinding(_shader->id(), materialBlockIndex, 2); //2СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
 
-            glBindBufferBase(GL_UNIFORM_BUFFER, 2, _cubeMaterialUbo); //2я точка привязки
+            glBindBufferBase(GL_UNIFORM_BUFFER, 2, _cubeMaterialUbo); //2СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
             _cube->draw();
         }
@@ -356,7 +356,7 @@ public:
             _shader->setMat4Uniform("modelMatrix", _sphere->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _sphere->modelMatrix()))));
 
-            glBindBufferBase(GL_UNIFORM_BUFFER, 2, _sphereMaterialUbo); //2я точка привязки
+            glBindBufferBase(GL_UNIFORM_BUFFER, 2, _sphereMaterialUbo); //2СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
             _sphere->draw();
         }
@@ -365,12 +365,12 @@ public:
             _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _bunny->modelMatrix()))));
 
-            glBindBufferBase(GL_UNIFORM_BUFFER, 2, _bunnyMaterialUbo); //2я точка привязки
+            glBindBufferBase(GL_UNIFORM_BUFFER, 2, _bunnyMaterialUbo); //2СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
             _bunny->draw();
         }
 
-        //Рисуем маркер для источника света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°		
         {
             _markerShader->use();
             _markerShader->setMat4Uniform("mvpMatrix", _camera.projMatrix * _camera.viewMatrix * glm::translate(glm::mat4(1.0f), lightPos));

@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
-Несколько примеров шейдеров
+РќРµСЃРєРѕР»СЊРєРѕ РїСЂРёРјРµСЂРѕРІ С€РµР№РґРµСЂРѕРІ
 */
 class SampleApplication : public Application
 {
@@ -29,41 +29,41 @@ public:
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _shader = std::make_shared<ShaderProgram>("shaders2/shaderUBO.vert", "shaders2/shader.frag");
 
         //=========================================================
-        //Инициализация Uniform Buffer Object
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Uniform Buffer Object
 
         glGenBuffers(1, &_ubo);
         glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
         glBufferData(GL_UNIFORM_BUFFER, sizeof(_camera), &_camera, GL_DYNAMIC_DRAW);
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        glBindBufferBase(GL_UNIFORM_BUFFER, 0, _ubo); //0я точка привязки
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, _ubo); //0СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
     }
 
     void update() override
     {
         Application::update();
 
-        //Обновляем содержимое Uniform Buffer Object
+        //РћР±РЅРѕРІР»СЏРµРј СЃРѕРґРµСЂР¶РёРјРѕРµ Uniform Buffer Object
 
 #if 0
-        //Вариант с glMapBuffer
+        //Р’Р°СЂРёР°РЅС‚ СЃ glMapBuffer
         glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
         GLvoid* p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY);
         memcpy(p, &_camera, sizeof(_camera));
         glUnmapBuffer(GL_UNIFORM_BUFFER);
 #elif 0
-        //Вариант с glBufferSubData
+        //Р’Р°СЂРёР°РЅС‚ СЃ glBufferSubData
         glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
         glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(_camera), &_camera);
 #else
-        //Вариант для буферов, у которых layout отличается от std140
+        //Р’Р°СЂРёР°РЅС‚ РґР»СЏ Р±СѓС„РµСЂРѕРІ, Сѓ РєРѕС‚РѕСЂС‹С… layout РѕС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ std140
 
-        //Имена юниформ-переменных
+        //РРјРµРЅР° СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         const char* names[2] =
         {
             "viewMatrix",
@@ -73,13 +73,13 @@ public:
         GLuint index[2];
         GLint offset[2];
 
-        //Запрашиваем индексы 2х юниформ-переменных
+        //Р—Р°РїСЂР°С€РёРІР°РµРј РёРЅРґРµРєСЃС‹ 2С… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         glGetUniformIndices(_shader->id(), 2, names, index);
 
-        //Зная индексы, запрашиваем сдвиги для 2х юниформ-переменных
+        //Р—РЅР°СЏ РёРЅРґРµРєСЃС‹, Р·Р°РїСЂР°С€РёРІР°РµРј СЃРґРІРёРіРё РґР»СЏ 2С… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         glGetActiveUniformsiv(_shader->id(), 2, index, GL_UNIFORM_OFFSET, offset);
 
-        //Устанавливаем значения 2х юниформ-перменных по отдельности
+        //РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·РЅР°С‡РµРЅРёСЏ 2С… СЋРЅРёС„РѕСЂРј-РїРµСЂРјРµРЅРЅС‹С… РїРѕ РѕС‚РґРµР»СЊРЅРѕСЃС‚Рё
         glBindBuffer(GL_UNIFORM_BUFFER, _ubo);
         glBufferSubData(GL_UNIFORM_BUFFER, offset[0], sizeof(_camera.viewMatrix), &_camera.viewMatrix);
         glBufferSubData(GL_UNIFORM_BUFFER, offset[1], sizeof(_camera.projMatrix), &_camera.projMatrix);
@@ -90,23 +90,23 @@ public:
     {
         Application::draw();
 
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //Подключаем шейдер
+        //РџРѕРґРєР»СЋС‡Р°РµРј С€РµР№РґРµСЂ
         _shader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         unsigned int blockIndex = glGetUniformBlockIndex(_shader->id(), "Matrices");
-        glUniformBlockBinding(_shader->id(), blockIndex, 0); //0я точка привязки
+        glUniformBlockBinding(_shader->id(), blockIndex, 0); //0СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         _cube->draw();
 

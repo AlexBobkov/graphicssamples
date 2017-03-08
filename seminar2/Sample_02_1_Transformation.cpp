@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
-Куб и кролик. Управление виртуальной камерой. Вращение кролика.
+РљСѓР± Рё РєСЂРѕР»РёРє. РЈРїСЂР°РІР»РµРЅРёРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂРѕР№. Р’СЂР°С‰РµРЅРёРµ РєСЂРѕР»РёРєР°.
 */
 class SampleApplication : public Application
 {
@@ -22,15 +22,15 @@ public:
 
         _cameraMover = std::make_shared<FreeCameraMover>();
 
-        //Создаем меш с кубом
+        //РЎРѕР·РґР°РµРј РјРµС€ СЃ РєСѓР±РѕРј
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
 
-        //Создаем меш из файла
+        //РЎРѕР·РґР°РµРј РјРµС€ РёР· С„Р°Р№Р»Р°
         _bunny = loadFromFile("models/bunny.obj");
         _bunny->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 1.0f, 0.0f)));
 
-        //Создаем шейдерную программу        
+        //РЎРѕР·РґР°РµРј С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ        
         _shader = std::make_shared<ShaderProgram>("shaders2/shaderNormal.vert", "shaders2/shader.frag");
     }
 
@@ -38,7 +38,7 @@ public:
     {
         Application::update();
 
-        //Вращаем кролика
+        //Р’СЂР°С‰Р°РµРј РєСЂРѕР»РёРєР°
         float angle = static_cast<float>(glfwGetTime());
 
         glm::mat4 mat;
@@ -59,18 +59,18 @@ public:
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //Устанавливаем шейдер
+        //РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С€РµР№РґРµСЂ
         _shader->use();
 
-        //Устанавливаем общие юниформ-переменные
+        //РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РѕР±С‰РёРµ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹Рµ
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-        //Рисуем первый меш
+        //Р РёСЃСѓРµРј РїРµСЂРІС‹Р№ РјРµС€
         _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
         _cube->draw();
 
-        //Рисуем второй меш
+        //Р РёСЃСѓРµРј РІС‚РѕСЂРѕР№ РјРµС€
         _shader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
         _bunny->draw();
     }

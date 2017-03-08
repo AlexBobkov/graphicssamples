@@ -8,7 +8,7 @@
 
 struct LightInfo
 {
-    glm::vec3 position; //Будем здесь хранить координаты в мировой системе координат, а при копировании в юниформ-переменную конвертировать в систему виртуальной камеры
+    glm::vec3 position; //Р‘СѓРґРµРј Р·РґРµСЃСЊ С…СЂР°РЅРёС‚СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ РІ РјРёСЂРѕРІРѕР№ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚, Р° РїСЂРё РєРѕРїРёСЂРѕРІР°РЅРёРё РІ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅСѓСЋ РєРѕРЅРІРµСЂС‚РёСЂРѕРІР°С‚СЊ РІ СЃРёСЃС‚РµРјСѓ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
@@ -25,7 +25,7 @@ struct MaterialInfo
 constexpr unsigned int LightNum = 3;
 
 /**
-Несколько источников света
+РќРµСЃРєРѕР»СЊРєРѕ РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
 */
 class SampleApplication : public Application
 {
@@ -34,12 +34,12 @@ public:
     MeshPtr _sphere;
     MeshPtr _bunny;
 
-    MeshPtr _marker; //Маркер для источника света
+    MeshPtr _marker; //РњР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
     ShaderProgramPtr _shader;
     ShaderProgramPtr _markerShader;
 
-    //Переменные для управления положением одного источника света
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
     float _lr = 3.0;
     float _phi = 0.0;
     float _theta = glm::pi<float>() * 0.25f;
@@ -52,7 +52,7 @@ public:
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -66,13 +66,13 @@ public:
         _marker = makeSphere(0.1f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _shader = std::make_shared<ShaderProgram>("shaders3/manyLights.vert", "shaders3/manyLights.frag");
         _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
         _light[0].position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
         _light[0].ambient = glm::vec3(0.2, 0.2, 0.2);
         _light[0].diffuse = glm::vec3(0.8, 0.8, 0.8);
@@ -88,7 +88,7 @@ public:
         _light[2].diffuse = glm::vec3(0.0, 0.8, 0.0);
         _light[2].specular = glm::vec3(1.0, 1.0, 1.0);
 
-        //Инициализация материала кролика
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РјР°С‚РµСЂРёР°Р»Р° РєСЂРѕР»РёРєР°
         _material.ambient = glm::vec3(1.0, 1.0, 0.0);
         _material.diffuse = glm::vec3(1.0, 1.0, 0.0);
         _material.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -128,19 +128,19 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //Подключаем шейдер		
+        //РџРѕРґРєР»СЋС‡Р°РµРј С€РµР№РґРµСЂ		
         _shader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         _shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
@@ -153,13 +153,13 @@ public:
 
             glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light[i].position, 1.0));
 
-            _shader->setVec3Uniform(str.str() + ".pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+            _shader->setVec3Uniform(str.str() + ".pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
             _shader->setVec3Uniform(str.str() + ".La", _light[i].ambient);
             _shader->setVec3Uniform(str.str() + ".Ld", _light[i].diffuse);
             _shader->setVec3Uniform(str.str() + ".Ls", _light[i].specular);
         }
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             _shader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
             _shader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
@@ -196,7 +196,7 @@ public:
             _bunny->draw();
         }
 
-        //Рисуем маркеры для всех источников света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂС‹ РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°		
         {
             _markerShader->use();
 
