@@ -21,6 +21,7 @@ macro(MAKE_SAMPLE TRGTNAME)
     
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_compile_options(${TRGTNAME} PRIVATE -std=c++11)
+        target_link_libraries(${TRGTNAME} "-framework CoreFoundation")
     endif()
 
     if(CMAKE_COMPILER_IS_GNUCC)
