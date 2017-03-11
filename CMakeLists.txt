@@ -8,8 +8,6 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMake Targets")
 set(CMAKE_DEBUG_POSTFIX "d")
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-option(USE_CORE_PROFILE "Enable to use core profile" ON)
-
 include(MacroUtils)
 
 option(USE_AUTO_DEPENDENCIES "Enable to use auto built dependencies" ON)

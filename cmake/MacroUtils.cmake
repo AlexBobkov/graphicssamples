@@ -28,9 +28,5 @@ macro(MAKE_SAMPLE TRGTNAME)
         target_compile_options(${TRGTNAME} PRIVATE -std=c++11)
     endif()
 
-    if(USE_CORE_PROFILE)
-        target_compile_definitions(${TRGTNAME} PRIVATE USE_CORE_PROFILE)
-    endif(USE_CORE_PROFILE)
-
     install(TARGETS ${TRGTNAME} RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX})
 endmacro(MAKE_SAMPLE TRGTNAME)

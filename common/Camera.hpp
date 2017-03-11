@@ -93,7 +93,6 @@ public:
     void update(GLFWwindow* window, double dt) override;
 
 protected:
-    //Положение виртуальный камеры задается в сферических координат
     glm::vec3 _pos;
     glm::quat _rot;
 
