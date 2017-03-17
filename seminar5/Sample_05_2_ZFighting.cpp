@@ -9,23 +9,23 @@
 #include <vector>
 
 /**
-Пример z-fighting
+РџСЂРёРјРµСЂ z-fighting
 */
 class SampleApplication : public Application
 {
 public:
     MeshPtr _plane;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //РњРµС€ - РјР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _commonShader;
     ShaderProgramPtr _markerShader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0f;
+    float _phi = 2.65f;
+    float _theta = 0.48f;
 
     LightInfo _light;
 
@@ -34,52 +34,41 @@ public:
 
     GLuint _sampler;
 
-    bool enableDepthTest;
-    bool enablePolygonOffset;
-    bool addZOffset;
+    bool enableDepthTest = true;
+    bool enablePolygonOffset = false;
+    bool addZOffset = false;
 
     void makeScene() override
     {
         Application::makeScene();
 
-        enableDepthTest = true;
-        enablePolygonOffset = false;
-        addZOffset = false;
-
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _plane = makeGroundPlane(1.0f, 1.0f);
 
         _marker = makeSphere(0.1f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _commonShader = std::make_shared<ShaderProgram>("shaders/common.vert", "shaders/common.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 2.65f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _worldTex = loadTexture("images/earth_global.jpg");
         _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -137,36 +126,36 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //====== РИСУЕМ ОСНОВНЫЕ ОБЪЕКТЫ СЦЕНЫ ======
+        //====== Р РРЎРЈР•Рњ РћРЎРќРћР’РќР«Р• РћР‘РЄР•РљРўР« РЎР¦Р•РќР« ======
         _commonShader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         _commonShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _commonShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         _commonShader->setVec3Uniform("light.La", _light.ambient);
         _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
         _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _worldTex->bind();
         _commonShader->setIntUniform("diffuseTex", 0);
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             glm::mat4 modelMatrix = _plane->modelMatrix();
 
@@ -176,12 +165,12 @@ public:
             _plane->draw();
         }
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _brickTex->bind();
         _commonShader->setIntUniform("diffuseTex", 0);
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             float zOffset = addZOffset ? 0.01f : 0.0f;
 
@@ -213,7 +202,7 @@ public:
             }
         }
 
-        //Рисуем маркеры для всех источников света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂС‹ РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°		
         {
             _markerShader->use();
 
@@ -222,7 +211,7 @@ public:
             _marker->draw();
         }
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }

@@ -28,7 +28,7 @@ public:
 
     //Переменные для управления положением одного источника света
     float _lr = 10.0;
-    float _phi = 2.65f;
+    float _phi = 4.0f;
     float _theta = 0.48f;
 
     LightInfo _light;
@@ -62,14 +62,9 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
-
-        _skyboxShader = std::make_shared<ShaderProgram>();
-        _skyboxShader->createProgram("shaders/skybox.vert", "shaders/skybox.frag");
+        _commonShader = std::make_shared<ShaderProgram>("shaders/common.vert", "shaders/common.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
+        _skyboxShader = std::make_shared<ShaderProgram>("shaders/skybox.vert", "shaders/skybox.frag");
 
         //=========================================================
         //Инициализация значений переменных освщения
@@ -143,8 +138,8 @@ public:
             _skyboxShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
             _skyboxShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-            //Для преобразования координат в текстурные координаты нужна матрица для поворота осей YZ на 90 градусов и отражения оси Y.
-            glm::mat3 textureMatrix = glm::mat3(glm::scale(glm::rotate(glm::mat4(), -glm::pi<float>() * 0.5f, glm::vec3(1.0f, 0.0f, 0.0f)), glm::vec3(1.0f, -1.0f, 1.0f)));
+            //Для преобразования координат в текстурные координаты нужна специальная матрица
+            glm::mat3 textureMatrix = glm::mat3(0.0f, 0.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
             _skyboxShader->setMat3Uniform("textureMatrix", textureMatrix);
 
             glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0            

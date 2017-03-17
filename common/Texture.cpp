@@ -8,7 +8,7 @@
 namespace
 {
     /**
-    Библиотека SOIL читает текстуры перевернутыми
+    Р‘РёР±Р»РёРѕС‚РµРєР° SOIL С‡РёС‚Р°РµС‚ С‚РµРєСЃС‚СѓСЂС‹ РїРµСЂРµРІРµСЂРЅСѓС‚С‹РјРё
     */
     void invertY(unsigned char* image, int width, int height, int channels)
     {
@@ -77,7 +77,7 @@ TexturePtr loadTextureDDS(const std::string& filename)
 
 namespace
 {
-    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
+    //РЈРґРѕР±РЅР°СЏ С„СѓРЅРєС†РёСЏ РґР»СЏ РІС‹С‡РёСЃР»РµРЅРёСЏ С†РІРµС‚Р° РёР· Р»РёРЅРµР№РЅРѕР№ РїР°Р»РёС‚СЂС‹ РѕС‚ СЃРёРЅРµРіРѕ РґРѕ РєСЂР°СЃРЅРѕРіРѕ
     glm::vec3 getColorFromLinearPalette(float value)
     {
         if (value < 0.25f)
