@@ -9,7 +9,7 @@
 #include <vector>
 
 /**
-Пример с проективной текстурой
+РџСЂРёРјРµСЂ СЃ РїСЂРѕРµРєС‚РёРІРЅРѕР№ С‚РµРєСЃС‚СѓСЂРѕР№
 */
 class SampleApplication : public Application
 {
@@ -19,16 +19,16 @@ public:
     MeshPtr _bunny;
     MeshPtr _ground;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //РњРµС€ - РјР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _markerShader;
     ShaderProgramPtr _projectorShader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0f;
+    float _phi = 2.65f;
+    float _theta = 0.48f;
 
     LightInfo _light;
 
@@ -38,18 +38,18 @@ public:
     GLuint _sampler;
     GLuint _projSampler;
 
-    float _projR;
-    float _projPhi;
-    float _projTheta;
+    float _projR = 4.0f;
+    float _projPhi = 0.0f;
+    float _projTheta = 1.0f;
 
-    CameraInfo _projCamera; //Для управления проектором можно использовать те же настройки, что и для виртуальной камеры
+    CameraInfo _projCamera; //Р”Р»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїСЂРѕРµРєС‚РѕСЂРѕРј РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚Рµ Р¶Рµ РЅР°СЃС‚СЂРѕР№РєРё, С‡С‚Рѕ Рё РґР»СЏ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
 
     void makeScene() override
     {
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -65,32 +65,25 @@ public:
         _marker = makeSphere(0.1f);
 
         //=========================================================
-        //Инициализация шейдеров
-        
-        _projectorShader = std::make_shared<ShaderProgram>();
-        _projectorShader->createProgram("shaders7/projector.vert", "shaders7/projector.frag");
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
-                
+        _projectorShader = std::make_shared<ShaderProgram>("shaders5/projector.vert", "shaders5/projector.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
+
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 2.65f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _worldTex = loadTexture("images/earth_global.jpg");
         _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -104,12 +97,7 @@ public:
         glSamplerParameteri(_projSampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
         //=========================================================
-        //Инициализация проектора
-
-        _projR = 4.0f;
-        _projPhi = 0.0;
-        _projTheta = 1.0;
-
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїСЂРѕРµРєС‚РѕСЂР°
         glm::vec3 projPos = glm::vec3(glm::cos(_projPhi) * glm::cos(_projTheta), glm::sin(_projPhi) * glm::cos(_projTheta), glm::sin(_projTheta)) * _projR;
 
         _projCamera.viewMatrix = glm::lookAt(projPos, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -147,26 +135,26 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //====== РИСУЕМ ОСНОВНЫЕ ОБЪЕКТЫ СЦЕНЫ ======
+        //====== Р РРЎРЈР•Рњ РћРЎРќРћР’РќР«Р• РћР‘РЄР•РљРўР« РЎР¦Р•РќР« ======
         _projectorShader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         _projectorShader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         _projectorShader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        _projectorShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        _projectorShader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         _projectorShader->setVec3Uniform("light.La", _light.ambient);
         _projectorShader->setVec3Uniform("light.Ld", _light.diffuse);
         _projectorShader->setVec3Uniform("light.Ls", _light.specular);
@@ -184,17 +172,17 @@ public:
             _projectorShader->setMat4Uniform("projScaleBiasMatrix", projScaleBiasMatrix);
         }
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _brickTex->bind();
         _projectorShader->setIntUniform("diffuseTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
+        glActiveTexture(GL_TEXTURE1);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 1        
         glBindSampler(1, _projSampler);
         _worldTex->bind();
         _projectorShader->setIntUniform("projTex", 1);
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             _projectorShader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
             _projectorShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(_camera.viewMatrix * _cube->modelMatrix()))));
@@ -223,7 +211,7 @@ public:
             _ground->draw();
         }
 
-        //Рисуем маркеры для всех источников света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂС‹ РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°		
         {
             _markerShader->use();
 
@@ -232,7 +220,7 @@ public:
             _marker->draw();
         }
 
-        //Рисуем маркер для проектора
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂ РґР»СЏ РїСЂРѕРµРєС‚РѕСЂР°
         {
             _markerShader->use();
 
@@ -243,7 +231,7 @@ public:
             _marker->draw();
         }
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }

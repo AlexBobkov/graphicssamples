@@ -9,7 +9,7 @@
 #include <vector>
 
 /**
-Пример с рендерингом во множество буферов цвета одновременно
+РџСЂРёРјРµСЂ СЃ СЂРµРЅРґРµСЂРёРЅРіРѕРј РІ С‚РµРєСЃС‚СѓСЂСѓ
 */
 class SampleApplication : public Application
 {
@@ -21,86 +21,64 @@ public:
 
     MeshPtr _quad;
 
-    MeshPtr _marker; //Меш - маркер для источника света
+    MeshPtr _marker; //РњРµС€ - РјР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _commonShader;
     ShaderProgramPtr _markerShader;
     ShaderProgramPtr _quadShader;
-    ShaderProgramPtr _mrtShader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0f;
+    float _phi = 0.0f;
+    float _theta = 0.48f;
 
     LightInfo _light;
 
     TexturePtr _brickTex;
+    GLuint _renderTexId;
 
     GLuint _sampler;
 
     GLuint _framebufferId;
-    unsigned int _fbWidth;
-    unsigned int _fbHeight;
+    unsigned int _fbWidth = 1024;
+    unsigned int _fbHeight = 1024;
 
-    GLuint _renderAmbientTexId;
-    GLuint _renderDiffuseTexId;
-    GLuint _renderSpecularTexId;
+    CameraInfo _fbCamera;
+
+    bool _showDebugQuad = false;
+    bool _blitFramebuffer = false;
 
     void initFramebuffer()
     {
-        _fbWidth = 1024;
-        _fbHeight = 1024;
-
-        //Создаем фреймбуфер
+        //РЎРѕР·РґР°РµРј С„СЂРµР№РјР±СѓС„РµСЂ
         glGenFramebuffers(1, &_framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
         //----------------------------
 
-        //Создаем текстуру, куда будет осуществляться рендеринг	
-        glGenTextures(1, &_renderAmbientTexId);
-        glBindTexture(GL_TEXTURE_2D, _renderAmbientTexId);
-
+        //РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂСѓ, РєСѓРґР° Р±СѓРґРµС‚ РѕСЃСѓС‰РµСЃС‚РІР»СЏС‚СЊСЃСЏ СЂРµРЅРґРµСЂРёРЅРі	
+        glGenTextures(1, &_renderTexId);
+        glBindTexture(GL_TEXTURE_2D, _renderTexId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _renderAmbientTexId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, _renderTexId, 0);
 
         //----------------------------
 
-        //Создаем текстуру, куда будет осуществляться рендеринг	
-        glGenTextures(1, &_renderDiffuseTexId);
-        glBindTexture(GL_TEXTURE_2D, _renderDiffuseTexId);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, _renderDiffuseTexId, 0);
-
-        //----------------------------
-
-        //Создаем текстуру, куда будет осуществляться рендеринг	
-        glGenTextures(1, &_renderSpecularTexId);
-        glBindTexture(GL_TEXTURE_2D, _renderSpecularTexId);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, _renderSpecularTexId, 0);
-
-        //----------------------------
-
-        //Создаем буфер глубины для фреймбуфера
+        //РЎРѕР·РґР°РµРј Р±СѓС„РµСЂ РіР»СѓР±РёРЅС‹ РґР»СЏ С„СЂРµР№РјР±СѓС„РµСЂР°
         GLuint depthRenderBuffer;
         glGenRenderbuffers(1, &depthRenderBuffer);
         glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _fbWidth, _fbHeight);
+
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
 
         //----------------------------
 
-        //Указываем куда именно мы будем рендерить		
-        GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-        glDrawBuffers(3, buffers);
+        //РЈРєР°Р·С‹РІР°РµРј РєСѓРґР° РёРјРµРЅРЅРѕ РјС‹ Р±СѓРґРµРј СЂРµРЅРґРµСЂРёС‚СЊ		
+        GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, buffers);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         {
@@ -116,7 +94,7 @@ public:
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -134,37 +112,25 @@ public:
         _quad = makeScreenAlignedQuad();
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _commonShader = std::make_shared<ShaderProgram>();
-        _commonShader->createProgram("shaders/common.vert", "shaders/common.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
-
-        _quadShader = std::make_shared<ShaderProgram>();
-        _quadShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
-
-        _mrtShader = std::make_shared<ShaderProgram>();
-        _mrtShader->createProgram("shaders7/mrt.vert", "shaders7/mrt.frag");
+        _commonShader = std::make_shared<ShaderProgram>("shaders/common.vert", "shaders/common.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
+        _quadShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders/quadColor.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -172,9 +138,12 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         //=========================================================
-        //Инициализация фреймбуфера для рендеринга в текстуру
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР±СѓС„РµСЂР° Рё 2Р№ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹ - РґР»СЏ СЂРµРЅРґРµСЂРёРЅРіР° РІ С‚РµРєСЃС‚СѓСЂСѓ
 
         initFramebuffer();
+
+        _fbCamera.viewMatrix = glm::lookAt(glm::vec3(5.0f, 0.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f));
+        _fbCamera.projMatrix = glm::perspective(glm::radians(45.0f), 1.0f, 0.1f, 100.f);
     }
 
     void updateGUI() override
@@ -196,13 +165,16 @@ public:
                 ImGui::SliderFloat("phi", &_phi, 0.0f, 2.0f * glm::pi<float>());
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
+
+            ImGui::Checkbox("Show debug quad", &_showDebugQuad);
+            ImGui::Checkbox("Blit framebuffer", &_blitFramebuffer);
         }
         ImGui::End();
     }
 
     void draw() override
     {
-        drawToFramebuffer(_camera);
+        drawToFramebuffer(_fbCamera);
         drawScene(_camera);
     }
 
@@ -212,97 +184,79 @@ public:
 
         glViewport(0, 0, _fbWidth, _fbHeight);
 
-        glClearColor(0, 0, 0, 1);
+        glClearColor(1, 1, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        _mrtShader->use();
+        _commonShader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
-        _mrtShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
-        _mrtShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
+        _commonShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
+        _commonShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        _mrtShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
-        _mrtShader->setVec3Uniform("light.La", _light.ambient);
-        _mrtShader->setVec3Uniform("light.Ld", _light.diffuse);
-        _mrtShader->setVec3Uniform("light.Ls", _light.specular);
+        _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
+        _commonShader->setVec3Uniform("light.La", _light.ambient);
+        _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
+        _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
-        _mrtShader->setIntUniform("diffuseTex", 0);
+        _brickTex->bind();
+        _commonShader->setIntUniform("diffuseTex", 0);
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
-            _mrtShader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
-            _mrtShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
+            glm::mat4 modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.5f * glm::sin(glfwGetTime())));
 
-            _cube->draw();
-        }
-
-        {
-            _mrtShader->setMat4Uniform("modelMatrix", _sphere->modelMatrix());
-            _mrtShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _sphere->modelMatrix()))));
-
-            _sphere->draw();
-        }
-
-        {
-            _mrtShader->setMat4Uniform("modelMatrix", _bunny->modelMatrix());
-            _mrtShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _bunny->modelMatrix()))));
+            _commonShader->setMat4Uniform("modelMatrix", modelMatrix);
+            _commonShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * modelMatrix))));
 
             _bunny->draw();
         }
 
-        {
-            _mrtShader->setMat4Uniform("modelMatrix", _ground->modelMatrix());
-            _mrtShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _ground->modelMatrix()))));
-
-            _ground->draw();
-        }
-
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
 
-        //Отсоединяем фреймбуфер, чтобы теперь рендерить на экран
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј С„СЂРµР№РјР±СѓС„РµСЂ, С‡С‚РѕР±С‹ С‚РµРїРµСЂСЊ СЂРµРЅРґРµСЂРёС‚СЊ РЅР° СЌРєСЂР°РЅ
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void drawScene(const CameraInfo& camera)
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //====== РИСУЕМ ОСНОВНЫЕ ОБЪЕКТЫ СЦЕНЫ ======
+        //====== Р РРЎРЈР•Рњ РћРЎРќРћР’РќР«Р• РћР‘РЄР•РљРўР« РЎР¦Р•РќР« ======
         _commonShader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         _commonShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         _commonShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        _commonShader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         _commonShader->setVec3Uniform("light.La", _light.ambient);
         _commonShader->setVec3Uniform("light.Ld", _light.diffuse);
         _commonShader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        _brickTex->bind();
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
+        glBindTexture(GL_TEXTURE_2D, _renderTexId);
         _commonShader->setIntUniform("diffuseTex", 0);
 
-        //Загружаем на видеокарту матрицы модели мешей и запускаем отрисовку
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ РјР°С‚СЂРёС†С‹ РјРѕРґРµР»Рё РјРµС€РµР№ Рё Р·Р°РїСѓСЃРєР°РµРј РѕС‚СЂРёСЃРѕРІРєСѓ
         {
             _commonShader->setMat4Uniform("modelMatrix", _cube->modelMatrix());
             _commonShader->setMat3Uniform("normalToCameraMatrix", glm::transpose(glm::inverse(glm::mat3(camera.viewMatrix * _cube->modelMatrix()))));
@@ -331,7 +285,7 @@ public:
             _ground->draw();
         }
 
-        //Рисуем маркеры для всех источников света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂС‹ РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°		
         {
             _markerShader->use();
 
@@ -340,49 +294,28 @@ public:
             _marker->draw();
         }
 
-        //Выводим текстуру в прямоугольник на экране
+        if (_blitFramebuffer)
+        {
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferId);
+            glBlitFramebuffer(0, 0, _fbWidth, _fbHeight, width - 500, 0, width, 500, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        }
+
+        if (_showDebugQuad)
         {
             _quadShader->use();
 
-            glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-            glBindTexture(GL_TEXTURE_2D, _renderAmbientTexId);
+            glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0
+            glBindTexture(GL_TEXTURE_2D, _renderTexId);
             glBindSampler(0, _sampler);
             _quadShader->setIntUniform("tex", 0);
 
-            glViewport(0, 0, 300, 300);
+            glViewport(0, 0, 500, 500);
 
             _quad->draw();
         }
 
-        //Выводим текстуру в прямоугольник на экране
-        {
-            _quadShader->use();
-
-            glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-            glBindTexture(GL_TEXTURE_2D, _renderDiffuseTexId);
-            glBindSampler(0, _sampler);
-            _quadShader->setIntUniform("tex", 0);
-
-            glViewport(300, 0, 300, 300);
-
-            _quad->draw();
-        }
-
-        //Выводим текстуру в прямоугольник на экране
-        {
-            _quadShader->use();
-
-            glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-            glBindTexture(GL_TEXTURE_2D, _renderSpecularTexId);
-            glBindSampler(0, _sampler);
-            _quadShader->setIntUniform("tex", 0);
-
-            glViewport(600, 0, 300, 300);
-
-            _quad->draw();
-        }
-
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }

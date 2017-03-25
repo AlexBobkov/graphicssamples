@@ -15,13 +15,6 @@ set(HEADER_FILES
 )
 
 set(SHADER_FILES
-	shaders8/toshadow.vert	
-	shaders8/toshadow.frag
-	
-	shaders8/shadow.vert
-	shaders8/shadow.frag
-	shaders8/shadow2.frag
-	
 	shaders8/togbuffer.vert	
 	shaders8/togbuffer.frag
 	
@@ -33,7 +26,6 @@ source_group("Shaders" FILES
 	${SHADER_FILES}	
 )
 
-MAKE_SAMPLE(Sample_08_1_Shadows)
 MAKE_SAMPLE(Sample_08_2_Deferred)
 MAKE_SAMPLE(Sample_08_3_Forward)
 

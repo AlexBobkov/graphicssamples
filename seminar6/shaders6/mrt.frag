@@ -24,12 +24,11 @@ const float shininess = 128.0;
 
 void main()
 {
-	//vec3 texColor = texture(diffuseTex, texCoord).rgb;
-	vec3 texColor = vec3(1.0, 1.0, 1.0);
+	vec3 baseColor = vec3(1.0, 1.0, 1.0);
 	
 	//=================================
 	
-	ambientColor = vec4(texColor * light.La, 1.0);
+	ambientColor = vec4(baseColor * light.La, 1.0);
 
 	//=================================	
 
@@ -40,7 +39,7 @@ void main()
 
 	float NdotL = max(dot(normal, lightDirCamSpace.xyz), 0.0); //скалярное произведение (косинус)
 
-	diffuseColor = vec4(texColor * light.Ld * NdotL, 1.0);
+	diffuseColor = vec4(baseColor * light.Ld * NdotL, 1.0);
 	
 	//=================================
 
