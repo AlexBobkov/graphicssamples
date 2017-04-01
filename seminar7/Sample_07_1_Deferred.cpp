@@ -15,7 +15,7 @@ namespace
         return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
+    //РЈРґРѕР±РЅР°СЏ С„СѓРЅРєС†РёСЏ РґР»СЏ РІС‹С‡РёСЃР»РµРЅРёСЏ С†РІРµС‚Р° РёР· Р»РёРЅРµР№РЅРѕР№ РїР°Р»РёС‚СЂС‹ РѕС‚ СЃРёРЅРµРіРѕ РґРѕ РєСЂР°СЃРЅРѕРіРѕ
     glm::vec3 getColorFromLinearPalette(float value)
     {
         if (value < 0.25f)
@@ -38,7 +38,7 @@ namespace
 }
 
 /**
-Пример с отложенным рендерингом
+РџСЂРёРјРµСЂ СЃ РѕС‚Р»РѕР¶РµРЅРЅС‹Рј СЂРµРЅРґРµСЂРёРЅРіРѕРј
 */
 class SampleApplication : public Application
 {
@@ -50,9 +50,9 @@ public:
 
     MeshPtr _quad;
 
-    MeshPtr _lightSphere; //Маркер для источника света
+    MeshPtr _lightSphere; //РњР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _quadDepthShader;
     ShaderProgramPtr _quadColorShader;
     ShaderProgramPtr _renderToGBufferShader;
@@ -60,17 +60,17 @@ public:
     ShaderProgramPtr _renderDeferredSphereShader;
     ShaderProgramPtr _renderDeferredSphereDebugShader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0;
+    float _phi = 0.0;
+    float _theta = 0.48;
 
-    float _attenuation0;
-    float _attenuation1;
-    float _attenuation2;
+    float _attenuation0 = 1.0;
+    float _attenuation1 = 0.0;
+    float _attenuation2 = 0.05;
 
-    float _minIntensity;
-    float _maxRadius;
+    float _minIntensity = 0.1;
+    float _maxRadius = 1.0;
 
     LightInfo _light;
 
@@ -84,50 +84,30 @@ public:
     GLuint _normalsTexId;
     GLuint _diffuseTexId;
 
-    unsigned int _fbWidth;
-    unsigned int _fbHeight;
+    unsigned int _fbWidth = 1024;
+    unsigned int _fbHeight = 1024;
 
-    bool _showDebugQuads;
+    bool _showDebugQuads = false;
 
-    int _Npositions;
-    int _Ncurrent;
+    int _Npositions = 100;
+    int _Ncurrent = 0;
     std::vector<glm::vec3> _positions;
 
-    int _Klights;
-    int _Kcurrent;
+    int _Klights = 100;
+    int _Kcurrent = 0;
     std::vector<LightInfo> _lights;
 
     int _renderMode = 0; //0 - quads, 1 - spheres, 2 - debug spheres
 
-    SampleApplication() :
-        Application(),
-        _attenuation0(1.0f),
-        _attenuation1(0.0f),
-        _attenuation2(0.05f),
-        _minIntensity(0.1f),
-        _maxRadius(1.0f),
-        _fbWidth(1024),
-        _fbHeight(1024),
-        _Npositions(100),
-        _Ncurrent(0),
-        _Klights(100),
-        _Kcurrent(0),
-        _showDebugQuads(false)
-    {
-    }
-
     void initFramebuffer()
     {
-        _fbWidth = 1024;
-        _fbHeight = 1024;
-
-        //Создаем фреймбуфер
+        //РЎРѕР·РґР°РµРј С„СЂРµР№РјР±СѓС„РµСЂ
         glGenFramebuffers(1, &_framebufferId);
         glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
         //----------------------------
 
-        //Создаем текстуру, куда будет осуществляться рендеринг нормалей
+        //РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂСѓ, РєСѓРґР° Р±СѓРґРµС‚ РѕСЃСѓС‰РµСЃС‚РІР»СЏС‚СЊСЃСЏ СЂРµРЅРґРµСЂРёРЅРі РЅРѕСЂРјР°Р»РµР№
         glGenTextures(1, &_normalsTexId);
         glBindTexture(GL_TEXTURE_2D, _normalsTexId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
@@ -135,7 +115,7 @@ public:
 
         //----------------------------
 
-        //Создаем текстуру, куда будет осуществляться рендеринг диффузного цвета
+        //РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂСѓ, РєСѓРґР° Р±СѓРґРµС‚ РѕСЃСѓС‰РµСЃС‚РІР»СЏС‚СЊСЃСЏ СЂРµРЅРґРµСЂРёРЅРі РґРёС„С„СѓР·РЅРѕРіРѕ С†РІРµС‚Р°
         glGenTextures(1, &_diffuseTexId);
         glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, _fbWidth, _fbHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
@@ -143,7 +123,7 @@ public:
 
         //----------------------------
 
-        //Создаем текстуру, куда будем впоследствии копировать буфер глубины
+        //РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂСѓ, РіРґРµ Р±СѓРґРµС‚ РЅР°С…РѕРґРёС‚СЊСЃСЏ Р±СѓС„РµСЂ РіР»СѓР±РёРЅС‹
         glGenTextures(1, &_depthTexId);
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, _fbWidth, _fbHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
@@ -151,7 +131,7 @@ public:
 
         //----------------------------
 
-        //Указываем куда именно мы будем рендерить		
+        //РЈРєР°Р·С‹РІР°РµРј РєСѓРґР° РёРјРµРЅРЅРѕ РјС‹ Р±СѓРґРµРј СЂРµРЅРґРµСЂРёС‚СЊ		
         GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
         glDrawBuffers(2, buffers);
 
@@ -171,7 +151,7 @@ public:
         _showDebugQuads = false;
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -189,33 +169,18 @@ public:
         _lightSphere = makeSphere(1.0f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _quadDepthShader = std::make_shared<ShaderProgram>();
-        _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
-
-        _quadColorShader = std::make_shared<ShaderProgram>();
-        _quadColorShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
-
-        _renderToGBufferShader = std::make_shared<ShaderProgram>();
-        _renderToGBufferShader->createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
-
-        _renderDeferredShader = std::make_shared<ShaderProgram>();
-        _renderDeferredShader->createProgram("shaders8/deferred.vert", "shaders8/deferred.frag");
-
-        _renderDeferredSphereShader = std::make_shared<ShaderProgram>();
-        _renderDeferredSphereShader->createProgram("shaders8/deferredSphere.vert", "shaders8/deferredSphere.frag");
-
-        _renderDeferredSphereDebugShader = std::make_shared<ShaderProgram>();
-        _renderDeferredSphereDebugShader->createProgram("shaders8/deferredSphere.vert", "shaders8/deferredSphereDebug.frag");
+        _quadDepthShader = std::make_shared<ShaderProgram>("shaders/quadDepth.vert", "shaders/quadDepth.frag");
+        _quadColorShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders/quadColor.frag");
+        _renderToGBufferShader = std::make_shared<ShaderProgram>("shaders7/togbuffer.vert", "shaders7/togbuffer.frag");
+        _renderDeferredShader = std::make_shared<ShaderProgram>("shaders7/deferred.vert", "shaders7/deferred.frag");
+        _renderDeferredSphereShader = std::make_shared<ShaderProgram>("shaders7/deferredSphere.vert", "shaders7/deferredSphere.frag");
+        _renderDeferredSphereDebugShader = std::make_shared<ShaderProgram>("shaders7/deferredSphere.vert", "shaders7/deferredSphereDebug.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -224,11 +189,11 @@ public:
         _light.attenuation2 = _attenuation2;
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -236,7 +201,7 @@ public:
         glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         //=========================================================
-        //Инициализация фреймбуфера для рендера G-буфераы
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР±СѓС„РµСЂР° РґР»СЏ СЂРµРЅРґРµСЂР° G-Р±СѓС„РµСЂР°С‹
 
         initFramebuffer();
 
@@ -352,7 +317,7 @@ public:
 
     void drawToGBuffer(const CameraInfo& camera)
     {
-        //=========== Сначала подключаем фреймбуфер и рендерим в текстуру ==========
+        //=========== РЎРЅР°С‡Р°Р»Р° РїРѕРґРєР»СЋС‡Р°РµРј С„СЂРµР№РјР±СѓС„РµСЂ Рё СЂРµРЅРґРµСЂРёРј РІ С‚РµРєСЃС‚СѓСЂСѓ ==========
         glBindFramebuffer(GL_FRAMEBUFFER, _framebufferId);
 
         glViewport(0, 0, _fbWidth, _fbHeight);
@@ -362,7 +327,7 @@ public:
         _renderToGBufferShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         _renderToGBufferShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _brickTex->bind();
         _renderToGBufferShader->setIntUniform("diffuseTex", 0);
@@ -370,34 +335,34 @@ public:
         drawScene(_renderToGBufferShader, camera);
 
         glUseProgram(0);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0); //Отключаем фреймбуфер
+        glBindFramebuffer(GL_FRAMEBUFFER, 0); //РћС‚РєР»СЋС‡Р°РµРј С„СЂРµР№РјР±СѓС„РµСЂ
     }
 
     void drawToScreen(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader->use();
         shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
                 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0
         glBindTexture(GL_TEXTURE_2D, _normalsTexId);
         glBindSampler(0, _sampler);
         shader->setIntUniform("normalsTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
+        glActiveTexture(GL_TEXTURE1);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 1
         glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
         glBindSampler(1, _sampler);
         shader->setIntUniform("diffuseTex", 1);
 
-        glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
+        glActiveTexture(GL_TEXTURE2);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 2
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glBindSampler(2, _sampler);
         shader->setIntUniform("depthTex", 2);
@@ -406,14 +371,14 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
 
-        //Параметры затухания сделаем общими для всех источников света
+        //РџР°СЂР°РјРµС‚СЂС‹ Р·Р°С‚СѓС…Р°РЅРёСЏ СЃРґРµР»Р°РµРј РѕР±С‰РёРјРё РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
         shader->setFloatUniform("light.a0", _attenuation0);
         shader->setFloatUniform("light.a1", _attenuation1);
         shader->setFloatUniform("light.a2", _attenuation2);
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         shader->setVec3Uniform("light.La", _light.ambient);
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);        
@@ -424,7 +389,7 @@ public:
         {
             glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
 
-            shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+            shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
             shader->setVec3Uniform("light.La", _lights[i].ambient);
             shader->setVec3Uniform("light.Ld", _lights[i].diffuse);
             shader->setVec3Uniform("light.Ls", _lights[i].specular);
@@ -435,20 +400,20 @@ public:
         glDisable(GL_BLEND);
         glEnable(GL_DEPTH_TEST);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
 
     void drawSpheresToScreen(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDisable(GL_DEPTH_TEST);
@@ -462,17 +427,17 @@ public:
         shader->setFloatUniform("screenWidth", (float)width);
         shader->setFloatUniform("screenHeight", (float)height);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0
         glBindTexture(GL_TEXTURE_2D, _normalsTexId);
         glBindSampler(0, _sampler);
         shader->setIntUniform("normalsTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1
+        glActiveTexture(GL_TEXTURE1);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 1
         glBindTexture(GL_TEXTURE_2D, _diffuseTexId);
         glBindSampler(1, _sampler);
         shader->setIntUniform("diffuseTex", 1);
 
-        glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
+        glActiveTexture(GL_TEXTURE2);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 2
         glBindTexture(GL_TEXTURE_2D, _depthTexId);
         glBindSampler(2, _sampler);
         shader->setIntUniform("depthTex", 2);
@@ -493,14 +458,14 @@ public:
            
             //-----------------------------------
 
-            //Параметры затухания сделаем общими для всех источников света
+            //РџР°СЂР°РјРµС‚СЂС‹ Р·Р°С‚СѓС…Р°РЅРёСЏ СЃРґРµР»Р°РµРј РѕР±С‰РёРјРё РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
             shader->setFloatUniform("light.a0", _attenuation0);
             shader->setFloatUniform("light.a1", _attenuation1);
             shader->setFloatUniform("light.a2", _attenuation2);
 
             glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-            shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+            shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
             shader->setVec3Uniform("light.La", _light.ambient);
             shader->setVec3Uniform("light.Ld", _light.diffuse);
             shader->setVec3Uniform("light.Ls", _light.specular);
@@ -514,7 +479,7 @@ public:
             {
                 glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
 
-                shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+                shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
                 shader->setVec3Uniform("light.La", _lights[i].ambient);
                 shader->setVec3Uniform("light.Ld", _lights[i].diffuse);
                 shader->setVec3Uniform("light.Ls", _lights[i].specular);
@@ -532,20 +497,20 @@ public:
         glDisable(GL_CULL_FACE);
         glEnable(GL_DEPTH_TEST);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
 
     void drawDebugSpheresToScreen(const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDisable(GL_DEPTH_TEST);
@@ -575,7 +540,7 @@ public:
 
         glEnable(GL_DEPTH_TEST);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }

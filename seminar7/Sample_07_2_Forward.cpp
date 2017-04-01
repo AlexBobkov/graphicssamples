@@ -15,7 +15,7 @@ namespace
         return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     }
 
-    //Удобная функция для вычисления цвета из линейной палитры от синего до красного
+    //РЈРґРѕР±РЅР°СЏ С„СѓРЅРєС†РёСЏ РґР»СЏ РІС‹С‡РёСЃР»РµРЅРёСЏ С†РІРµС‚Р° РёР· Р»РёРЅРµР№РЅРѕР№ РїР°Р»РёС‚СЂС‹ РѕС‚ СЃРёРЅРµРіРѕ РґРѕ РєСЂР°СЃРЅРѕРіРѕ
     glm::vec3 getColorFromLinearPalette(float value)
     {
         if (value < 0.25f)
@@ -38,7 +38,7 @@ namespace
 }
 
 /**
-Пример с отложенным рендерингом
+РџСЂРёРјРµСЂ СЃ РѕС‚Р»РѕР¶РµРЅРЅС‹Рј СЂРµРЅРґРµСЂРёРЅРіРѕРј
 */
 class SampleApplication : public Application
 {
@@ -48,21 +48,21 @@ public:
     MeshPtr _bunny;
     MeshPtr _ground;
 
-    MeshPtr _marker; //Маркер для источника света
+    MeshPtr _marker; //РњР°СЂРєРµСЂ РґР»СЏ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _prepassShader;
     ShaderProgramPtr _mainShader;
     ShaderProgramPtr _markerShader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0;
+    float _phi = 0.0;
+    float _theta = 0.48;
 
-    float _attenuation0;
-    float _attenuation1;
-    float _attenuation2;
+    float _attenuation0 = 1.0;
+    float _attenuation1 = 0.0;
+    float _attenuation2 = 0.05;
 
     LightInfo _light;
 
@@ -70,32 +70,20 @@ public:
 
     GLuint _sampler;
 
-    int _Npositions;
-    int _Ncurrent;
+    int _Npositions = 100;
+    int _Ncurrent = 0;
     std::vector<glm::vec3> _positions;
 
-    int _Klights;
-    int _Kcurrent;
+    int _Klights = 100;
+    int _Kcurrent = 0;
     std::vector<LightInfo> _lights;
-
-    SampleApplication() :
-        Application(),
-        _attenuation0(1.0f),
-        _attenuation1(0.0f),
-        _attenuation2(0.05f),
-        _Npositions(100),
-        _Ncurrent(0),
-        _Klights(100),
-        _Kcurrent(0)
-    {
-    }
 
     void makeScene() override
     {
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -111,24 +99,15 @@ public:
         _marker = makeSphere(0.1f);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _prepassShader = std::make_shared<ShaderProgram>();
-        _prepassShader->createProgram("shaders8/forwardLightingPrepass.vert", "shaders8/forwardLightingPrepass.frag");
-
-        _mainShader = std::make_shared<ShaderProgram>();
-        _mainShader->createProgram("shaders8/forwardLighting.vert", "shaders8/forwardLighting.frag");
-
-        _markerShader = std::make_shared<ShaderProgram>();
-        _markerShader->createProgram("shaders/marker.vert", "shaders/marker.frag");
+        _prepassShader = std::make_shared<ShaderProgram>("shaders7/forwardLightingPrepass.vert", "shaders7/forwardLightingPrepass.frag");
+        _mainShader = std::make_shared<ShaderProgram>("shaders7/forwardLighting.vert", "shaders7/forwardLighting.frag");
+        _markerShader = std::make_shared<ShaderProgram>("shaders/marker.vert", "shaders/marker.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -137,11 +116,11 @@ public:
         _light.attenuation2 = _attenuation2;
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -162,7 +141,7 @@ public:
         for (int i = 0; i < _Klights; i++)
         {
             LightInfo light;
-                        
+
             glm::vec3 color = getColorFromLinearPalette(frand());
 
             light.position = glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, frand() * 3.0);
@@ -221,13 +200,13 @@ public:
 
     void drawToScreen(const CameraInfo& camera)
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //-----------------------------------------------------
@@ -237,7 +216,7 @@ public:
         _prepassShader->use();
         _prepassShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         _prepassShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
-                
+
         drawScene(_prepassShader, _camera, glm::vec3(), false);
 
         glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -247,8 +226,8 @@ public:
         _mainShader->use();
         _mainShader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         _mainShader->setMat4Uniform("projectionMatrix", camera.projMatrix);
-                
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _brickTex->bind();
         _mainShader->setIntUniform("diffuseTex", 0);
@@ -257,14 +236,14 @@ public:
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
 
-        //Параметры затухания сделаем общими для всех источников света
+        //РџР°СЂР°РјРµС‚СЂС‹ Р·Р°С‚СѓС…Р°РЅРёСЏ СЃРґРµР»Р°РµРј РѕР±С‰РёРјРё РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°
         _mainShader->setFloatUniform("light.a0", _attenuation0);
         _mainShader->setFloatUniform("light.a1", _attenuation1);
         _mainShader->setFloatUniform("light.a2", _attenuation2);
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        _mainShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        _mainShader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         _mainShader->setVec3Uniform("light.La", _light.ambient);
         _mainShader->setVec3Uniform("light.Ld", _light.diffuse);
         _mainShader->setVec3Uniform("light.Ls", _light.specular);
@@ -275,7 +254,7 @@ public:
         {
             glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_lights[i].position, 1.0));
 
-            _mainShader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+            _mainShader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
             _mainShader->setVec3Uniform("light.La", _lights[i].ambient);
             _mainShader->setVec3Uniform("light.Ld", _lights[i].diffuse);
             _mainShader->setVec3Uniform("light.Ls", _lights[i].specular);
@@ -286,7 +265,7 @@ public:
         glDisable(GL_BLEND);
         glDepthFunc(GL_LESS);
 
-        //Рисуем маркеры для всех источников света		
+        //Р РёСЃСѓРµРј РјР°СЂРєРµСЂС‹ РґР»СЏ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ СЃРІРµС‚Р°		
         {
             _markerShader->use();
 
@@ -302,7 +281,7 @@ public:
             }
         }
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }

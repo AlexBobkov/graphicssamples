@@ -11,5 +11,5 @@ layout(location = 1) out vec3 diffuseColor; // "go to GL_COLOR_ATTACHMENT1"
 void main()
 {
 	diffuseColor = texture(diffuseTex, texCoord).rgb; //читаем из текстуры
-	normal = normalize(normalCamSpace) * 0.5 + 0.5;				    
+	normal = normalize(normalCamSpace) * 0.5 + 0.5;
 }
