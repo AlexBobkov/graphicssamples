@@ -10,7 +10,7 @@
 #include <vector>
 
 /**
-Пример эффекта постобработки - вывод изображения с гамма-коррекцией
+РџСЂРёРјРµСЂ СЌС„С„РµРєС‚Р° "РіР»СѓР±РёРЅР° СЂРµР·РєРѕСЃС‚Рё"
 */
 class SampleApplication : public Application
 {
@@ -22,34 +22,40 @@ public:
 
     MeshPtr _quad;
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _quadDepthShader;
     ShaderProgramPtr _quadColorShader;
     ShaderProgramPtr _renderToShadowMapShader;
     ShaderProgramPtr _renderToGBufferShader;
     ShaderProgramPtr _renderDeferredShader;
-    ShaderProgramPtr _gammaShader;
+    ShaderProgramPtr _horizBlurShader;
+    ShaderProgramPtr _vertBlurShader;
+    ShaderProgramPtr _dofShader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0;
+    float _phi = 0.0;
+    float _theta = 0.48;
 
     LightInfo _light;
     CameraInfo _lightCamera;
 
     TexturePtr _brickTex;
-    TexturePtr _brickGammaTex;
+    TexturePtr _rotateTex;
 
     GLuint _sampler;
+    GLuint _repeatSampler;
     GLuint _depthSampler;
 
-    bool _applyEffect;
-    bool _applyGammaTexture;
+    bool _applyEffect = true;
 
-    bool _showGBufferDebug;
-    bool _showShadowDebug;
-    bool _showDeferredDebug;
+    bool _showGBufferDebug = false;
+    bool _showShadowDebug = false;
+    bool _showDeferredDebug = false;
+    bool _showDoFDebug = false;
+
+    float _focalDistance = 5.0;
+    float _focalRange = 1.0;
 
     FramebufferPtr _gbufferFB;
     TexturePtr _depthTex;
@@ -62,26 +68,21 @@ public:
     FramebufferPtr _deferredFB;
     TexturePtr _deferredTex;
 
-    //Старые размеры экрана
-    int _oldWidth;
-    int _oldHeight;
+    FramebufferPtr _horizBlurDofFB;
+    TexturePtr _horizBlurDofTex;
 
-    SampleApplication() :
-        Application(),
-        _oldWidth(1024),
-        _oldHeight(1024),
-        _applyEffect(true),
-        _applyGammaTexture(true),
-        _showGBufferDebug(false),
-        _showShadowDebug(false),
-        _showDeferredDebug(false)
-    {
-    }
+    FramebufferPtr _vertBlurDofFB;
+    TexturePtr _vertBlurDofTex;
+
+    FramebufferPtr _dofFB;
+    TexturePtr _dofTex;
+
+    //РЎС‚Р°СЂС‹Рµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР°
+    int _oldWidth = 1024;
+    int _oldHeight = 1024;
 
     void initFramebuffers()
     {
-        //Создаем фреймбуфер для рендеринга в G-буфер
-
         _gbufferFB = std::make_shared<Framebuffer>(1024, 1024);
 
         _normalsTex = _gbufferFB->addBuffer(GL_RGB16F, GL_COLOR_ATTACHMENT0);
@@ -97,7 +98,6 @@ public:
         }
 
         //=========================================================
-        //Создаем фреймбуфер для рендеринга в теневую карту
 
         _shadowFB = std::make_shared<Framebuffer>(1024, 1024);
 
@@ -112,15 +112,56 @@ public:
         }
 
         //=========================================================
-        //Создаем фреймбуфер для результатов расчета освещения
 
         _deferredFB = std::make_shared<Framebuffer>(1024, 1024);
 
-        _deferredTex = _deferredFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+        _deferredTex = _deferredFB->addBuffer(GL_RGB32F, GL_COLOR_ATTACHMENT0);
 
         _deferredFB->initDrawBuffers();
 
         if (!_deferredFB->valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        //=========================================================
+
+        _horizBlurDofFB = std::make_shared<Framebuffer>(512, 512);
+
+        _horizBlurDofTex = _horizBlurDofFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _horizBlurDofFB->initDrawBuffers();
+
+        if (!_horizBlurDofFB->valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        //=========================================================
+
+        _vertBlurDofFB = std::make_shared<Framebuffer>(512, 512);
+
+        _vertBlurDofTex = _vertBlurDofFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _vertBlurDofFB->initDrawBuffers();
+
+        if (!_vertBlurDofFB->valid())
+        {
+            std::cerr << "Failed to setup framebuffer\n";
+            exit(1);
+        }
+
+        //=========================================================
+
+        _dofFB = std::make_shared<Framebuffer>(1024, 1024);
+
+        _dofTex = _dofFB->addBuffer(GL_RGB8, GL_COLOR_ATTACHMENT0);
+
+        _dofFB->initDrawBuffers();
+
+        if (!_dofFB->valid())
         {
             std::cerr << "Failed to setup framebuffer\n";
             exit(1);
@@ -132,7 +173,7 @@ public:
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -148,49 +189,42 @@ public:
         _quad = makeScreenAlignedQuad();
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _quadDepthShader = std::make_shared<ShaderProgram>();
-        _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
-
-        _quadColorShader = std::make_shared<ShaderProgram>();
-        _quadColorShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
-        
-        _renderToShadowMapShader = std::make_shared<ShaderProgram>();
-        _renderToShadowMapShader->createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
-
-        _renderToGBufferShader = std::make_shared<ShaderProgram>();
-        _renderToGBufferShader->createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
-
-        _renderDeferredShader = std::make_shared<ShaderProgram>();
-        _renderDeferredShader->createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
-
-        _gammaShader = std::make_shared<ShaderProgram>();
-        _gammaShader->createProgram("shaders9/quad.vert", "shaders9/gamma.frag");
+        _quadDepthShader = std::make_shared<ShaderProgram>("shaders/quadDepth.vert", "shaders/quadDepth.frag");
+        _quadColorShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders/quadColor.frag");
+        _renderToShadowMapShader = std::make_shared<ShaderProgram>("shaders6/toshadow.vert", "shaders6/toshadow.frag");
+        _renderToGBufferShader = std::make_shared<ShaderProgram>("shaders7/togbuffer.vert", "shaders7/togbuffer.frag");
+        _renderDeferredShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders8/deferred.frag");
+        _horizBlurShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders8/horizblur.frag");
+        _vertBlurShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders8/vertblur.frag");
+        _dofShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders8/dof.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
-        _brickTex = loadTexture("images/brick.jpg", SRGB::NO);
-        _brickGammaTex = loadTexture("images/brick.jpg", SRGB::YES);
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
+        _brickTex = loadTexture("images/brick.jpg", SRGB::YES); //sRGB
+        _rotateTex = loadTexture("images/rotate.png");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glSamplerParameteri(_sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glGenSamplers(1, &_repeatSampler);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glSamplerParameteri(_repeatSampler, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         GLfloat border[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 
@@ -207,7 +241,7 @@ public:
         glfwGetFramebufferSize(_window, &_oldWidth, &_oldHeight);
 
         //=========================================================
-        //Инициализация фреймбуфера для рендера теневой карты
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР±СѓС„РµСЂР° РґР»СЏ СЂРµРЅРґРµСЂР° С‚РµРЅРµРІРѕР№ РєР°СЂС‚С‹
 
         initFramebuffers();
     }
@@ -232,11 +266,15 @@ public:
                 ImGui::SliderFloat("theta", &_theta, 0.0f, glm::pi<float>());
             }
 
-            ImGui::Checkbox("Apply gamma", &_applyEffect);
-            ImGui::Checkbox("Use SRGB texture", &_applyGammaTexture);
+            ImGui::Checkbox("Apply DOF", &_applyEffect);
+
+            ImGui::SliderFloat("Focal distance", &_focalDistance, 1.0f, 20.0f);
+            ImGui::SliderFloat("Focal range", &_focalRange, 0.1f, 10.0f);
+
             ImGui::Checkbox("Show G-buffer debug", &_showGBufferDebug);
             ImGui::Checkbox("Show shadow debug", &_showShadowDebug);
             ImGui::Checkbox("Show deferred debug", &_showDeferredDebug);
+            ImGui::Checkbox("Show DOF debug", &_showDoFDebug);
         }
         ImGui::End();
     }
@@ -251,10 +289,6 @@ public:
             {
                 _applyEffect = !_applyEffect;
             }
-            else if (key == GLFW_KEY_2)
-            {
-                _applyGammaTexture = !_applyGammaTexture;
-            }
             else if (key == GLFW_KEY_Z)
             {
                 _showGBufferDebug = !_showGBufferDebug;
@@ -267,6 +301,10 @@ public:
             {
                 _showDeferredDebug = !_showDeferredDebug;
             }
+            else if (key == GLFW_KEY_N)
+            {
+                _showDoFDebug = !_showDoFDebug;
+            }
         }
     }
 
@@ -278,13 +316,18 @@ public:
         _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
-        //Если размер окна изменился, то изменяем размеры фреймбуферов - перевыделяем память под текстуры
+        //Р•СЃР»Рё СЂР°Р·РјРµСЂ РѕРєРЅР° РёР·РјРµРЅРёР»СЃСЏ, С‚Рѕ РёР·РјРµРЅСЏРµРј СЂР°Р·РјРµСЂС‹ С„СЂРµР№РјР±СѓС„РµСЂРѕРІ - РїРµСЂРµРІС‹РґРµР»СЏРµРј РїР°РјСЏС‚СЊ РїРѕРґ С‚РµРєСЃС‚СѓСЂС‹
+
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
         if (width != _oldWidth || height != _oldHeight)
         {
             _gbufferFB->resize(width, height);
             _deferredFB->resize(width, height);
+
+            _horizBlurDofFB->resize(width / 2, height / 2);
+            _vertBlurDofFB->resize(width / 2, height / 2);
+            _dofFB->resize(width, height);
 
             _oldWidth = width;
             _oldHeight = height;
@@ -293,26 +336,30 @@ public:
 
     void draw() override
     {
-        //Рендерим геометрию сцены в G-буфер
+        //Р РµРЅРґРµСЂРёРј РіРµРѕРјРµС‚СЂРёСЋ СЃС†РµРЅС‹ РІ G-Р±СѓС„РµСЂ
         drawToGBuffer(_gbufferFB, _renderToGBufferShader, _camera);
 
-        //Рендерим геометрию сцены в теневую карту с позиции источника света
+        //Р РµРЅРґРµСЂРёРј РіРµРѕРјРµС‚СЂРёСЋ СЃС†РµРЅС‹ РІ С‚РµРЅРµРІСѓСЋ РєР°СЂС‚Сѓ СЃ РїРѕР·РёС†РёРё РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
         drawToShadowMap(_shadowFB, _renderToShadowMapShader, _lightCamera);
 
-        //Выполняем отложенное освещение, заодно накладывает тени, а результат записываем в текстуру
+        //Р’С‹РїРѕР»РЅСЏРµРј РѕС‚Р»РѕР¶РµРЅРЅРѕРµ РѕСЃРІРµС‰РµРЅРёРµ, Р·Р°РѕРґРЅРѕ РЅР°РєР»Р°РґС‹РІР°РµС‚ С‚РµРЅРё, Р° СЂРµР·СѓР»СЊС‚Р°С‚ Р·Р°РїРёСЃС‹РІР°РµРј РІ С‚РµРєСЃС‚СѓСЂСѓ
         drawDeferred(_deferredFB, _renderDeferredShader, _camera, _lightCamera);
 
-        //Выводим полученную текстуру на экран, попутно применяя эффект постобработки
+        drawProcessTexture(_horizBlurDofFB, _horizBlurShader, _deferredTex);
+        drawProcessTexture(_vertBlurDofFB, _vertBlurShader, _horizBlurDofTex);
+
+        drawDoF(_dofFB, _dofShader, _camera);
+
         if (_applyEffect)
         {
-            drawToScreen(_gammaShader);
+            drawToScreen(_quadColorShader, _dofTex);
         }
         else
         {
-            drawToScreen(_quadColorShader);
+            drawToScreen(_quadColorShader, _deferredTex);
         }
 
-        //Отладочный рендер текстур
+        //РћС‚Р»Р°РґРѕС‡РЅС‹Р№ СЂРµРЅРґРµСЂ С‚РµРєСЃС‚СѓСЂ
         drawDebug();
     }
 
@@ -327,23 +374,16 @@ public:
         shader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         shader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0
-        glBindSampler(0, _sampler);
-        if (_applyGammaTexture)
-        {
-            _brickGammaTex->bind();
-        }
-        else
-        {
-            _brickTex->bind();
-        }        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
+        glBindSampler(0, _repeatSampler);
+        _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         drawScene(shader, camera);
 
-        glUseProgram(0); //Отключаем шейдер
+        glUseProgram(0); //РћС‚РєР»СЋС‡Р°РµРј С€РµР№РґРµСЂ
 
-        fb->unbind(); //Отключаем фреймбуфер
+        fb->unbind(); //РћС‚РєР»СЋС‡Р°РµРј С„СЂРµР№РјР±СѓС„РµСЂ
     }
 
     void drawToShadowMap(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& lightCamera)
@@ -383,7 +423,7 @@ public:
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         shader->setVec3Uniform("light.La", _light.ambient);
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
@@ -394,36 +434,92 @@ public:
         glm::mat4 projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
         shader->setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _normalsTex->bind();
         shader->setIntUniform("normalsTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
+        glActiveTexture(GL_TEXTURE1);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 1        
         glBindSampler(1, _sampler);
         _diffuseTex->bind();
         shader->setIntUniform("diffuseTex", 1);
 
-        glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2        
+        glActiveTexture(GL_TEXTURE2);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 2        
         glBindSampler(2, _sampler);
         _depthTex->bind();
         shader->setIntUniform("depthTex", 2);
 
-        glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3        
+        glActiveTexture(GL_TEXTURE3);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 3        
         glBindSampler(3, _depthSampler);
         _shadowTex->bind();
         shader->setIntUniform("shadowTex", 3);
 
-        _quad->draw(); //main light
+        _quad->draw();
 
         glUseProgram(0);
 
         fb->unbind();
     }
 
-    void drawToScreen(const ShaderProgramPtr& shader)
+    void drawDoF(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& camera)
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        fb->bind();
+
+        glViewport(0, 0, fb->width(), fb->height());
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader->use();
+        shader->setMat4Uniform("projMatrixInverse", glm::inverse(camera.projMatrix));
+
+        shader->setFloatUniform("focalDistance", _focalDistance);
+        shader->setFloatUniform("focalRange", _focalRange);
+
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
+        glBindSampler(0, _sampler);
+        _deferredTex->bind();
+        shader->setIntUniform("tex", 0);
+
+        glActiveTexture(GL_TEXTURE1);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 1        
+        glBindSampler(1, _sampler);
+        _vertBlurDofTex->bind();
+        shader->setIntUniform("blurTex", 1);
+
+        glActiveTexture(GL_TEXTURE2);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 2        
+        glBindSampler(2, _sampler);
+        _depthTex->bind();
+        shader->setIntUniform("depthTex", 2);
+
+        _quad->draw();
+
+        glUseProgram(0);
+
+        fb->unbind();
+    }
+
+    void drawProcessTexture(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const TexturePtr& inputTexture)
+    {
+        fb->bind();
+
+        glViewport(0, 0, fb->width(), fb->height());
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        shader->use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindSampler(0, _sampler);
+        inputTexture->bind();
+        shader->setIntUniform("tex", 0);
+
+        _quad->draw();
+
+        glUseProgram(0);
+
+        fb->unbind();
+    }
+
+    void drawToScreen(const ShaderProgramPtr& shader, const TexturePtr& inputTexture)
+    {
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
@@ -432,18 +528,18 @@ public:
 
         shader->use();
 
-        glActiveTexture(GL_TEXTURE0);        
+        glActiveTexture(GL_TEXTURE0);
         glBindSampler(0, _sampler);
-        _deferredTex->bind();
+        inputTexture->bind();
         shader->setIntUniform("tex", 0);
 
-        //glEnable(GL_FRAMEBUFFER_SRGB); //Альтернатива шейдеру с постобработкой
+        glEnable(GL_FRAMEBUFFER_SRGB); //Р’РєР»СЋС‡Р°РµС‚ РіР°РјРјР°-РєРѕСЂСЂРµРєС†РёСЋ
 
         _quad->draw();
 
-        //glDisable(GL_FRAMEBUFFER_SRGB);
+        glDisable(GL_FRAMEBUFFER_SRGB);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
@@ -491,6 +587,10 @@ public:
         {
             drawQuad(_quadColorShader, _deferredTex, 0, 0, size, size);
         }
+        else if (_showDoFDebug)
+        {
+            drawQuad(_quadColorShader, _vertBlurDofTex, 0, 0, size, size);
+        }
 
         glBindSampler(0, 0);
         glUseProgram(0);
@@ -502,7 +602,7 @@ public:
 
         shader->use();
 
-        glActiveTexture(GL_TEXTURE0);        
+        glActiveTexture(GL_TEXTURE0);
         glBindSampler(0, _sampler);
         texture->bind();
         shader->setIntUniform("tex", 0);

@@ -10,7 +10,7 @@
 #include <vector>
 
 /**
-Пример эффекта Screen Space Ambient Occlusion
+РџСЂРёРјРµСЂ СЌС„С„РµРєС‚Р° Screen Space Ambient Occlusion
 */
 class SampleApplication : public Application
 {
@@ -22,7 +22,7 @@ public:
 
     MeshPtr _quad;
 
-    //Идентификатор шейдерной программы
+    //РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ С€РµР№РґРµСЂРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹
     ShaderProgramPtr _quadDepthShader;
     ShaderProgramPtr _quadColorShader;
     ShaderProgramPtr _renderToShadowMapShader;
@@ -31,10 +31,10 @@ public:
     ShaderProgramPtr _renderDeferredWithSSAOShader;
     ShaderProgramPtr _ssaoShader;
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0;
+    float _phi = 0.0;
+    float _theta = 0.48;
 
     LightInfo _light;
     CameraInfo _lightCamera;
@@ -46,17 +46,17 @@ public:
     GLuint _repeatSampler;
     GLuint _depthSampler;
 
-    bool _applyEffect;
+    bool _applyEffect = true;
 
-    float _attBias;
-    float _attScale;
-    float _radius;
+    float _attBias = 0.0;
+    float _attScale = 2.0;
+    float _radius = 0.1;
 
-    bool _showGBufferDebug;
-    bool _showShadowDebug;
-    bool _showDeferredDebug;
-    bool _showSSAODebug;
-    
+    bool _showGBufferDebug = false;
+    bool _showShadowDebug = false;
+    bool _showDeferredDebug = false;
+    bool _showSSAODebug = false;
+
     FramebufferPtr _gbufferFB;
     TexturePtr _depthTex;
     TexturePtr _normalsTex;
@@ -71,24 +71,9 @@ public:
     FramebufferPtr _ssaoFB;
     TexturePtr _ssaoTex;
 
-    //Старые размеры экрана
-    int _oldWidth;
-    int _oldHeight;
-
-    SampleApplication() :
-        Application(),
-        _oldWidth(1024),
-        _oldHeight(1024),
-        _applyEffect(true),
-        _showGBufferDebug(false),
-        _showShadowDebug(false),
-        _showDeferredDebug(false),
-        _showSSAODebug(false),
-        _attBias(0.0),
-        _attScale(2.0),
-        _radius(0.1f)
-    {
-    }
+    //РЎС‚Р°СЂС‹Рµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР°
+    int _oldWidth = 1024;
+    int _oldHeight = 1024;
 
     void initFramebuffers()
     {
@@ -154,7 +139,7 @@ public:
         Application::makeScene();
 
         //=========================================================
-        //Создание и загрузка мешей		
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
         _cube = makeCube(0.5f);
         _cube->setModelMatrix(glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -1.0f, 0.5f)));
@@ -170,47 +155,30 @@ public:
         _quad = makeScreenAlignedQuad();
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _quadDepthShader = std::make_shared<ShaderProgram>();
-        _quadDepthShader->createProgram("shaders/quadDepth.vert", "shaders/quadDepth.frag");
-
-        _quadColorShader = std::make_shared<ShaderProgram>();
-        _quadColorShader->createProgram("shaders/quadColor.vert", "shaders/quadColor.frag");
-
-        _renderToShadowMapShader = std::make_shared<ShaderProgram>();
-        _renderToShadowMapShader->createProgram("shaders8/toshadow.vert", "shaders8/toshadow.frag");
-
-        _renderToGBufferShader = std::make_shared<ShaderProgram>();
-        _renderToGBufferShader->createProgram("shaders8/togbuffer.vert", "shaders8/togbuffer.frag");
-
-        _renderDeferredShader = std::make_shared<ShaderProgram>();
-        _renderDeferredShader->createProgram("shaders9/deferred.vert", "shaders9/deferred.frag");
-
-        _renderDeferredWithSSAOShader = std::make_shared<ShaderProgram>();
-        _renderDeferredWithSSAOShader->createProgram("shaders9/deferred.vert", "shaders9/deferredWithSSAO.frag");
-
-        _ssaoShader = std::make_shared<ShaderProgram>();
-        _ssaoShader->createProgram("shaders9/quad.vert", "shaders9/ssao.frag");
+        _quadDepthShader = std::make_shared<ShaderProgram>("shaders/quadDepth.vert", "shaders/quadDepth.frag");
+        _quadColorShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders/quadColor.frag");
+        _renderToShadowMapShader = std::make_shared<ShaderProgram>("shaders6/toshadow.vert", "shaders6/toshadow.frag");
+        _renderToGBufferShader = std::make_shared<ShaderProgram>("shaders7/togbuffer.vert", "shaders7/togbuffer.frag");
+        _renderDeferredShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders8/deferred.frag");
+        _renderDeferredWithSSAOShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders8/deferredWithSSAO.frag");
+        _ssaoShader = std::make_shared<ShaderProgram>("shaders/quadColor.vert", "shaders8/ssao.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _brickTex = loadTexture("images/brick.jpg", SRGB::YES); //sRGB
         _rotateTex = loadTexture("images/rotate.png");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -238,7 +206,7 @@ public:
         glfwGetFramebufferSize(_window, &_oldWidth, &_oldHeight);
 
         //=========================================================
-        //Инициализация фреймбуфера для рендера теневой карты
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„СЂРµР№РјР±СѓС„РµСЂР° РґР»СЏ СЂРµРЅРґРµСЂР° С‚РµРЅРµРІРѕР№ РєР°СЂС‚С‹
 
         initFramebuffers();
     }
@@ -314,14 +282,14 @@ public:
         _lightCamera.viewMatrix = glm::lookAt(_light.position, glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
         _lightCamera.projMatrix = glm::perspective(glm::radians(60.0f), 1.0f, 0.1f, 30.f);
 
-        //Если размер окна изменился, то изменяем размеры фреймбуферов - перевыделяем память под текстуры
+        //Р•СЃР»Рё СЂР°Р·РјРµСЂ РѕРєРЅР° РёР·РјРµРЅРёР»СЃСЏ, С‚Рѕ РёР·РјРµРЅСЏРµРј СЂР°Р·РјРµСЂС‹ С„СЂРµР№РјР±СѓС„РµСЂРѕРІ - РїРµСЂРµРІС‹РґРµР»СЏРµРј РїР°РјСЏС‚СЊ РїРѕРґ С‚РµРєСЃС‚СѓСЂС‹
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
         if (width != _oldWidth || height != _oldHeight)
         {
             _gbufferFB->resize(width, height);
             _deferredFB->resize(width, height);
-            
+
             _ssaoFB->resize(width, height);
 
             _oldWidth = width;
@@ -331,18 +299,18 @@ public:
 
     void draw() override
     {
-        //Рендерим геометрию сцены в G-буфер
+        //Р РµРЅРґРµСЂРёРј РіРµРѕРјРµС‚СЂРёСЋ СЃС†РµРЅС‹ РІ G-Р±СѓС„РµСЂ
         drawToGBuffer(_gbufferFB, _renderToGBufferShader, _camera);
 
-        //Рендерим геометрию сцены в теневую карту с позиции источника света
+        //Р РµРЅРґРµСЂРёРј РіРµРѕРјРµС‚СЂРёСЋ СЃС†РµРЅС‹ РІ С‚РµРЅРµРІСѓСЋ РєР°СЂС‚Сѓ СЃ РїРѕР·РёС†РёРё РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
         drawToShadowMap(_shadowFB, _renderToShadowMapShader, _lightCamera);
 
-        //Генерируем Ambient Occlusion текстуру
+        //Р“РµРЅРµСЂРёСЂСѓРµРј Ambient Occlusion С‚РµРєСЃС‚СѓСЂСѓ
         drawSSAO(_ssaoFB, _ssaoShader, _camera);
 
         if (_applyEffect)
         {
-            //Выполняем отложенное освещение, заодно накладывает тени, а результат записываем в текстуру
+            //Р’С‹РїРѕР»РЅСЏРµРј РѕС‚Р»РѕР¶РµРЅРЅРѕРµ РѕСЃРІРµС‰РµРЅРёРµ, Р·Р°РѕРґРЅРѕ РЅР°РєР»Р°РґС‹РІР°РµС‚ С‚РµРЅРё, Р° СЂРµР·СѓР»СЊС‚Р°С‚ Р·Р°РїРёСЃС‹РІР°РµРј РІ С‚РµРєСЃС‚СѓСЂСѓ
             drawDeferred(_deferredFB, _renderDeferredWithSSAOShader, _camera, _lightCamera);
         }
         else
@@ -352,7 +320,7 @@ public:
 
         drawToScreen(_quadColorShader, _deferredTex);
 
-        //Отладочный рендер текстур
+        //РћС‚Р»Р°РґРѕС‡РЅС‹Р№ СЂРµРЅРґРµСЂ С‚РµРєСЃС‚СѓСЂ
         drawDebug();
     }
 
@@ -367,16 +335,16 @@ public:
         shader->setMat4Uniform("viewMatrix", camera.viewMatrix);
         shader->setMat4Uniform("projectionMatrix", camera.projMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _repeatSampler);
         _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
 
         drawScene(shader, camera);
 
-        glUseProgram(0); //Отключаем шейдер
+        glUseProgram(0); //РћС‚РєР»СЋС‡Р°РµРј С€РµР№РґРµСЂ
 
-        fb->unbind(); //Отключаем фреймбуфер
+        fb->unbind(); //РћС‚РєР»СЋС‡Р°РµРј С„СЂРµР№РјР±СѓС„РµСЂ
     }
 
     void drawToShadowMap(const FramebufferPtr& fb, const ShaderProgramPtr& shader, const CameraInfo& lightCamera)
@@ -416,7 +384,7 @@ public:
 
         glm::vec3 lightPosCamSpace = glm::vec3(camera.viewMatrix * glm::vec4(_light.position, 1.0));
 
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         shader->setVec3Uniform("light.La", _light.ambient);
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
@@ -427,27 +395,27 @@ public:
         glm::mat4 projScaleBiasMatrix = glm::scale(glm::translate(glm::mat4(1.0), glm::vec3(0.5, 0.5, 0.5)), glm::vec3(0.5, 0.5, 0.5));
         shader->setMat4Uniform("lightScaleBiasMatrix", projScaleBiasMatrix);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _normalsTex->bind();
         shader->setIntUniform("normalsTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
+        glActiveTexture(GL_TEXTURE1);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 1        
         glBindSampler(1, _sampler);
         _diffuseTex->bind();
         shader->setIntUniform("diffuseTex", 1);
 
-        glActiveTexture(GL_TEXTURE2);  //текстурный юнит 2
+        glActiveTexture(GL_TEXTURE2);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 2
         glBindSampler(2, _sampler);
         _depthTex->bind();
         shader->setIntUniform("depthTex", 2);
 
-        glActiveTexture(GL_TEXTURE3);  //текстурный юнит 3        
+        glActiveTexture(GL_TEXTURE3);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 3        
         glBindSampler(3, _depthSampler);
         _shadowTex->bind();
         shader->setIntUniform("shadowTex", 3);
 
-        glActiveTexture(GL_TEXTURE4);  //текстурный юнит 4        
+        glActiveTexture(GL_TEXTURE4);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 4        
         glBindSampler(4, _sampler);
         _ssaoTex->bind();
         shader->setIntUniform("ssaoTex", 4);
@@ -474,12 +442,12 @@ public:
         shader->setFloatUniform("attScale", _attScale);
         shader->setFloatUniform("radius", _radius);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _depthTex->bind();
         shader->setIntUniform("depthTex", 0);
 
-        glActiveTexture(GL_TEXTURE1);  //текстурный юнит 1        
+        glActiveTexture(GL_TEXTURE1);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 1        
         glBindSampler(1, _repeatSampler);
         _rotateTex->bind();
         shader->setIntUniform("rotateTex", 1);
@@ -493,7 +461,7 @@ public:
 
     void drawToScreen(const ShaderProgramPtr& shader, const TexturePtr& inputTexture)
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
@@ -502,18 +470,18 @@ public:
 
         shader->use();
 
-        glActiveTexture(GL_TEXTURE0);        
+        glActiveTexture(GL_TEXTURE0);
         glBindSampler(0, _sampler);
         inputTexture->bind();
         shader->setIntUniform("tex", 0);
 
-        glEnable(GL_FRAMEBUFFER_SRGB); //Включает гамма-коррекцию
+        glEnable(GL_FRAMEBUFFER_SRGB); //Р’РєР»СЋС‡Р°РµС‚ РіР°РјРјР°-РєРѕСЂСЂРµРєС†РёСЋ
 
         _quad->draw();
 
         glDisable(GL_FRAMEBUFFER_SRGB);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
@@ -576,7 +544,7 @@ public:
 
         shader->use();
 
-        glActiveTexture(GL_TEXTURE0);        
+        glActiveTexture(GL_TEXTURE0);
         glBindSampler(0, _sampler);
         texture->bind();
         shader->setIntUniform("tex", 0);

@@ -52,7 +52,7 @@ void main()
 	
 	//-------------------------------
 			
-	vec3 normalColor = texture(normalsTex, texCoord).rgb;	
+	vec3 normalColor = texture(normalsTex, texCoord).rgb;
 	vec3 normal = normalize(normalColor * 2.0 - 1.0);
 	
 	//-------------------------------
