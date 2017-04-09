@@ -17,7 +17,6 @@ set(HEADER_FILES
 )
 
 set(SHADER_FILES
-	shaders8/deferred.vert	
 	shaders8/deferred.frag
 
 	shaders8/grayscale.frag
