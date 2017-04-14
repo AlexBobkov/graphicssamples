@@ -1,44 +1,29 @@
-set(SRC_FILES	
-	${PROJECT_SOURCE_DIR}/common/Application.cpp
-	${PROJECT_SOURCE_DIR}/common/Camera.cpp
-	${PROJECT_SOURCE_DIR}/common/Mesh.cpp
-	${PROJECT_SOURCE_DIR}/common/ShaderProgram.cpp
-	${PROJECT_SOURCE_DIR}/common/Texture.cpp
+set(SRC_FILES
+    ${PROJECT_SOURCE_DIR}/common/Application.cpp
+    ${PROJECT_SOURCE_DIR}/common/Camera.cpp
+    ${PROJECT_SOURCE_DIR}/common/Mesh.cpp
+    ${PROJECT_SOURCE_DIR}/common/ShaderProgram.cpp
+    ${PROJECT_SOURCE_DIR}/common/Texture.cpp
 )
 
 set(HEADER_FILES
-	${PROJECT_SOURCE_DIR}/common/Application.hpp
-	${PROJECT_SOURCE_DIR}/common/Camera.hpp
-	${PROJECT_SOURCE_DIR}/common/Mesh.hpp
-	${PROJECT_SOURCE_DIR}/common/ShaderProgram.hpp
-	${PROJECT_SOURCE_DIR}/common/Texture.hpp
+    ${PROJECT_SOURCE_DIR}/common/Application.hpp
+    ${PROJECT_SOURCE_DIR}/common/Camera.hpp
+    ${PROJECT_SOURCE_DIR}/common/Mesh.hpp
+    ${PROJECT_SOURCE_DIR}/common/ShaderProgram.hpp
+    ${PROJECT_SOURCE_DIR}/common/Texture.hpp
 )
 
 set(SHADER_FILES
-	shaders10/instancingNoMatrix.vert	
-	shaders10/instancingUniform.vert	
-	shaders10/instancingTexture.vert	
-	shaders10/instancingDivisor.vert
-	
-	shaders10/particle.vert	
-	shaders10/particle.frag
-	
-	shaders10/transformFeedbackPass1.vert
-	shaders10/transformFeedbackPass2.vert
-	
-	shaders10/particleWithGeomShader.vert	
-	shaders10/particleWithGeomShader.geom
-	shaders10/particleWithGeomShader.frag
+    shaders10/particleWithComputeShader.vert
+    shaders10/particleWithComputeShader.frag
+    shaders10/particleWithComputeShader.compute
 )
 
-source_group("Shaders" FILES	
-	${SHADER_FILES}	
+source_group("Shaders" FILES
+    ${SHADER_FILES}
 )
 
-MAKE_SAMPLE(Sample_10_1_Instancing)
-MAKE_SAMPLE(Sample_10_2_Particles)
-MAKE_SAMPLE(Sample_10_3_TransformFeedback)
-MAKE_SAMPLE(Sample_10_4_GeometryShader)
 MAKE_SAMPLE(Sample_10_5_ComputeShader)
 MAKE_SAMPLE(Sample_10_6_GPUCulling)
 MAKE_SAMPLE(Sample_10_7_Tesselation)

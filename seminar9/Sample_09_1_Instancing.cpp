@@ -23,7 +23,7 @@ namespace
     }
 
     /**
-    Загружает 3д-модель, размножает её в буфере positions.size() раз, сдвигая координаты в мировой системе координат
+    Р—Р°РіСЂСѓР¶Р°РµС‚ 3Рґ-РјРѕРґРµР»СЊ, СЂР°Р·РјРЅРѕР¶Р°РµС‚ РµС‘ РІ Р±СѓС„РµСЂРµ positions.size() СЂР°Р·, СЃРґРІРёРіР°СЏ РєРѕРѕСЂРґРёРЅР°С‚С‹ РІ РјРёСЂРѕРІРѕР№ СЃРёСЃС‚РµРјРµ РєРѕРѕСЂРґРёРЅР°С‚
     */
     MeshPtr loadFromFileArray(const std::string& filename, const std::vector<glm::vec3>& positions)
     {
@@ -104,7 +104,7 @@ namespace
 }
 
 /**
-Инстансинг
+РРЅСЃС‚Р°РЅСЃРёРЅРі
 */
 class SampleApplication : public Application
 {
@@ -118,7 +118,7 @@ public:
         UBO,
         SSBO,
         TEXTURE,
-        DIVISOR        
+        DIVISOR
     };
 
     MeshPtr _teapot;
@@ -129,83 +129,75 @@ public:
     GLuint _sampler;
 
     //------------------------
-        
+
     std::vector<ShaderProgramPtr> _shaders;
-    Mode _currentMode;
+    Mode _currentMode = NO_INSTANCING;
 
     //------------------------
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0;
+    float _phi = 0.0;
+    float _theta = 0.48;
 
     LightInfo _light;
 
     //------------------------
 
-    const unsigned int K = 1000; //Количество инстансов
+    const unsigned int K = 1000; //РљРѕР»РёС‡РµСЃС‚РІРѕ РёРЅСЃС‚Р°РЅСЃРѕРІ
 
     std::vector<glm::vec3> _positionsVec3;
     std::vector<glm::vec4> _positionsVec4;
 
     DataBufferPtr _bufVec3;
     DataBufferPtr _bufVec4;
-    
-    TexturePtr _bufferTex;
 
-    //------------------------
-    
-    SampleApplication() :
-        Application(),
-        _currentMode(NO_INSTANCING)
-    {
-    }
+    TexturePtr _bufferTex;
 
     void makeScene() override
     {
         Application::makeScene();
 
-        //Максимальное количество вершиных атрибутов, выраженное в количестве vec4
+        //РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅС‹С… Р°С‚СЂРёР±СѓС‚РѕРІ, РІС‹СЂР°Р¶РµРЅРЅРѕРµ РІ РєРѕР»РёС‡РµСЃС‚РІРµ vec4
         GLint maxVertexAttributes;
         glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
 
-        //Максимальный размер всех юниформ-перемнных, выраженный в количестве vec4
+        //РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІСЃРµС… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРЅРЅС‹С…, РІС‹СЂР°Р¶РµРЅРЅС‹Р№ РІ РєРѕР»РёС‡РµСЃС‚РІРµ vec4
         GLint maxVertexUniformVectors;
         glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &maxVertexUniformVectors);
 
-        //Максимальный размер юниформ-блока в байтах
+        //РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЋРЅРёС„РѕСЂРј-Р±Р»РѕРєР° РІ Р±Р°Р№С‚Р°С…
         GLint maxUniformBlockSize;
         glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
 
-        //Максимальный размер ShaderStorage-блока в байтах
+        //РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ ShaderStorage-Р±Р»РѕРєР° РІ Р±Р°Р№С‚Р°С…
         GLint maxShaderStorageBlockSize;
         glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxShaderStorageBlockSize);
 
-        //Максимальное количество текселей в текстурном буфере
+        //РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РµРєСЃРµР»РµР№ РІ С‚РµРєСЃС‚СѓСЂРЅРѕРј Р±СѓС„РµСЂРµ
         GLint maxTextureBufferSize;
         glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &maxTextureBufferSize);
 
         std::cout << "GL_MAX_VERTEX_ATTRIBS " << maxVertexAttributes << std::endl;
         std::cout << "GL_MAX_VERTEX_UNIFORM_VECTORS " << maxVertexUniformVectors << std::endl;
         std::cout << "GL_MAX_UNIFORM_BLOCK_SIZE " << maxUniformBlockSize << std::endl;
-        std::cout << "GL_MAX_SHADER_STORAGE_BLOCK_SIZE " << maxShaderStorageBlockSize << std::endl;            
+        std::cout << "GL_MAX_SHADER_STORAGE_BLOCK_SIZE " << maxShaderStorageBlockSize << std::endl;
         std::cout << "GL_MAX_TEXTURE_BUFFER_SIZE " << maxTextureBufferSize << std::endl;
 
         //=========================================================
-        //Инициализируем K случайных сдвигов для K экземпляров
-        //Некоторые варианты требуют выровненный массив по vec4, а некоторые нет
+        //РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј K СЃР»СѓС‡Р°Р№РЅС‹С… СЃРґРІРёРіРѕРІ РґР»СЏ K СЌРєР·РµРјРїР»СЏСЂРѕРІ
+        //РќРµРєРѕС‚РѕСЂС‹Рµ РІР°СЂРёР°РЅС‚С‹ С‚СЂРµР±СѓСЋС‚ РІС‹СЂРѕРІРЅРµРЅРЅС‹Р№ РјР°СЃСЃРёРІ РїРѕ vec4, Р° РЅРµРєРѕС‚РѕСЂС‹Рµ РЅРµС‚
 
         srand((int)(glfwGetTime() * 1000));
 
-        float size = 50.0f;
+        const float size = 50.0f;
         for (unsigned int i = 0; i < K; i++)
         {
             _positionsVec3.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
             _positionsVec4.push_back(glm::vec4(_positionsVec3.back(), 0.0));
         }
 
-        //Создаем буферы без выравнивания (_bufVec3) и с выравниванием (_bufVec4)
+        //РЎРѕР·РґР°РµРј Р±СѓС„РµСЂС‹ Р±РµР· РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ (_bufVec3) Рё СЃ РІС‹СЂР°РІРЅРёРІР°РЅРёРµРј (_bufVec4)
 
         _bufVec3 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
         _bufVec3->setData(_positionsVec3.size() * sizeof(float) * 3, _positionsVec3.data());
@@ -215,17 +207,17 @@ public:
 
         //----------------------------
 
-        //Привязываем SSBO к 0й точке привязки (требуется буфер с выравниванием)
+        //РџСЂРёРІСЏР·С‹РІР°РµРј SSBO Рє 0Р№ С‚РѕС‡РєРµ РїСЂРёРІСЏР·РєРё (С‚СЂРµР±СѓРµС‚СЃСЏ Р±СѓС„РµСЂ СЃ РІС‹СЂР°РІРЅРёРІР°РЅРёРµРј)
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, _bufVec4->id());
 
         //----------------------------
 
-        //Привязываем UBO к 0й точке привязки (требуется буфер с выравниванием)
+        //РџСЂРёРІСЏР·С‹РІР°РµРј UBO Рє 0Р№ С‚РѕС‡РєРµ РїСЂРёРІСЏР·РєРё (С‚СЂРµР±СѓРµС‚СЃСЏ Р±СѓС„РµСЂ СЃ РІС‹СЂР°РІРЅРёРІР°РЅРёРµРј)
         glBindBufferBase(GL_UNIFORM_BUFFER, 0, _bufVec4->id());
 
         //----------------------------
 
-        //Создаем текстурный буфер и привязываем к нему буфер без выравнивания
+        //РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂРЅС‹Р№ Р±СѓС„РµСЂ Рё РїСЂРёРІСЏР·С‹РІР°РµРј Рє РЅРµРјСѓ Р±СѓС„РµСЂ Р±РµР· РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ
         _bufferTex = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
         _bufferTex->bind();
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, _bufVec3->id());
@@ -239,57 +231,38 @@ public:
         //----------------------------
 
         _teapotDivisor = loadFromFile("models/teapot.obj");
-                
-        //Используем буфер без выравнивания в качестве вершинного атрибута
+
+        //РСЃРїРѕР»СЊР·СѓРµРј Р±СѓС„РµСЂ Р±РµР· РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ РІ РєР°С‡РµСЃС‚РІРµ РІРµСЂС€РёРЅРЅРѕРіРѕ Р°С‚СЂРёР±СѓС‚Р°
         _teapotDivisor->setAttribute(3, 3, GL_FLOAT, GL_FALSE, 0, 0, _bufVec3);
-        _teapotDivisor->setAttributeDivisor(3, 1);        
+        _teapotDivisor->setAttributeDivisor(3, 1);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _shaders.resize(8);
 
-        _shaders[NO_INSTANCING] = std::make_shared<ShaderProgram>();
-        _shaders[NO_INSTANCING]->createProgram("shaders/common.vert", "shaders/common.frag");
-
-        _shaders[BATCH] = std::make_shared<ShaderProgram>();
-        _shaders[BATCH]->createProgram("shaders/common.vert", "shaders/common.frag");
-        
-        _shaders[NO_MATRIX] = std::make_shared<ShaderProgram>();
-        _shaders[NO_MATRIX]->createProgram("shaders10/instancingNoMatrix.vert", "shaders/common.frag");
-
-        _shaders[UNIFORM] = std::make_shared<ShaderProgram>();
-        _shaders[UNIFORM]->createProgram("shaders10/instancingUniform.vert", "shaders/common.frag");
-
-        _shaders[UBO] = std::make_shared<ShaderProgram>();
-        _shaders[UBO]->createProgram("shaders10/instancingUBO.vert", "shaders/common.frag");
-
-        _shaders[SSBO] = std::make_shared<ShaderProgram>();
-        _shaders[SSBO]->createProgram("shaders10/instancingSSBO.vert", "shaders/common.frag");
-
-        _shaders[TEXTURE] = std::make_shared<ShaderProgram>();
-        _shaders[TEXTURE]->createProgram("shaders10/instancingTexture.vert", "shaders/common.frag");
-
-        _shaders[DIVISOR] = std::make_shared<ShaderProgram>();
-        _shaders[DIVISOR]->createProgram("shaders10/instancingDivisor.vert", "shaders/common.frag");
+        _shaders[NO_INSTANCING] = std::make_shared<ShaderProgram>("shaders/common.vert", "shaders/common.frag");
+        _shaders[BATCH] = std::make_shared<ShaderProgram>("shaders/common.vert", "shaders/common.frag");
+        _shaders[NO_MATRIX] = std::make_shared<ShaderProgram>("shaders9/instancingNoMatrix.vert", "shaders/common.frag");
+        _shaders[UNIFORM] = std::make_shared<ShaderProgram>("shaders9/instancingUniform.vert", "shaders/common.frag");
+        _shaders[UBO] = std::make_shared<ShaderProgram>("shaders9/instancingUBO.vert", "shaders/common.frag");
+        _shaders[SSBO] = std::make_shared<ShaderProgram>("shaders9/instancingSSBO.vert", "shaders/common.frag");
+        _shaders[TEXTURE] = std::make_shared<ShaderProgram>("shaders9/instancingTexture.vert", "shaders/common.frag");
+        _shaders[DIVISOR] = std::make_shared<ShaderProgram>("shaders9/instancingDivisor.vert", "shaders/common.frag");
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _brickTex = loadTexture("images/brick.jpg");
-                
+
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -379,18 +352,18 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawScene(_shaders[_currentMode]);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
@@ -399,17 +372,17 @@ public:
     {
         shader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         shader->setVec3Uniform("light.La", _light.ambient);
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);
@@ -449,12 +422,12 @@ public:
             else if (_currentMode == UBO)
             {
                 unsigned int uboIndex = glGetUniformBlockIndex(shader->id(), "Positions");
-                glUniformBlockBinding(shader->id(), uboIndex, 0); //0я точка привязки
+                glUniformBlockBinding(shader->id(), uboIndex, 0); //0СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
             }
             else if (_currentMode == SSBO)
             {
                 unsigned int ssboIndex = glGetProgramResourceIndex(shader->id(), GL_SHADER_STORAGE_BLOCK, "Positions");
-                glShaderStorageBlockBinding(shader->id(), ssboIndex, 0); //0я точка привязки
+                glShaderStorageBlockBinding(shader->id(), ssboIndex, 0); //0СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
             }
             else if (_currentMode == TEXTURE)
             {

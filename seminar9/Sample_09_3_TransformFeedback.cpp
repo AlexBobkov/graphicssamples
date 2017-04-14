@@ -19,7 +19,7 @@ namespace
     {
         glm::vec3 position;
         glm::vec3 velocity;
-        float startTime;
+        float startTime = 0.0;
     };
 
     float frand()
@@ -35,7 +35,7 @@ class SampleApplication : public Application
 {
 public:
     MeshPtr _ground;
-    
+
     ShaderProgramPtr _groundShader;
     ShaderProgramPtr _transformFeedbackPass1Shader;
     ShaderProgramPtr _transformFeedbackPass2Shader;
@@ -46,8 +46,8 @@ public:
     GLuint _sampler;
     GLuint _grassSampler;
 
-    float _oldTime;
-    float _deltaTime;
+    float _oldTime = 0.0;
+    float _deltaTime = 0.0;
 
     std::vector<Particle> _particles;
     std::vector<glm::vec3> _particlePositions;
@@ -60,22 +60,13 @@ public:
     GLuint _particleTimeVboTF[2];
     GLuint _TF[2];
 
-    int _tfIndex;
-    bool _firstTime;
-
-    SampleApplication() :
-        Application(),
-        _oldTime(0.0),
-        _deltaTime(0.0),
-        _tfIndex(0),
-        _firstTime(true)
-    {
-    }
+    int _tfIndex = 0;
+    bool _firstTime = true;
 
     void makeScene() override
     {
         Application::makeScene();
-        
+
         //=========================================================
         //Создание и загрузка мешей		
 
@@ -84,26 +75,24 @@ public:
         //=========================================================
         //Инициализация шейдеров
 
-        _groundShader = std::make_shared<ShaderProgram>();
-        _groundShader->createProgram("shaders10/ground.vert", "shaders10/ground.frag");
+        _groundShader = std::make_shared<ShaderProgram>("shaders9/ground.vert", "shaders9/ground.frag");
 
         //----------------------------
-        
+
         _transformFeedbackPass1Shader = std::make_shared<ShaderProgram>();
-        
+
         ShaderPtr vs = std::make_shared<Shader>(GL_VERTEX_SHADER);
-        vs->createFromFile("shaders10/transformFeedbackPass1.vert");
+        vs->createFromFile("shaders9/transformFeedbackPass1.vert");
         _transformFeedbackPass1Shader->attachShader(vs);
 
         const char* attribs[] = { "position", "velocity", "particleTime" };
         glTransformFeedbackVaryings(_transformFeedbackPass1Shader->id(), 3, attribs, GL_SEPARATE_ATTRIBS);
-        
+
         _transformFeedbackPass1Shader->linkProgram();
 
         //----------------------------
 
-        _transformFeedbackPass2Shader = std::make_shared<ShaderProgram>();
-        _transformFeedbackPass2Shader->createProgram("shaders10/transformFeedbackPass2.vert", "shaders10/particle.frag");
+        _transformFeedbackPass2Shader = std::make_shared<ShaderProgram>("shaders9/transformFeedbackPass2.vert", "shaders9/particle.frag");
 
         //=========================================================
         //Загрузка и создание текстур
@@ -133,7 +122,7 @@ public:
             float r = frand() * emitterSize;
             float theta = frand() * 0.2f;
             float phi = frand() * 2.0f * glm::pi<float>();
-            
+
             Particle p;
             p.position = glm::vec3(cos(phi) * r, sin(phi) * r, 0.0);
             p.velocity = glm::vec3(cos(phi) * sin(theta), sin(phi) * sin(theta), cos(theta)) * 3.0f;
@@ -162,12 +151,12 @@ public:
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, _particlePosVboTF[i]);
             glBufferData(GL_ARRAY_BUFFER, _particlePositions.size() * sizeof(float) * 3, _particlePositions.data(), GL_DYNAMIC_DRAW);
-            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);            
+            glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
             glEnableVertexAttribArray(1);
             glBindBuffer(GL_ARRAY_BUFFER, _particleVelVboTF[i]);
             glBufferData(GL_ARRAY_BUFFER, _particleVelocities.size() * sizeof(float) * 3, _particleVelocities.data(), GL_DYNAMIC_DRAW);
-            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);            
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
             glEnableVertexAttribArray(2);
             glBindBuffer(GL_ARRAY_BUFFER, _particleTimeVboTF[i]);
@@ -180,10 +169,10 @@ public:
             glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _particlePosVboTF[i]);
             glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 1, _particleVelVboTF[i]);
             glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 2, _particleTimeVboTF[i]);
-        }
 
-        glBindVertexArray(0);
-        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+            glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+            glBindVertexArray(0);
+        }        
     }
 
     void update()
@@ -277,7 +266,7 @@ public:
         _particleTex->bind();
         _transformFeedbackPass2Shader->setIntUniform("tex", 0);
 
-        glEnable(GL_PROGRAM_POINT_SIZE);        
+        glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -289,7 +278,7 @@ public:
         glDepthMask(true);
 
         glDisable(GL_BLEND);
-        glDisable(GL_PROGRAM_POINT_SIZE);        
+        glDisable(GL_PROGRAM_POINT_SIZE);
     }
 };
 
