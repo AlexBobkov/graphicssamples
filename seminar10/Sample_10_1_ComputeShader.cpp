@@ -22,24 +22,24 @@ namespace
 }
 
 /**
-Пример расчета движения частиц с помощью вычислительного шейдера
+РџСЂРёРјРµСЂ СЂР°СЃС‡РµС‚Р° РґРІРёР¶РµРЅРёСЏ С‡Р°СЃС‚РёС† СЃ РїРѕРјРѕС‰СЊСЋ РІС‹С‡РёСЃР»РёС‚РµР»СЊРЅРѕРіРѕ С€РµР№РґРµСЂР°
 */
 class SampleApplication : public Application
 {
-public:    
-    ShaderProgramPtr _particleShader;    
+public:
+    ShaderProgramPtr _particleShader;
     ShaderProgramPtr _computeShader;
 
     TexturePtr _particleTex;
 
     GLuint _sampler;
-    
+
     float _oldTime = 0.0f;
     float _deltaTime = 0.0f;
-    
+
     std::vector<glm::vec4> _particlePositions;
     std::vector<glm::vec4> _particleVelocities;
-    
+
     glm::vec3 _attractor1Pos = glm::vec3(-10.0, 0.0, 0.0);
     glm::vec3 _attractor2Pos = glm::vec3(10.0, 0.0, 0.0);
 
@@ -57,16 +57,15 @@ public:
         GLint range[2];
         glGetIntegerv(GL_POINT_SIZE_RANGE, range);
 
-        std::cout << "Point size range " << range[0] << " " << range[1] << std::endl;       
-                
-        //=========================================================
-        //Создание и загрузка мешей		
+        std::cout << "Point size range " << range[0] << " " << range[1] << std::endl;
 
         //=========================================================
-        //Инициализация шейдеров
+        //РЎРѕР·РґР°РЅРёРµ Рё Р·Р°РіСЂСѓР·РєР° РјРµС€РµР№		
 
-        _particleShader = std::make_shared<ShaderProgram>();
-        _particleShader->createProgram("shaders10/particleWithComputeShader.vert", "shaders10/particleWithComputeShader.frag");
+        //=========================================================
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
+
+        _particleShader = std::make_shared<ShaderProgram>("shaders10/particleWithComputeShader.vert", "shaders10/particleWithComputeShader.frag");
 
         _computeShader = std::make_shared<ShaderProgram>();
 
@@ -77,11 +76,11 @@ public:
         _computeShader->linkProgram();
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _particleTex = loadTexture("images/particle.png");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -100,9 +99,9 @@ public:
             _particlePositions[i] = glm::vec4((frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, (frand() - 0.5) * emitterSize, 1.0f);
             _particleVelocities[i] = glm::vec4((frand() - 0.5) * maxSpeed, (frand() - 0.5) * maxSpeed, (frand() - 0.5) * maxSpeed, 0.0f);
         }
-                
+
         //--------------------------------
-        
+
         _particlePosVbo = 0;
         glGenBuffers(1, &_particlePosVbo);
         glBindBuffer(GL_ARRAY_BUFFER, _particlePosVbo);
@@ -128,7 +127,7 @@ public:
         //--------------------------------
 
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, _particlePosVbo);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _particleVelVbo);        
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _particleVelVbo);
     }
 
     void updateGUI() override
@@ -146,7 +145,7 @@ public:
             ImGui::SliderFloat("attractor2 gravity", &_attractor2Gravity, 0.0, 200.0f);
         }
         ImGui::End();
-    }    
+    }
 
     void update()
     {
@@ -155,24 +154,23 @@ public:
         float time = static_cast<float>(glfwGetTime());
         _deltaTime = time - _oldTime;
         _oldTime = time;
-        
 
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
-        //Выставим побольше far plane
+        //Р’С‹СЃС‚Р°РІРёРј РїРѕР±РѕР»СЊС€Рµ far plane
         _camera.projMatrix = glm::perspective(glm::radians(45.0f), (float)width / height, 1.0f, 10000.f);
     }
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         //-------------------------
@@ -182,7 +180,7 @@ public:
 
         //-------------------------
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
@@ -202,14 +200,14 @@ public:
         shader->setFloatUniform("attractor2Gravity", _attractor2Gravity);
 
         unsigned int posIndex = glGetProgramResourceIndex(shader->id(), GL_SHADER_STORAGE_BLOCK, "Positions");
-        glShaderStorageBlockBinding(shader->id(), posIndex, 0); //0я точка привязки
+        glShaderStorageBlockBinding(shader->id(), posIndex, 0); //0СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
         unsigned int velIndex = glGetProgramResourceIndex(shader->id(), GL_SHADER_STORAGE_BLOCK, "Velocities");
-        glShaderStorageBlockBinding(shader->id(), velIndex, 1); //1я точка привязки
+        glShaderStorageBlockBinding(shader->id(), velIndex, 1); //1СЏ С‚РѕС‡РєР° РїСЂРёРІСЏР·РєРё
 
-        glDispatchCompute(numParticles / 500, 1, 1); //500 - количество вызовов внутри одного рабочей группы (оно задается в шейдере)
+        glDispatchCompute(numParticles / 500, 1, 1); //500 - РєРѕР»РёС‡РµСЃС‚РІРѕ РІС‹Р·РѕРІРѕРІ РІРЅСѓС‚СЂРё РѕРґРЅРѕРіРѕ СЂР°Р±РѕС‡РµР№ РіСЂСѓРїРїС‹ (РѕРЅРѕ Р·Р°РґР°РµС‚СЃСЏ РІ С€РµР№РґРµСЂРµ)
 
-        //Блокируем дальнейшее выполнение, пока не завершится запись в SSBO
+        //Р‘Р»РѕРєРёСЂСѓРµРј РґР°Р»СЊРЅРµР№С€РµРµ РІС‹РїРѕР»РЅРµРЅРёРµ, РїРѕРєР° РЅРµ Р·Р°РІРµСЂС€РёС‚СЃСЏ Р·Р°РїРёСЃСЊ РІ SSBO
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
@@ -217,29 +215,29 @@ public:
     {
         shader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         shader->setMat4Uniform("modelMatrix", glm::mat4(1.0f));
         shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
         shader->setFloatUniform("time", static_cast<float>(glfwGetTime()));
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _particleTex->bind();
         shader->setIntUniform("tex", 0);
 
-        glEnable(GL_PROGRAM_POINT_SIZE);        
+        glEnable(GL_PROGRAM_POINT_SIZE);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glDepthMask(false);
 
-        glBindVertexArray(_particleVao); //Подключаем VertexArray
-        glDrawArrays(GL_POINTS, 0, numParticles); //Рисуем		
+        glBindVertexArray(_particleVao); //РџРѕРґРєР»СЋС‡Р°РµРј VertexArray
+        glDrawArrays(GL_POINTS, 0, numParticles); //Р РёСЃСѓРµРј		
 
         glDepthMask(true);
 
-        glDisable(GL_BLEND);                
+        glDisable(GL_BLEND);
         glDisable(GL_PROGRAM_POINT_SIZE);
     }
 };

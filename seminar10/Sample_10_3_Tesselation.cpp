@@ -12,17 +12,17 @@
 #include <deque>
 
 /**
-Тесселяция
+РўРµСЃСЃРµР»СЏС†РёСЏ
 */
 class SampleApplication : public Application
 {
-public:       
+public:
     ShaderProgramPtr _shader;
-  
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0;
+    float _phi = 0.0;
+    float _theta = 0.48;
 
     LightInfo _light;
 
@@ -42,7 +42,7 @@ public:
     {
         Application::makeScene();
 
-        //Максимальное количество текселей в текстурном буфере
+        //РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РµРєСЃРµР»РµР№ РІ С‚РµРєСЃС‚СѓСЂРЅРѕРј Р±СѓС„РµСЂРµ
         glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &maxTessLevel);
 
         std::cout << "Max tesselation level " << maxTessLevel << std::endl;
@@ -57,11 +57,11 @@ public:
             glm::vec3(-1.0f, 1.0f, 0.0f)
         };
 
-        //Создаем прямоугольник
+        //РЎРѕР·РґР°РµРј РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє
         glGenBuffers(1, &_vbo);
         glBindBuffer(GL_ARRAY_BUFFER, _vbo);
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float) * 3, vertices.data(), GL_STATIC_DRAW);
-        
+
         glGenVertexArrays(1, &_vao);
         glBindVertexArray(_vao);
 
@@ -72,7 +72,7 @@ public:
         glBindVertexArray(0);
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
         _shader = std::make_shared<ShaderProgram>();
 
@@ -83,24 +83,20 @@ public:
         ShaderPtr tcs = std::make_shared<Shader>(GL_TESS_CONTROL_SHADER);
         tcs->createFromFile("shaders10/tess.control");
         _shader->attachShader(tcs);
-        
+
         ShaderPtr tes = std::make_shared<Shader>(GL_TESS_EVALUATION_SHADER);
         tes->createFromFile("shaders10/tess.eval");
         _shader->attachShader(tes);
-        
+
         ShaderPtr fs = std::make_shared<Shader>(GL_FRAGMENT_SHADER);
         fs->createFromFile("shaders10/tess.frag");
         _shader->attachShader(fs);
 
         _shader->linkProgram();
-        
-        //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
 
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //=========================================================
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
@@ -143,18 +139,18 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         drawScene(_shader);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
@@ -168,20 +164,20 @@ public:
         shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         shader->setVec3Uniform("light.La", _light.ambient);
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
         shader->setIntUniform("outerLevel", outerLevel);
-        shader->setIntUniform("innerLevel", innerLevel);          
+        shader->setIntUniform("innerLevel", innerLevel);
 
         shader->setIntUniform("dynamicLevel", dynamicLevel ? 1 : 0);
 
         glPatchParameteri(GL_PATCH_VERTICES, 4);
 
         glBindVertexArray(_vao);
-        glDrawArrays(GL_PATCHES, 0, 4);        
+        glDrawArrays(GL_PATCHES, 0, 4);
     }
 };
 

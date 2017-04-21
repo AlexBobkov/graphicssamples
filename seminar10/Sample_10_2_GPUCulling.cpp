@@ -24,7 +24,7 @@ namespace
 }
 
 /**
-Инстансинг: отсечение на видеокарте (gpu culling)
+РРЅСЃС‚Р°РЅСЃРёРЅРі: РѕС‚СЃРµС‡РµРЅРёРµ РЅР° РІРёРґРµРѕРєР°СЂС‚Рµ (gpu culling)
 */
 class SampleApplication : public Application
 {
@@ -41,16 +41,16 @@ public:
 
     //------------------------
 
-    //Переменные для управления положением одного источника света
-    float _lr;
-    float _phi;
-    float _theta;
+    //РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР»РѕР¶РµРЅРёРµРј РѕРґРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° СЃРІРµС‚Р°
+    float _lr = 10.0;
+    float _phi = 0.0;
+    float _theta = 0.48;
 
     LightInfo _light;
 
     //------------------------
 
-    const unsigned int K = 1000; //Количество инстансов
+    const unsigned int K = 1000; //РљРѕР»РёС‡РµСЃС‚РІРѕ РёРЅСЃС‚Р°РЅСЃРѕРІ
 
     std::vector<glm::vec3> _positionsVec3;
 
@@ -61,11 +61,11 @@ public:
 
     //------------------------
 
-    GLuint _TF; //Объект для хранения настроект Transform Feedback
-    GLuint _cullVao; //VAO, который хранит настройки буфера для чтения данных во время Transform Feedback
-    GLuint _tfOutputVbo; //VBO, в который будут записываться смещения моделей после отсечения
+    GLuint _TF; //РћР±СЉРµРєС‚ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРєС‚ Transform Feedback
+    GLuint _cullVao; //VAO, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РЅР°СЃС‚СЂРѕР№РєРё Р±СѓС„РµСЂР° РґР»СЏ С‡С‚РµРЅРёСЏ РґР°РЅРЅС‹С… РІРѕ РІСЂРµРјСЏ Transform Feedback
+    GLuint _tfOutputVbo; //VBO, РІ РєРѕС‚РѕСЂС‹Р№ Р±СѓРґСѓС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ СЃРјРµС‰РµРЅРёСЏ РјРѕРґРµР»РµР№ РїРѕСЃР»Рµ РѕС‚СЃРµС‡РµРЅРёСЏ
 
-    GLuint _query; //Переменная-счетчик, куда будет записываться количество пройденных отбор моделей
+    GLuint _query; //РџРµСЂРµРјРµРЅРЅР°СЏ-СЃС‡РµС‚С‡РёРє, РєСѓРґР° Р±СѓРґРµС‚ Р·Р°РїРёСЃС‹РІР°С‚СЊСЃСЏ РєРѕР»РёС‡РµСЃС‚РІРѕ РїСЂРѕР№РґРµРЅРЅС‹С… РѕС‚Р±РѕСЂ РјРѕРґРµР»РµР№
 
     //------------------------
 
@@ -75,23 +75,23 @@ public:
     {
         Application::makeScene();
 
-        //Максимальное количество вершиных атрибутов, выраженное в количестве vec4
+        //РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РІРµСЂС€РёРЅС‹С… Р°С‚СЂРёР±СѓС‚РѕРІ, РІС‹СЂР°Р¶РµРЅРЅРѕРµ РІ РєРѕР»РёС‡РµСЃС‚РІРµ vec4
         GLint maxVertexAttributes;
         glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxVertexAttributes);
 
-        //Максимальный размер всех юниформ-перемнных, выраженный в количестве vec4
+        //РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РІСЃРµС… СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРЅРЅС‹С…, РІС‹СЂР°Р¶РµРЅРЅС‹Р№ РІ РєРѕР»РёС‡РµСЃС‚РІРµ vec4
         GLint maxVertexUniformVectors;
         glGetIntegerv(GL_MAX_VERTEX_UNIFORM_VECTORS, &maxVertexUniformVectors);
 
-        //Максимальный размер юниформ-блока в байтах
+        //РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ СЋРЅРёС„РѕСЂРј-Р±Р»РѕРєР° РІ Р±Р°Р№С‚Р°С…
         GLint maxUniformBlockSize;
         glGetIntegerv(GL_MAX_UNIFORM_BLOCK_SIZE, &maxUniformBlockSize);
 
-        //Максимальный размер ShaderStorage-блока в байтах
+        //РњР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ ShaderStorage-Р±Р»РѕРєР° РІ Р±Р°Р№С‚Р°С…
         GLint maxShaderStorageBlockSize;
         glGetIntegerv(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, &maxShaderStorageBlockSize);
 
-        //Максимальное количество текселей в текстурном буфере
+        //РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РµРєСЃРµР»РµР№ РІ С‚РµРєСЃС‚СѓСЂРЅРѕРј Р±СѓС„РµСЂРµ
         GLint maxTextureBufferSize;
         glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, &maxTextureBufferSize);
 
@@ -102,8 +102,8 @@ public:
         std::cout << "GL_MAX_TEXTURE_BUFFER_SIZE " << maxTextureBufferSize << std::endl;
 
         //=========================================================
-        //Инициализируем K случайных сдвигов для K экземпляров
-        //Некоторые варианты требуют выровненный массив по vec4, а некоторые нет
+        //РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј K СЃР»СѓС‡Р°Р№РЅС‹С… СЃРґРІРёРіРѕРІ РґР»СЏ K СЌРєР·РµРјРїР»СЏСЂРѕРІ
+        //РќРµРєРѕС‚РѕСЂС‹Рµ РІР°СЂРёР°РЅС‚С‹ С‚СЂРµР±СѓСЋС‚ РІС‹СЂРѕРІРЅРµРЅРЅС‹Р№ РјР°СЃСЃРёРІ РїРѕ vec4, Р° РЅРµРєРѕС‚РѕСЂС‹Рµ РЅРµС‚
 
         srand((int)(glfwGetTime() * 1000));
 
@@ -113,14 +113,14 @@ public:
             _positionsVec3.push_back(glm::vec3(frand() * size - 0.5 * size, frand() * size - 0.5 * size, 0.0));
         }
 
-        //Создаем буферы без выравнивания (_bufVec3) и с выравниванием (_bufVec4)
+        //РЎРѕР·РґР°РµРј Р±СѓС„РµСЂС‹ Р±РµР· РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ (_bufVec3) Рё СЃ РІС‹СЂР°РІРЅРёРІР°РЅРёРµРј (_bufVec4)
 
         _bufVec3 = std::make_shared<DataBuffer>(GL_ARRAY_BUFFER);
         _bufVec3->setData(_positionsVec3.size() * sizeof(float) * 3, _positionsVec3.data());
 
         //----------------------------
 
-        //Инициализируем буфер, в который будут скопированы смещения моделей после отсечения
+        //РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј Р±СѓС„РµСЂ, РІ РєРѕС‚РѕСЂС‹Р№ Р±СѓРґСѓС‚ СЃРєРѕРїРёСЂРѕРІР°РЅС‹ СЃРјРµС‰РµРЅРёСЏ РјРѕРґРµР»РµР№ РїРѕСЃР»Рµ РѕС‚СЃРµС‡РµРЅРёСЏ
         glGenBuffers(1, &_tfOutputVbo);
         glBindBuffer(GL_ARRAY_BUFFER, _tfOutputVbo);
         glBufferData(GL_ARRAY_BUFFER, _positionsVec3.size() * sizeof(float) * 3, 0, GL_STREAM_DRAW);
@@ -129,13 +129,13 @@ public:
 
         //----------------------------
 
-        //Создаем текстурный буфер и привязываем к нему буфер без выравнивания
+        //РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂРЅС‹Р№ Р±СѓС„РµСЂ Рё РїСЂРёРІСЏР·С‹РІР°РµРј Рє РЅРµРјСѓ Р±СѓС„РµСЂ Р±РµР· РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ
         _bufferTexAll = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
         _bufferTexAll->bind();
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, _bufVec3->id());
         _bufferTexAll->unbind();
 
-        //Создаем текстурный буфер и привязываем к нему буфер без выравнивания
+        //РЎРѕР·РґР°РµРј С‚РµРєСЃС‚СѓСЂРЅС‹Р№ Р±СѓС„РµСЂ Рё РїСЂРёРІСЏР·С‹РІР°РµРј Рє РЅРµРјСѓ Р±СѓС„РµСЂ Р±РµР· РІС‹СЂР°РІРЅРёРІР°РЅРёСЏ
         _bufferTexCulled = std::make_shared<Texture>(GL_TEXTURE_BUFFER);
         _bufferTexCulled->bind();
         glTexBuffer(GL_TEXTURE_BUFFER, GL_RGB32F_ARB, _tfOutputVbo);
@@ -146,10 +146,9 @@ public:
         _teapot = loadFromFile("models/teapot.obj");
 
         //=========================================================
-        //Инициализация шейдеров
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С€РµР№РґРµСЂРѕРІ
 
-        _shader = std::make_shared<ShaderProgram>();
-        _shader->createProgram("shaders10/instancingTexture.vert", "shaders/common.frag");
+        _shader = std::make_shared<ShaderProgram>("shaders9/instancingTexture.vert", "shaders/common.frag");
 
         //----------------------------
 
@@ -163,7 +162,7 @@ public:
         gs->createFromFile("shaders10/cull.geom");
         _cullShader->attachShader(gs);
 
-        //Выходные переменные, которые будут записаны в буфер
+        //Р’С‹С…РѕРґРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ, РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ Р·Р°РїРёСЃР°РЅС‹ РІ Р±СѓС„РµСЂ
         const char* attribs[] = { "position" };
         glTransformFeedbackVaryings(_cullShader->id(), 1, attribs, GL_SEPARATE_ATTRIBS);
 
@@ -171,7 +170,7 @@ public:
 
         //----------------------------
 
-        //VAO, который будет поставлять данные для отсечения
+        //VAO, РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РїРѕСЃС‚Р°РІР»СЏС‚СЊ РґР°РЅРЅС‹Рµ РґР»СЏ РѕС‚СЃРµС‡РµРЅРёСЏ
         glGenVertexArrays(1, &_cullVao);
         glBindVertexArray(_cullVao);
 
@@ -183,7 +182,7 @@ public:
 
         //----------------------------
 
-        //Настроечный объект Transform Feedback
+        //РќР°СЃС‚СЂРѕРµС‡РЅС‹Р№ РѕР±СЉРµРєС‚ Transform Feedback
         glGenTransformFeedbacks(1, &_TF);
         glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, _TF);
         glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, _tfOutputVbo);
@@ -194,22 +193,18 @@ public:
         glGenQueries(1, &_query);
 
         //=========================================================
-        //Инициализация значений переменных освщения
-        _lr = 10.0;
-        _phi = 0.0f;
-        _theta = 0.48f;
-
-        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * (float)_lr;
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Р·РЅР°С‡РµРЅРёР№ РїРµСЂРµРјРµРЅРЅС‹С… РѕСЃРІС‰РµРЅРёСЏ
+        _light.position = glm::vec3(glm::cos(_phi) * glm::cos(_theta), glm::sin(_phi) * glm::cos(_theta), glm::sin(_theta)) * _lr;
         _light.ambient = glm::vec3(0.2, 0.2, 0.2);
         _light.diffuse = glm::vec3(0.8, 0.8, 0.8);
         _light.specular = glm::vec3(1.0, 1.0, 1.0);
 
         //=========================================================
-        //Загрузка и создание текстур
+        //Р—Р°РіСЂСѓР·РєР° Рё СЃРѕР·РґР°РЅРёРµ С‚РµРєСЃС‚СѓСЂ
         _brickTex = loadTexture("images/brick.jpg");
 
         //=========================================================
-        //Инициализация сэмплера, объекта, который хранит параметры чтения из текстуры
+        //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСЌРјРїР»РµСЂР°, РѕР±СЉРµРєС‚Р°, РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РїР°СЂР°РјРµС‚СЂС‹ С‡С‚РµРЅРёСЏ РёР· С‚РµРєСЃС‚СѓСЂС‹
         glGenSamplers(1, &_sampler);
         glSamplerParameteri(_sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glSamplerParameteri(_sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -251,20 +246,20 @@ public:
 
     void draw() override
     {
-        //Получаем текущие размеры экрана и выставлям вьюпорт
+        //РџРѕР»СѓС‡Р°РµРј С‚РµРєСѓС‰РёРµ СЂР°Р·РјРµСЂС‹ СЌРєСЂР°РЅР° Рё РІС‹СЃС‚Р°РІР»СЏРј РІСЊСЋРїРѕСЂС‚
         int width, height;
         glfwGetFramebufferSize(_window, &width, &height);
 
         glViewport(0, 0, width, height);
 
-        //Очищаем буферы цвета и глубины от результатов рендеринга предыдущего кадра
+        //РћС‡РёС‰Р°РµРј Р±СѓС„РµСЂС‹ С†РІРµС‚Р° Рё РіР»СѓР±РёРЅС‹ РѕС‚ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂРµРЅРґРµСЂРёРЅРіР° РїСЂРµРґС‹РґСѓС‰РµРіРѕ РєР°РґСЂР°
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         cull(_cullShader);
 
         drawScene(_shader);
 
-        //Отсоединяем сэмплер и шейдерную программу
+        //РћС‚СЃРѕРµРґРёРЅСЏРµРј СЃСЌРјРїР»РµСЂ Рё С€РµР№РґРµСЂРЅСѓСЋ РїСЂРѕРіСЂР°РјРјСѓ
         glBindSampler(0, 0);
         glUseProgram(0);
     }
@@ -300,17 +295,17 @@ public:
 
         shader->use();
 
-        //Загружаем на видеокарту значения юниформ-переменных
+        //Р—Р°РіСЂСѓР¶Р°РµРј РЅР° РІРёРґРµРѕРєР°СЂС‚Сѓ Р·РЅР°С‡РµРЅРёСЏ СЋРЅРёС„РѕСЂРј-РїРµСЂРµРјРµРЅРЅС‹С…
         shader->setMat4Uniform("viewMatrix", _camera.viewMatrix);
         shader->setMat4Uniform("projectionMatrix", _camera.projMatrix);
 
         glm::vec3 lightPosCamSpace = glm::vec3(_camera.viewMatrix * glm::vec4(_light.position, 1.0));
-        shader->setVec3Uniform("light.pos", lightPosCamSpace); //копируем положение уже в системе виртуальной камеры
+        shader->setVec3Uniform("light.pos", lightPosCamSpace); //РєРѕРїРёСЂСѓРµРј РїРѕР»РѕР¶РµРЅРёРµ СѓР¶Рµ РІ СЃРёСЃС‚РµРјРµ РІРёСЂС‚СѓР°Р»СЊРЅРѕР№ РєР°РјРµСЂС‹
         shader->setVec3Uniform("light.La", _light.ambient);
         shader->setVec3Uniform("light.Ld", _light.diffuse);
         shader->setVec3Uniform("light.Ls", _light.specular);
 
-        glActiveTexture(GL_TEXTURE0);  //текстурный юнит 0        
+        glActiveTexture(GL_TEXTURE0);  //С‚РµРєСЃС‚СѓСЂРЅС‹Р№ СЋРЅРёС‚ 0        
         glBindSampler(0, _sampler);
         _brickTex->bind();
         shader->setIntUniform("diffuseTex", 0);

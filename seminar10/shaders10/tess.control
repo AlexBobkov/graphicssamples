@@ -33,7 +33,7 @@ void main()
         gl_TessLevelOuter[3] = float(tessLevel);
 
         gl_TessLevelInner[0] = float(tessLevel);
-        gl_TessLevelInner[1] = float(tessLevel);    
+        gl_TessLevelInner[1] = float(tessLevel);
     }
     else
     {
