@@ -17,6 +17,8 @@
 class SampleApplication : public Application
 {
 public:
+    MeshPtr _sphere;
+
     ShaderProgramPtr _shader;
 
     //Переменные для управления положением одного источника света
@@ -49,27 +51,30 @@ public:
 
         //------------------------------
 
-        std::vector<glm::vec3> vertices =
-        {
-            glm::vec3(-1.0f, -1.0f, 0.0f),
-            glm::vec3(1.0f, -1.0f, 0.0f),
-            glm::vec3(1.0f, 1.0f, 0.0f),
-            glm::vec3(-1.0f, 1.0f, 0.0f)
-        };
+        //std::vector<glm::vec3> vertices =
+        //{
+        //    glm::vec3(-1.0f, -1.0f, 0.0f),
+        //    glm::vec3(1.0f, -1.0f, 0.0f),
+        //    glm::vec3(1.0f, 1.0f, 0.0f),
+        //    glm::vec3(-1.0f, 1.0f, 0.0f)
+        //};
 
-        //Создаем прямоугольник
-        glGenBuffers(1, &_vbo);
-        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float) * 3, vertices.data(), GL_STATIC_DRAW);
+        ////Создаем прямоугольник
+        //glGenBuffers(1, &_vbo);
+        //glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        //glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float) * 3, vertices.data(), GL_STATIC_DRAW);
 
-        glGenVertexArrays(1, &_vao);
-        glBindVertexArray(_vao);
+        //glGenVertexArrays(1, &_vao);
+        //glBindVertexArray(_vao);
 
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, _vbo);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        //glEnableVertexAttribArray(0);
+        //glBindBuffer(GL_ARRAY_BUFFER, _vbo);
+        //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-        glBindVertexArray(0);
+        //glBindVertexArray(0);
+
+        _sphere = makeSphere(0.5f, 5);
+        _sphere->setPrimitiveType(GL_PATCHES);
 
         //=========================================================
         //Инициализация шейдеров
@@ -173,11 +178,20 @@ public:
         shader->setIntUniform("innerLevel", innerLevel);
 
         shader->setIntUniform("dynamicLevel", dynamicLevel ? 1 : 0);
+                
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        glPatchParameteri(GL_PATCH_VERTICES, 4);
+        glEnable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
+        glCullFace(GL_BACK);
 
-        glBindVertexArray(_vao);
-        glDrawArrays(GL_PATCHES, 0, 4);
+        glPatchParameteri(GL_PATCH_VERTICES, 3);
+
+        //glBindVertexArray(_vao);
+        //glDrawArrays(GL_PATCHES, 0, 4);
+        _sphere->draw();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     }
 };
 

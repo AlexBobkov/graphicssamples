@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(vertices = 4) out;
+layout(vertices = 3) out;
 
 uniform mat4 modelMatrix; //из локальной в мировую
 uniform mat4 viewMatrix; //из мировой в систему координат камеры
@@ -30,19 +30,19 @@ void main()
         gl_TessLevelOuter[0] = float(tessLevel);
         gl_TessLevelOuter[1] = float(tessLevel);
         gl_TessLevelOuter[2] = float(tessLevel);
-        gl_TessLevelOuter[3] = float(tessLevel);
+        //gl_TessLevelOuter[3] = float(tessLevel);
 
         gl_TessLevelInner[0] = float(tessLevel);
-        gl_TessLevelInner[1] = float(tessLevel);
+        //gl_TessLevelInner[1] = float(tessLevel);
     }
     else
     {
         gl_TessLevelOuter[0] = float(outerLevel);
         gl_TessLevelOuter[1] = float(outerLevel);
         gl_TessLevelOuter[2] = float(outerLevel);
-        gl_TessLevelOuter[3] = float(outerLevel);
+        //gl_TessLevelOuter[3] = float(outerLevel);
         
         gl_TessLevelInner[0] = float(innerLevel);
-        gl_TessLevelInner[1] = float(innerLevel);
+        //gl_TessLevelInner[1] = float(innerLevel);
     }
 }

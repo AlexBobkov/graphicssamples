@@ -9,7 +9,7 @@ struct LightInfo
 };
 uniform LightInfo light;
 
-in vec2 texCoords;
+//in vec2 texCoords;
 in vec3 normalCamSpace;
 in vec3 posCamSpace;
 
@@ -41,5 +41,6 @@ void main()
         color += light.Ls * Ks * blinnTerm;
     }	
 
-	fragColor = vec4(color, 1.0);
+	//fragColor = vec4(color, 1.0);
+    fragColor = vec4(1.0);
 }
